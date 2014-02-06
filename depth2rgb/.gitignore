@@ -1,0 +1,9 @@
+*.sdf
+*.suo
+desktop.ini
+
+/Debug
+/Release
+
+/depth2rgb/Debug
+/depth2rgb/Release
