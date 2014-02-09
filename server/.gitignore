@@ -1,0 +1,6 @@
+*.sdf
+*.suo
+*.vcxproj.user
+
+/x64
+/server/x64
