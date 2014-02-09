@@ -3,6 +3,14 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "server", "server\server.vcxproj", "{6372D9A0-C97E-4758-8039-31C3B26F0963}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test", "test\test.vcxproj", "{AB9844F0-EC12-42BD-90BD-DDFE115A7404}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{6B397F56-3AB5-42B0-A7DD-C915BE6CB16E}"
+	ProjectSection(SolutionItems) = preProject
+		kppl_debug_x64.props = kppl_debug_x64.props
+		kppl_release_x64.props = kppl_release_x64.props
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -13,6 +21,10 @@ Global
 		{6372D9A0-C97E-4758-8039-31C3B26F0963}.Debug|x64.Build.0 = Debug|x64
 		{6372D9A0-C97E-4758-8039-31C3B26F0963}.Release|x64.ActiveCfg = Release|x64
 		{6372D9A0-C97E-4758-8039-31C3B26F0963}.Release|x64.Build.0 = Release|x64
+		{AB9844F0-EC12-42BD-90BD-DDFE115A7404}.Debug|x64.ActiveCfg = Debug|x64
+		{AB9844F0-EC12-42BD-90BD-DDFE115A7404}.Debug|x64.Build.0 = Debug|x64
+		{AB9844F0-EC12-42BD-90BD-DDFE115A7404}.Release|x64.ActiveCfg = Release|x64
+		{AB9844F0-EC12-42BD-90BD-DDFE115A7404}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

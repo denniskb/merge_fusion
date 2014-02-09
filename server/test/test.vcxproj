@@ -10,27 +10,19 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="DepthStream.h" />
-    <ClInclude Include="util.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="DepthStream.cpp" />
-    <ClCompile Include="util.cpp" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{6372D9A0-C97E-4758-8039-31C3B26F0963}</ProjectGuid>
-    <RootNamespace>server</RootNamespace>
+    <ProjectGuid>{AB9844F0-EC12-42BD-90BD-DDFE115A7404}</ProjectGuid>
+    <RootNamespace>test</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v110</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v110</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -50,14 +42,34 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile />
+    <Link />
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(BOOST_ROOT);..</AdditionalIncludeDirectories>
+    </ClCompile>
     <Link>
-      <AdditionalDependencies />
+      <AdditionalLibraryDirectories>$(BOOST_LIB_PATH_X64)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile />
     <Link />
+    <Link>
+      <AdditionalLibraryDirectories>$(BOOST_LIB_PATH_X64)</AdditionalLibraryDirectories>
+    </Link>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(BOOST_ROOT);..</AdditionalIncludeDirectories>
+    </ClCompile>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="DepthStream.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="util.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\server\server.vcxproj">
+      <Project>{6372d9a0-c97e-4758-8039-31c3b26f0963}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

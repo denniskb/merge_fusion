@@ -1,6 +1,10 @@
+*.opensdf
 *.sdf
 *.suo
 *.vcxproj.user
 
-/x64
-/server/x64
+/server/bin
+/server/obj
+
+/test/bin
+/test/obj
