@@ -13,10 +13,13 @@
   <ItemGroup>
     <ClInclude Include="DepthStream.h" />
     <ClInclude Include="util.h" />
+    <ClInclude Include="Volume.h" />
+    <ClInclude Include="Voxel.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DepthStream.cpp" />
     <ClCompile Include="util.cpp" />
+    <ClCompile Include="Voxel.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{6372D9A0-C97E-4758-8039-31C3B26F0963}</ProjectGuid>
