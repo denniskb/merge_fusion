@@ -19,6 +19,7 @@
   <ItemGroup>
     <ClCompile Include="DepthStream.cpp" />
     <ClCompile Include="util.cpp" />
+    <ClCompile Include="Volume.cpp" />
     <ClCompile Include="Voxel.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

@@ -43,6 +43,20 @@ void kppl::Voxel::Update( float newDistance, float truncationMargin )
 
 
 
+bool kppl::Voxel::operator==( Voxel const & rhs ) const
+{
+	return
+		m_distance == rhs.m_distance &&
+		m_weight == rhs.m_weight;
+}
+
+bool kppl::Voxel::operator!=( Voxel const & rhs ) const
+{
+	return ! ( * this == rhs );
+}
+
+
+
 // static 
 int kppl::Voxel::PackDistance( float distance, float truncationMargin )
 {

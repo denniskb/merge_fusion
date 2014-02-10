@@ -25,6 +25,15 @@ public:
 
 	void Update( float newDistance, float truncationMargin );
 
+	/*
+	Returns true if this and rhs are identical on the bit-level.
+	Please note that this comparison is only meaningful if
+	both voxels were only ever updated using the same truncation margin.
+	It is the programmer's responsibility to assert this.
+	*/
+	bool operator==( Voxel const & rhs ) const;
+	bool operator!=( Voxel const & rhs ) const;
+
 private:
 	unsigned char m_distance : 6;
 	unsigned char m_weight : 2;
