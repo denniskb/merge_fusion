@@ -29,15 +29,15 @@ kppl::DepthStream::~DepthStream()
 
 
 
-bool kppl::DepthStream::NextFrame( std::vector< short > & out_frame )
+bool kppl::DepthStream::NextFrame( std::vector< short > & outFrame )
 {
 	if( m_iFrame >= m_nFrames )
 		return false;
 
-	_fseeki64( m_file, 48, SEEK_CUR ); // skip view matrix
+	_fseeki64( m_file, 64, SEEK_CUR ); // skip view matrix
 
-	out_frame.resize( 640 * 480 );
-	fread_s( & out_frame[ 0 ], out_frame.size() * 2, 2, 640 * 480, m_file );
+	outFrame.resize( 640 * 480 );
+	fread_s( & outFrame[ 0 ], outFrame.size() * 2, 2, 640 * 480, m_file );
 	m_iFrame++;
 
 	return true;

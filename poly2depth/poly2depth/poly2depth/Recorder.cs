@@ -75,21 +75,25 @@ namespace poly2depth
                 tmpBufferDepth[2 * i + 1] = (byte)(depth >> 8);
             }
 
-            Matrix viewT = Matrix.Transpose(view);
-            bw.Write(viewT.M11);
-            bw.Write(viewT.M12);
-            bw.Write(viewT.M13);
-            bw.Write(viewT.M14);
+            bw.Write(view.M11);
+            bw.Write(view.M12);
+            bw.Write(view.M13);
+            bw.Write(view.M14);
 
-            bw.Write(viewT.M21);
-            bw.Write(viewT.M22);
-            bw.Write(viewT.M23);
-            bw.Write(viewT.M24);
+            bw.Write(view.M21);
+            bw.Write(view.M22);
+            bw.Write(view.M23);
+            bw.Write(view.M24);
 
-            bw.Write(viewT.M31);
-            bw.Write(viewT.M32);
-            bw.Write(viewT.M33);
-            bw.Write(viewT.M34);
+            bw.Write(view.M31);
+            bw.Write(view.M32);
+            bw.Write(view.M33);
+            bw.Write(view.M34);
+
+            bw.Write(view.M41);
+            bw.Write(view.M42);
+            bw.Write(view.M43);
+            bw.Write(view.M44);
 
             bw.Write(tmpBufferDepth);
          

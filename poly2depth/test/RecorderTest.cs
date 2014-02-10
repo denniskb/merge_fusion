@@ -16,7 +16,7 @@ namespace test
             FileStream fs_src = File.Open(src, FileMode.Open);
             BinaryReader br = new BinaryReader(fs_src);
 
-            br.BaseStream.Seek(71, SeekOrigin.Begin);   // skip to first depth frame
+            br.BaseStream.Seek(87, SeekOrigin.Begin);   // skip to first depth frame
             br.Read(frame, 0, 640 * 480 * 2);
 
             br.Close();

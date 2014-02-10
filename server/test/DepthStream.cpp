@@ -20,14 +20,14 @@ BOOST_AUTO_TEST_CASE( NextFrame )
 	char const * header = "KPPL raw depth\n";
 	int version = 1;
 	int nFrames = 1;
-	char viewMatrix[ 48 ];
+	char viewMatrix[ 64 ];
 	std::vector< short > depthData( FRAME_RES );
 	depthData[ 123 ] = 57;
 
 	fwrite( header, 1, 15, file );
 	fwrite( & version, 4, 1, file );
 	fwrite( & nFrames, 4, 1, file );
-	fwrite( viewMatrix, 1, 48, file );
+	fwrite( viewMatrix, 1, sizeof( viewMatrix ), file );
 	fwrite( & depthData[ 0 ], 2, FRAME_RES, file );
 
 	fclose( file );

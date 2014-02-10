@@ -31,7 +31,7 @@ Bytes		Type		Default value		Meaning
 
 // the following two entries are repeated [#frames] times:
 
-48		float3x4				view matrix (R*T) of the following frame, row major
+64		float3x4				view matrix (R*T) of the following frame, row major
 648*480*2	short					depth in mm (0 means invalid measurement), row major
 
 
@@ -43,5 +43,5 @@ The camera's projection matrix is defined by the Kinect's lens parameters:
 - focal length: (585, 585)
 
 Kinecting People (KPPL) uses throughout:
-- row matrices and column vectors (i.e. positionView = matrixView * positionWorld)
+- row vectors and column matrices (i.e. positionView = positionWorld * matrixView)
 - a right-handed coordinate system (i.e. smaller Z = further away in camera space)
