@@ -2,10 +2,12 @@
 
 #include <cassert>
 #include <stdio.h>
+#include <vector>
 
+#include "flink.h"
 #include "util.h"
 
-using namespace DirectX;
+using namespace flink;
 
 
 
@@ -34,7 +36,7 @@ kppl::DepthStream::~DepthStream()
 bool kppl::DepthStream::NextFrame
 (
 	std::vector< short > & outFrame,
-	XMFLOAT4X4A & outView
+	float4x4 & outView
 )
 {
 	if( m_iFrame >= m_nFrames )

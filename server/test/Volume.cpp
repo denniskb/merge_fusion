@@ -44,7 +44,7 @@ BOOST_AUTO_TEST_CASE( Integrate )
 	all voxels near surface are stored as vertices to an .obj
 	*/
 
-#if 0
+#if 1
 
 	kppl::Volume v( 256, 2.0f );
 	kppl::DepthStream ds( "C:/TEMP/debug.depth" );

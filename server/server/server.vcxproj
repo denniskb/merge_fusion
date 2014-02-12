@@ -12,6 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DepthStream.h" />
+    <ClInclude Include="flink.h" />
     <ClInclude Include="util.h" />
     <ClInclude Include="Volume.h" />
     <ClInclude Include="Voxel.h" />

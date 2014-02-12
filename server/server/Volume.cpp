@@ -2,11 +2,10 @@
 
 #include <cassert>
 
-#include <DirectXMath.h>
-
+#include "flink.h"
 #include "Voxel.h"
 
-using namespace DirectX;
+using namespace flink;
 
 
 
@@ -45,9 +44,9 @@ kppl::Voxel & kppl::Volume::operator()( int x, int y, int z )
 
 
 
-XMFLOAT4A kppl::Volume::VoxelCenter( int x, int y, int z ) const
+float4 kppl::Volume::VoxelCenter( int x, int y, int z ) const
 {
-	XMFLOAT4A result;
+	float4 result;
 
 	int halfRes = Resolution() / 2;
 	float voxelLen = m_sideLen / Resolution();
@@ -65,35 +64,33 @@ XMFLOAT4A kppl::Volume::VoxelCenter( int x, int y, int z ) const
 void kppl::Volume::Integrate
 (
 	std::vector< short > const & frame, 
-	XMFLOAT4X4A const & view,
-	XMFLOAT4X4A const & projection,
+	float4x4 const & view,
+	float4x4 const & projection,
 	float truncationMargin
 )
 {
 	assert( truncationMargin > 0 );
 	assert( 0 == Resolution() % 2 );
 
-	XMMATRIX _view = XMLoadFloat4x4A( & view );
-	XMMATRIX _projection = XMLoadFloat4x4A( & projection );
-	XMVECTOR _ndcToUV = XMVectorSet( 320, 240, 0, 0 );
+	matrix _view = load( & view );
+	matrix _projection = load( & projection );
+	vector _ndcToUV = set( 320, 240, 0, 0 );
 
 	for( int z = 0; z < Resolution(); z++ )
 		for( int y = 0; y < Resolution(); y++ )
 			for( int x = 0; x < Resolution(); x ++ )
 			{
-				XMFLOAT4A centerWorld = VoxelCenter( x, y, z );
-				XMVECTOR _centerWorld = XMLoadFloat4A( & centerWorld );
+				float4 centerWorld = VoxelCenter( x, y, z );
+				vector _centerWorld = load( & centerWorld );
 
-				XMVECTOR _centerCamera = XMVector4Transform( _centerWorld, _view );
-				XMFLOAT4A centerCamera; XMStoreFloat4A( & centerCamera, _centerCamera );
+				vector _centerCamera = _centerWorld * _view;
+				float4 centerCamera = store( _centerCamera );
 
-				XMVECTOR _centerScreen = XMVector4Transform( _centerCamera, _projection );
-				XMVECTOR _wwww = XMVectorPermute< 3, 3, 3, 3 >( _centerScreen, _centerScreen );
-				XMVECTOR _centerNDC = XMVectorDivide( _centerScreen, _wwww );
-				XMVECTOR _centerUV = _centerNDC * _ndcToUV + _ndcToUV;
+				vector _centerScreen = _centerCamera * _projection;
+				vector _centerNDC = homogenize( _centerScreen );
+				vector _centerUV = _centerNDC * _ndcToUV + _ndcToUV;
 
-				XMFLOAT4A centerUV;
-				XMStoreFloat4A( & centerUV, _centerUV );
+				float4 centerUV = store( _centerUV );
 
 				int u = (int) centerUV.x;
 				int v = (int) centerUV.y;

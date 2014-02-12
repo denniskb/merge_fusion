@@ -7,13 +7,13 @@ The file format documentation can be found in poly2depth/readme.txt.
 
 #include <vector>
 
-#include <DirectXMath.h>
+#include "flink.h"
 
 
 
 namespace kppl {
 
-using namespace DirectX;
+using namespace flink;
 
 class DepthStream
 {
@@ -32,7 +32,7 @@ public:
 	bool NextFrame
 	(
 		std::vector< short > & outFrame,
-		XMFLOAT4X4A & outView
+		float4x4 & outView
 	);
 
 private:

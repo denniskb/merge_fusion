@@ -6,13 +6,13 @@ Voxel volume as used in KinectFusion
 
 #include <vector>
 
-#include <DirectXMath.h>
+#include "flink.h"
 
 
 
 namespace kppl {
 
-using namespace DirectX;
+using namespace flink;
 
 class Voxel;
 
@@ -37,7 +37,7 @@ public:
 	/*
 	Returns the world position of the voxel at index (x, y, z)
 	*/
-	XMFLOAT4A VoxelCenter( int x, int y, int z ) const;
+	float4 VoxelCenter( int x, int y, int z ) const;
 
 	/*
 	Integrates a depth frame into the volume using the KinectFusion algorithm.
@@ -48,8 +48,8 @@ public:
 	void Integrate
 	(
 		std::vector< short > const & frame, 
-		XMFLOAT4X4A const & view,
-		XMFLOAT4X4A const & projection,
+		float4x4 const & view,
+		float4x4 const & projection,
 		float truncationMargin
 	);
 
