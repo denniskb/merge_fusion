@@ -5,6 +5,8 @@ implement some missing functions.
 
 #pragma once
 
+#include <cassert>
+
 #include <DirectXMath.h>
 
 
@@ -64,6 +66,54 @@ inline vector operator*( vector v, matrix m )
 inline vector homogenize( vector v )
 {
 	return v / XMVectorPermute< 3, 3, 3, 3 >( v, v );
+}
+
+inline float4 operator+( float4 const & a, float4 const & b )
+{
+	return float4
+	(
+		a.x + b.x,
+		a.y + b.y,
+		a.z + b.z,
+		a.w + b.w
+	);
+}
+
+inline float4 operator*( float4 v, float s )
+{
+	return float4
+	(
+		v.x * s,
+		v.y * s,
+		v.z * s,
+		v.w * s
+	);
+}
+
+inline float4 operator/( float4 v, float s )
+{
+	assert( s != 0.0f );
+
+	float s1 = 1.0f / s;
+
+	return float4
+	(
+		v.x * s1,
+		v.y * s1,
+		v.z * s1,
+		v.w * s1
+	);
+}
+
+inline float4 lerp( float4 a, float4 b, float weightA, float weightB )
+{
+	assert( weightA >= 0.0f );
+	assert( weightB >= 0.0f );
+
+	if( 0.0f == weightA + weightB )
+		return ( a + b ) / 2.0f;
+
+	return ( a * weightA + b * weightB ) / ( weightA + weightB );
 }
 
 }

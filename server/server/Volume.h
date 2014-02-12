@@ -52,6 +52,12 @@ public:
 		float4x4 const & projection
 	);
 
+	/*
+	Marching cubes ported from http://paulbourke.net/geometry/polygonise/
+	@param outOBJ path to a .obj file.
+	*/
+	void Triangulate( char const * outOBJ );
+
 private:
 	int m_res;
 	float m_sideLen;

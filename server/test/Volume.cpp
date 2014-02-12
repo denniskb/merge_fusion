@@ -80,4 +80,30 @@ BOOST_AUTO_TEST_CASE( Integrate )
 	BOOST_REQUIRE( true );
 }
 
+BOOST_AUTO_TEST_CASE( Triangulate )
+{
+	/*
+	Quick visual test to verify triangulation works correctly:
+	One depth frame is integrated (generated with poly2depth) and then
+	the volume is triangulated using mc and stored as an .obj
+	*/
+
+#if 0
+
+	kppl::Volume v( 256, 2.0f, 0.02f );
+	kppl::DepthStream ds( "C:/TEMP/debug.depth" );
+
+	XMMATRIX _proj = XMMatrixPerspectiveFovRH( 0.778633444f, 4.0f / 3.0f, 0.8f, 4.0f );
+	XMFLOAT4X4A proj;
+	XMStoreFloat4x4A( & proj, _proj );
+
+	std::vector< short > depth;
+	XMFLOAT4X4A view;
+	ds.NextFrame( depth, view );
+	v.Integrate( depth, view, proj );
+	v.Triangulate( "C:/TEMP/triangulation_debug.obj" );
+
+#endif
+}
+
 BOOST_AUTO_TEST_SUITE_END()
