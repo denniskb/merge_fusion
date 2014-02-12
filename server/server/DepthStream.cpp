@@ -5,6 +5,8 @@
 
 #include "util.h"
 
+using namespace DirectX;
+
 
 
 kppl::DepthStream::DepthStream( char const * fileName ) :
@@ -29,12 +31,16 @@ kppl::DepthStream::~DepthStream()
 
 
 
-bool kppl::DepthStream::NextFrame( std::vector< short > & outFrame )
+bool kppl::DepthStream::NextFrame
+(
+	std::vector< short > & outFrame,
+	XMFLOAT4X4A & outView
+)
 {
 	if( m_iFrame >= m_nFrames )
 		return false;
 
-	_fseeki64( m_file, 64, SEEK_CUR ); // skip view matrix
+	fread_s( outView.m, sizeof( outView.m ), 4, 16, m_file );
 
 	outFrame.resize( 640 * 480 );
 	fread_s( & outFrame[ 0 ], outFrame.size() * 2, 2, 640 * 480, m_file );

@@ -7,9 +7,13 @@ The file format documentation can be found in poly2depth/readme.txt.
 
 #include <vector>
 
+#include <DirectXMath.h>
+
 
 
 namespace kppl {
+
+using namespace DirectX;
 
 class DepthStream
 {
@@ -25,7 +29,11 @@ public:
 	Copies the next frame into 'outFrame'.
 	Returns true if a frame was copied, false if no more frames remain.
 	*/
-	bool NextFrame( std::vector< short > & outFrame );
+	bool NextFrame
+	(
+		std::vector< short > & outFrame,
+		XMFLOAT4X4A & outView
+	);
 
 private:
 	FILE * m_file;
