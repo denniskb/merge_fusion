@@ -6,7 +6,7 @@
 
 
 kppl::Voxel::Voxel() :
-	m_distance( (unsigned char) PackDistance( 0, 1.0f ) ), m_weight( 0 )
+	m_distance( (unsigned short) PackDistance( 0, 1.0f ) ), m_weight( 0 )
 {
 }
 
@@ -30,7 +30,7 @@ void kppl::Voxel::Update( float newDistance, float truncationMargin )
 {
 	assert( truncationMargin > 0 );
 
-	if( Weight() < 3 )
+	if( Weight() < VOXEL_MAX_WEIGHT )
 	{
 		float d =
 			( Weight() * Distance( truncationMargin ) + Clamp( newDistance, -truncationMargin, truncationMargin ) ) /
@@ -62,8 +62,8 @@ int kppl::Voxel::PackDistance( float distance, float truncationMargin )
 {
 	assert( truncationMargin > 0 );
 
-	int d = (int) ( distance / truncationMargin * 31.5f + 31.5f + 0.5f ); // +0.5 => round to nearest int
-	d = Clamp( d, 0, 63 );
+	int d = (int) ( distance / truncationMargin * VOXEL_MAX_DIST_OVER_2 + VOXEL_MAX_DIST_OVER_2 + 0.5f ); // +0.5 => round to nearest int
+	d = Clamp( d, 0, VOXEL_MAX_DIST );
 
 	return d;
 }
@@ -73,7 +73,7 @@ float kppl::Voxel::UnpackDistance( int distance, float truncationMargin )
 {
 	assert( truncationMargin > 0 );
 
-	return ( distance - 31.5f ) / 31.5f * truncationMargin;
+	return ( distance - VOXEL_MAX_DIST_OVER_2 ) / VOXEL_MAX_DIST_OVER_2 * truncationMargin;
 }
 
 

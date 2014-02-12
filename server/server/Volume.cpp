@@ -9,12 +9,14 @@ using namespace flink;
 
 
 
-kppl::Volume::Volume( int resolution, float sideLength ) :
+kppl::Volume::Volume( int resolution, float sideLength, float truncationMargin ) :
 	m_res( resolution ),
-	m_sideLen( sideLength )
+	m_sideLen( sideLength ),
+	m_truncationMargin( truncationMargin )
 {
 	assert( resolution > 0 );
 	assert( sideLength > 0.0f );
+	assert( truncationMargin > 0.0f );
 
 	m_data.resize( resolution * resolution * resolution );
 }
@@ -65,11 +67,9 @@ void kppl::Volume::Integrate
 (
 	std::vector< short > const & frame, 
 	float4x4 const & view,
-	float4x4 const & projection,
-	float truncationMargin
+	float4x4 const & projection
 )
 {
-	assert( truncationMargin > 0 );
 	assert( 0 == Resolution() % 2 );
 
 	matrix _view = load( & view );
@@ -86,14 +86,13 @@ void kppl::Volume::Integrate
 				vector _centerCamera = _centerWorld * _view;
 				float4 centerCamera = store( _centerCamera );
 
-				vector _centerScreen = _centerCamera * _projection;
-				vector _centerNDC = homogenize( _centerScreen );
-				vector _centerUV = _centerNDC * _ndcToUV + _ndcToUV;
+				vector _centerNDC = homogenize( _centerCamera * _projection );
+				vector _centerScreen = _centerNDC * _ndcToUV + _ndcToUV;
 
-				float4 centerUV = store( _centerUV );
+				float4 centerScreen = store( _centerScreen );
 
-				int u = (int) centerUV.x;
-				int v = (int) centerUV.y;
+				int u = (int) centerScreen.x;
+				int v = (int) centerScreen.y;
 
 				if( u < 0 || u > 639 || v < 0 || v > 479 )
 					continue;
@@ -107,10 +106,10 @@ void kppl::Volume::Integrate
 				float dist = -centerCamera.z;
 				float signedDist = depth - dist;
 				
-				if( dist < 0.4f || signedDist < -truncationMargin )
+				if( dist < 0.4f || signedDist < -m_truncationMargin )
 					continue;
 
-				(*this)( x, y, z ).Update( signedDist, truncationMargin );
+				(*this)( x, y, z ).Update( signedDist, m_truncationMargin );
 			}
 }
 

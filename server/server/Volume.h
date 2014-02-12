@@ -24,7 +24,7 @@ public:
 	a side length of sideLength meters, centered at the origin.
 	We use a right-handed coordinate system.
 	*/
-	Volume( int resolution, float sideLength );
+	Volume( int resolution, float sideLength, float truncationMargin );
 
 	int Resolution() const;
 
@@ -49,13 +49,13 @@ public:
 	(
 		std::vector< short > const & frame, 
 		float4x4 const & view,
-		float4x4 const & projection,
-		float truncationMargin
+		float4x4 const & projection
 	);
 
 private:
 	int m_res;
 	float m_sideLen;
+	float m_truncationMargin;
 
 	std::vector< Voxel > m_data;
 

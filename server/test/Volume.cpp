@@ -18,7 +18,7 @@ BOOST_AUTO_TEST_SUITE( Volume )
 
 BOOST_AUTO_TEST_CASE( getset )
 {
-	kppl::Volume vol( 10, 1.0f );
+	kppl::Volume vol( 10, 1.0f, 0.02f );
 	BOOST_REQUIRE( 10 == vol.Resolution() );
 
 	kppl::Voxel v;
@@ -44,9 +44,9 @@ BOOST_AUTO_TEST_CASE( Integrate )
 	all voxels near surface are stored as vertices to an .obj
 	*/
 
-#if 1
+#if 0
 
-	kppl::Volume v( 256, 2.0f );
+	kppl::Volume v( 256, 2.0f, 0.02f );
 	kppl::DepthStream ds( "C:/TEMP/debug.depth" );
 
 	XMMATRIX _proj = XMMatrixPerspectiveFovRH( 0.778633444f, 4.0f / 3.0f, 0.8f, 4.0f );
@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE( Integrate )
 	std::vector< short > depth;
 	XMFLOAT4X4A view;
 	ds.NextFrame( depth, view );
-	v.Integrate( depth, view, proj, 0.02f );
+	v.Integrate( depth, view, proj );
 
 	FILE * debug;
 	fopen_s( & debug, "C:/TEMP/integration_debug.obj", "w" );

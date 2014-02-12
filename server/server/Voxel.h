@@ -10,6 +10,14 @@ The whole volume defines a signed distance field.
 
 namespace kppl {
 
+#define VOXEL_DIST_BITS 12
+#define VOXEL_WEIGHT_BITS 4
+
+#define VOXEL_MAX_DIST ( ( 1u << VOXEL_DIST_BITS ) - 1 )
+#define VOXEL_MAX_WEIGHT ( ( 1u << VOXEL_WEIGHT_BITS ) - 1 )
+
+#define VOXEL_MAX_DIST_OVER_2 ( VOXEL_MAX_DIST * 0.5f )
+
 /*
 newDistance and truncationMargin are provided in meters.
 Integration only happens up to surface plus truncation margin.
@@ -35,8 +43,8 @@ public:
 	bool operator!=( Voxel const & rhs ) const;
 
 private:
-	unsigned char m_distance : 6;
-	unsigned char m_weight : 2;
+	unsigned short m_distance : VOXEL_DIST_BITS;
+	unsigned short m_weight : VOXEL_WEIGHT_BITS;
 
 	/*
 	Maps distance from [-truncMargin, truncMargin] to [0, 63]
