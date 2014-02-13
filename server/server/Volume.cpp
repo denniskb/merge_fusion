@@ -79,7 +79,7 @@ void kppl::Volume::Integrate
 
 	for( int z = 0; z < Resolution(); z++ )
 		for( int y = 0; y < Resolution(); y++ )
-			for( int x = 0; x < Resolution(); x ++ )
+			for( int x = 0; x < Resolution(); x++ )
 			{
 				float4 centerWorld = VoxelCenter( x, y, z );
 				vector _centerWorld = load( & centerWorld );
@@ -107,7 +107,7 @@ void kppl::Volume::Integrate
 				float dist = -centerCamera.z;
 				float signedDist = depth - dist;
 				
-				if( dist < 0.4f || signedDist < -m_truncationMargin )
+				if( dist < 0.8f || signedDist < -m_truncationMargin )
 					continue;
 
 				(*this)( x, y, z ).Update( signedDist, m_truncationMargin );
@@ -443,7 +443,7 @@ void kppl::Volume::Triangulate( char const * outOBJ )
 				
 				for( int i = 0; i < 8; i++ )
 					if( 0 == weights[ i ] )
-						continue;
+						goto skip_x;
 
 				int lutIdx = 0;
 				for( int i = 0; i < 8; i++ )
@@ -481,6 +481,8 @@ void kppl::Volume::Triangulate( char const * outOBJ )
 				int i = 0;
 				while( triTable[ lutIdx ][ i ] != -1 )
 					triangles.push_back( vertices[ triTable[ lutIdx ][ i++ ] ] );
+
+skip_x:			;
 			}
 
 	FILE * file;

@@ -107,11 +107,8 @@ inline float4 operator/( float4 v, float s )
 
 inline float4 lerp( float4 a, float4 b, float weightA, float weightB )
 {
-	assert( weightA >= 0.0f );
-	assert( weightB >= 0.0f );
-
-	if( 0.0f == weightA + weightB )
-		return ( a + b ) / 2.0f;
+	assert( weightA > 0.0f );
+	assert( weightB > 0.0f );
 
 	return ( a * weightA + b * weightB ) / ( weightA + weightB );
 }

@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE( Triangulate )
 
 #if 0
 
-	kppl::Volume v( 256, 2.0f, 0.02f );
+	kppl::Volume v( 256, 2.0f, 0.04f );
 	kppl::DepthStream ds( "C:/TEMP/debug.depth" );
 
 	XMMATRIX _proj = XMMatrixPerspectiveFovRH( 0.778633444f, 4.0f / 3.0f, 0.8f, 4.0f );
