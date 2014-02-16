@@ -1,10 +1,11 @@
+#include <boost/test/auto_unit_test.hpp>
+
 #include <stdio.h>
 #include <vector>
 
 #include <DirectXMath.h>
 
-#include <boost/test/auto_unit_test.hpp>
-
+#include <server/DepthFrame.h>
 #include <server/DepthStream.h>
 
 using namespace DirectX;
@@ -21,10 +22,12 @@ BOOST_AUTO_TEST_CASE( NextFrame )
 	char const * header = "KPPL raw depth\n";
 	int version = 1;
 	int nFrames = 1;
+
 	float viewMatrix[ 16 ] = { 0.0f };
-	viewMatrix[ 7 ] = 0.271f;
+	viewMatrix[ 3 + 1 * 4 ] = 0.271f;
+
 	std::vector< short > depthData( FRAME_RES );
-	depthData[ 123 ] = 57;
+	depthData[ 71 + 103 * 640 ] = 57;
 
 	FILE * file;
 	fopen_s( & file, fileName, "wb" );
@@ -38,18 +41,19 @@ BOOST_AUTO_TEST_CASE( NextFrame )
 	fclose( file );
 
 	XMFLOAT4X4A view;
-	depthData.clear();
+	kppl::DepthFrame depth;
 
 	kppl::DepthStream ds( fileName );
-	BOOST_CHECK( ds.NextFrame( depthData, view ) );
-	BOOST_CHECK( FRAME_RES == depthData.size() );
-	BOOST_CHECK( 0 == depthData[ 0 ] );
-	BOOST_CHECK( 57 == depthData[ 123 ] );
+	BOOST_CHECK( ds.NextFrame( depth, view ) );
+	BOOST_CHECK( 640 == depth.Width() );
+	BOOST_CHECK( 480 == depth.Height() );
+	BOOST_CHECK( 0 == depth( 0, 0 ) );
+	BOOST_CHECK_CLOSE( 0.057f, depth( 71, 103 ), 0.1f );
 
 	BOOST_CHECK( 0.0f == view._11 );
 	BOOST_CHECK( 0.271f == view._24 );
 
-	BOOST_CHECK( ! ds.NextFrame( depthData, view ) );
+	BOOST_CHECK( ! ds.NextFrame( depth, view ) );
 
 	remove( fileName );
 }

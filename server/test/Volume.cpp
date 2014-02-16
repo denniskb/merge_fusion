@@ -6,6 +6,7 @@
 
 #include <DirectXMath.h>
 
+#include <server/DepthFrame.h>
 #include <server/DepthStream.h>
 #include <server/Volume.h>
 #include <server/Voxel.h>
@@ -44,7 +45,7 @@ BOOST_AUTO_TEST_CASE( Integrate )
 	all voxels near surface are stored as vertices to an .obj
 	*/
 
-#if 0
+#if 1
 
 	kppl::Volume v( 256, 2.0f, 0.02f );
 	kppl::DepthStream ds( "C:/TEMP/debug.depth" );
@@ -53,7 +54,7 @@ BOOST_AUTO_TEST_CASE( Integrate )
 	XMFLOAT4X4A proj;
 	XMStoreFloat4x4A( & proj, _proj );
 
-	std::vector< short > depth;
+	kppl::DepthFrame depth;
 	XMFLOAT4X4A view;
 	ds.NextFrame( depth, view );
 	v.Integrate( depth, view, proj );
@@ -88,7 +89,7 @@ BOOST_AUTO_TEST_CASE( Triangulate )
 	the volume is triangulated using mc and stored as an .obj
 	*/
 
-#if 0
+#if 1
 
 	kppl::Volume v( 256, 2.0f, 0.04f );
 	kppl::DepthStream ds( "C:/TEMP/debug.depth" );
@@ -97,13 +98,15 @@ BOOST_AUTO_TEST_CASE( Triangulate )
 	XMFLOAT4X4A proj;
 	XMStoreFloat4x4A( & proj, _proj );
 
-	std::vector< short > depth;
+	kppl::DepthFrame depth;
 	XMFLOAT4X4A view;
 	ds.NextFrame( depth, view );
 	v.Integrate( depth, view, proj );
 	v.Triangulate( "C:/TEMP/triangulation_debug.obj" );
 
 #endif
+
+	BOOST_REQUIRE( true );
 }
 
 BOOST_AUTO_TEST_SUITE_END()

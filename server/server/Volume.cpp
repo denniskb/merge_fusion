@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cstdio>
 
+#include "DepthFrame.h"
 #include "flink.h"
 #include "Voxel.h"
 
@@ -66,7 +67,7 @@ float4 kppl::Volume::VoxelCenter( int x, int y, int z ) const
 
 void kppl::Volume::Integrate
 (
-	std::vector< short > const & frame, 
+	kppl::DepthFrame const & frame, 
 	float4x4 const & view,
 	float4x4 const & projection
 )
@@ -75,7 +76,7 @@ void kppl::Volume::Integrate
 
 	matrix _view = load( & view );
 	matrix _projection = load( & projection );
-	vector _ndcToUV = set( 320, 240, 0, 0 );
+	vector _ndcToUV = set( frame.Width() / 2.0f, frame.Height() / 2.0f, 0, 0 );
 
 	for( int z = 0; z < Resolution(); z++ )
 		for( int y = 0; y < Resolution(); y++ )
@@ -95,11 +96,10 @@ void kppl::Volume::Integrate
 				int u = (int) centerScreen.x;
 				int v = (int) centerScreen.y;
 
-				if( u < 0 || u > 639 || v < 0 || v > 479 )
+				if( u < 0 || u >= frame.Width() || v < 0 || v >= frame.Height() )
 					continue;
 
-				int txIdx = u + 640 * ( 479 - v );
-				float depth = frame[ txIdx ] * 0.001f;
+				float depth = frame( u, frame.Height() - v );
 
 				if( depth == 0 )
 					continue;

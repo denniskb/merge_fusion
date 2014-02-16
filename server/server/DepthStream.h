@@ -15,6 +15,8 @@ namespace kppl {
 
 using namespace flink;
 
+class DepthFrame;
+
 class DepthStream
 {
 public:
@@ -31,7 +33,7 @@ public:
 	*/
 	bool NextFrame
 	(
-		std::vector< short > & outFrame,
+		DepthFrame & outFrame,
 		float4x4 & outView
 	);
 
@@ -39,6 +41,13 @@ private:
 	FILE * m_file;
 	int m_nFrames;
 	int m_iFrame;
+
+	/*
+	Copy and assignment are forbidden since we hold an open file handle.
+	Hence, the main resource this class wraps would be unavailable anyway.
+	*/
+	DepthStream( DepthStream const & copy );
+	DepthStream & operator=( DepthStream rhs );
 };
 
 }

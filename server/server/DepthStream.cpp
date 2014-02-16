@@ -2,8 +2,10 @@
 
 #include <cassert>
 #include <stdio.h>
+#include <utility>
 #include <vector>
 
+#include "DepthFrame.h"
 #include "flink.h"
 #include "util.h"
 
@@ -35,7 +37,7 @@ kppl::DepthStream::~DepthStream()
 
 bool kppl::DepthStream::NextFrame
 (
-	std::vector< short > & outFrame,
+	kppl::DepthFrame & outFrame,
 	float4x4 & outView
 )
 {
@@ -44,9 +46,9 @@ bool kppl::DepthStream::NextFrame
 
 	fread_s( outView.m, sizeof( outView.m ), 4, 16, m_file );
 
-	outFrame.resize( 640 * 480 );
-	fread_s( & outFrame[ 0 ], outFrame.size() * 2, 2, 640 * 480, m_file );
-	m_iFrame++;
+	outFrame.Resize( 640, 480 );
+	fread_s( outFrame.data(), outFrame.Resolution() * 2, 2, outFrame.Resolution(), m_file );
 
+	m_iFrame++;
 	return true;
 }

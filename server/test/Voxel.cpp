@@ -2,6 +2,8 @@
 
 #include <server/Voxel.h>
 
+
+
 BOOST_AUTO_TEST_SUITE( Voxel )
 
 BOOST_AUTO_TEST_CASE( Update )

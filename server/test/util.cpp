@@ -1,6 +1,6 @@
-#include <stdio.h>
-
 #include <boost/test/auto_unit_test.hpp>
+
+#include <stdio.h>
 
 #include <server/util.h>
 
