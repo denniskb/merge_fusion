@@ -27,7 +27,7 @@ namespace poly2depth
             buttonAWasDown = false;
 
             tmpBufferRT = new Vector4[640 * 480];
-            tmpBufferDepth = new byte[640 * 480 * 2];
+            tmpBufferDepth = new byte[640 * 480 * 4];
         }
 
         public void Update()
@@ -56,7 +56,10 @@ namespace poly2depth
             bw = new BinaryWriter(fs);
 
             bw.Write("KPPL raw depth\n".ToCharArray()); // magic
-            bw.Write((int)1);   // version
+            bw.Write((int)2);   // version
+            bw.Write((int)640); // frame width
+            bw.Write((int)480); // frame height
+            bw.Write((int)1);   // texel type (float)
             bw.Write((int)-1);  // #frames (reserved for later)
         }
 
@@ -69,12 +72,19 @@ namespace poly2depth
             rt.GetData<Vector4>(tmpBufferRT);
             for (int i = 0; i < 640 * 480; i++)
             {
-                ushort depth = (ushort)tmpBufferRT[i].X;
-                // little endian
-                tmpBufferDepth[2*i] = (byte)(depth & 255);
-                tmpBufferDepth[2 * i + 1] = (byte)(depth >> 8);
+                float depth = tmpBufferRT[i].X;
+                
+                unsafe
+                {
+                    int idepth = *((int*)&depth);
+                    // little endian
+                    tmpBufferDepth[4 * i + 0] = (byte)((idepth >>  0) & 255);
+                    tmpBufferDepth[4 * i + 1] = (byte)((idepth >>  8) & 255);
+                    tmpBufferDepth[4 * i + 2] = (byte)((idepth >> 16) & 255);
+                    tmpBufferDepth[4 * i + 3] = (byte)((idepth >> 24) & 255);
+                }
             }
-
+            
             bw.Write(view.M11);
             bw.Write(view.M12);
             bw.Write(view.M13);
@@ -102,7 +112,7 @@ namespace poly2depth
 
         private void StopRecording()
         {
-            bw.Seek(19, SeekOrigin.Begin);
+            bw.Seek(31, SeekOrigin.Begin);
             bw.Write(frameCount);
             bw.Close();
             fs.Close();

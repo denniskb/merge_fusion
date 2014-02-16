@@ -21,7 +21,7 @@ Usage
 
 
 .depth file format version 1:
-===============================
+=============================
 
 Bytes		Type		Default value		Meaning
 ---------------------------------------------------------------
@@ -33,6 +33,25 @@ Bytes		Type		Default value		Meaning
 
 64		float3x4				view matrix (R*T) of the following frame, row major
 648*480*2	short					depth in mm (0 means invalid measurement), row major
+
+
+.depth file format version 2:
+=============================
+
+Bytes		Type		Default value		Meaning
+---------------------------------------------------------------
+15		string		KPPL raw depth\n	magic ascii header
+4		int		2			version number
+4		int					width of frames in texels
+4		int					height of frames in texels
+4		enum(int)				texel type (0 = short, 1 = float)
+4		int					number of frames (#frames)
+
+// the following two entries are repeated [#frames] times:
+
+64		float4x4				view matrix (R*T) of the following frame, row major
+X*[width]*	short/float				depth in mm/m (0 means invalid measurement), row major
+[height]						(X is either 2 or 4 bytes depending on [texel type]
 
 
 Notes

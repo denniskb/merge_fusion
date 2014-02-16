@@ -47,13 +47,12 @@ VSOut VS(VSIn input)
 float4 PS(VSOut input) : COLOR0
 {
 	float depthInMeters = dot(input.worldPosition - eye, forward);
-	float depthInMillimeters = depthInMeters * 1000.0f + 0.5f; // rounded to nearest int
 
     return float4
 	(
-		depthInMillimeters,
-		depthInMillimeters,
-		depthInMillimeters,
+		depthInMeters,
+		depthInMeters,
+		depthInMeters,
 		1
 	);
 }

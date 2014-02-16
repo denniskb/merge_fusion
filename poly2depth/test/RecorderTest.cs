@@ -10,14 +10,13 @@ namespace test
     {
         public static void Depth2PGM(string src, string dst)
         {
-            byte[] frame = new byte[640*480*2];
-
             // Read .depth
             FileStream fs_src = File.Open(src, FileMode.Open);
             BinaryReader br = new BinaryReader(fs_src);
 
-            br.BaseStream.Seek(87, SeekOrigin.Begin);   // skip to first depth frame
-            br.Read(frame, 0, 640 * 480 * 2);
+            byte[] bytes = new byte[640 * 480 * 4];
+            br.BaseStream.Seek(99, SeekOrigin.Begin);   // skip to first depth frame
+            br.Read(bytes, 0, 640 * 480 * 4);
 
             br.Close();
             fs_src.Close();
@@ -27,11 +26,21 @@ namespace test
             BinaryWriter bw = new BinaryWriter(fs_dst);
 
             bw.Write("P5 640 480 65535\n".ToCharArray());
-            bw.Write(frame);
+            unsafe
+            {
+                fixed (byte* pbytes = bytes)
+                {
+                    for (int i = 0; i < 640 * 480 * 4; i += 4)
+                    {
+                        float depth = *((float*)(pbytes + i));
+                        short sdepth = (short)(depth * 1000.0f);
 
+                        bw.Write(sdepth);
+                    }
+                }
+            }
             bw.Close();
             fs_dst.Close();
-
         }
     }
 }
