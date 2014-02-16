@@ -6,6 +6,8 @@
 
 #include <DirectXMath.h>
 
+#include <boost/filesystem/operations.hpp>
+
 #include <server/DepthFrame.h>
 #include <server/DepthStream.h>
 #include <server/Volume.h>
@@ -45,10 +47,10 @@ BOOST_AUTO_TEST_CASE( Integrate )
 	all voxels near surface are stored as vertices to an .obj
 	*/
 
-#if 1
+#if 0
 
 	kppl::Volume v( 256, 2.0f, 0.02f );
-	kppl::DepthStream ds( "C:/TEMP/debug.depth" );
+	kppl::DepthStream ds( ( boost::filesystem::current_path() / "content/imrod_v1.depth" ).string().c_str() );
 
 	XMMATRIX _proj = XMMatrixPerspectiveFovRH( 0.778633444f, 4.0f / 3.0f, 0.8f, 4.0f );
 	XMFLOAT4X4A proj;
@@ -60,7 +62,7 @@ BOOST_AUTO_TEST_CASE( Integrate )
 	v.Integrate( depth, view, proj );
 
 	FILE * debug;
-	fopen_s( & debug, "C:/TEMP/integration_debug.obj", "w" );
+	fopen_s( & debug, "C:/TEMP/volume_integrate.obj", "w" );
 
 	for( int z = 0; z < 256; z++ )
 		for( int y = 0; y < 256; y++ )
@@ -89,10 +91,10 @@ BOOST_AUTO_TEST_CASE( Triangulate )
 	the volume is triangulated using mc and stored as an .obj
 	*/
 
-#if 1
+#if 0
 
 	kppl::Volume v( 256, 2.0f, 0.04f );
-	kppl::DepthStream ds( "C:/TEMP/debug.depth" );
+	kppl::DepthStream ds( ( boost::filesystem::current_path() / "content/imrod_v1.depth" ).string().c_str() );
 
 	XMMATRIX _proj = XMMatrixPerspectiveFovRH( 0.778633444f, 4.0f / 3.0f, 0.8f, 4.0f );
 	XMFLOAT4X4A proj;
@@ -102,7 +104,7 @@ BOOST_AUTO_TEST_CASE( Triangulate )
 	XMFLOAT4X4A view;
 	ds.NextFrame( depth, view );
 	v.Integrate( depth, view, proj );
-	v.Triangulate( "C:/TEMP/triangulation_debug.obj" );
+	v.Triangulate( "C:/TEMP/volume_triangulate.obj" );
 
 #endif
 
