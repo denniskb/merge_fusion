@@ -14,6 +14,7 @@
     <ClInclude Include="DepthFrame.h" />
     <ClInclude Include="DepthStream.h" />
     <ClInclude Include="flink.h" />
+    <ClInclude Include="Timer.h" />
     <ClInclude Include="util.h" />
     <ClInclude Include="Volume.h" />
     <ClInclude Include="Voxel.h" />
@@ -21,6 +22,7 @@
   <ItemGroup>
     <ClCompile Include="DepthFrame.cpp" />
     <ClCompile Include="DepthStream.cpp" />
+    <ClCompile Include="Timer.cpp" />
     <ClCompile Include="util.cpp" />
     <ClCompile Include="Volume.cpp" />
     <ClCompile Include="Voxel.cpp" />
