@@ -49,8 +49,9 @@ public:
 	void Integrate
 	(
 		DepthFrame const & frame,
-		float4x4 const & view,
-		float4x4 const & projection
+		float4 const & eye,
+		float4 const & forward,
+		float4x4 const & viewProjection
 	);
 
 	/*

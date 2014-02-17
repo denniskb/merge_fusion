@@ -68,14 +68,14 @@ float4 kppl::Volume::VoxelCenter( int x, int y, int z ) const
 void kppl::Volume::Integrate
 (
 	kppl::DepthFrame const & frame, 
-	float4x4 const & view,
-	float4x4 const & projection
+	float4 const & eye,
+	float4 const & forward,
+	float4x4 const & viewProjection
 )
 {
 	assert( 0 == Resolution() % 2 );
 
-	matrix _view = load( & view );
-	matrix _projection = load( & projection );
+	matrix _viewProj = load( & viewProjection );
 	vector _ndcToUV = set( frame.Width() / 2.0f, frame.Height() / 2.0f, 0, 0 );
 
 	for( int z = 0; z < Resolution(); z++ )
@@ -85,12 +85,9 @@ void kppl::Volume::Integrate
 				float4 centerWorld = VoxelCenter( x, y, z );
 				vector _centerWorld = load( & centerWorld );
 
-				vector _centerCamera = _centerWorld * _view;
-				float4 centerCamera = store( _centerCamera );
+				vector _centerNDC = homogenize( _centerWorld * _viewProj );
 
-				vector _centerNDC = homogenize( _centerCamera * _projection );
 				vector _centerScreen = _centerNDC * _ndcToUV + _ndcToUV;
-
 				float4 centerScreen = store( _centerScreen );
 
 				int u = (int) centerScreen.x;
@@ -104,7 +101,7 @@ void kppl::Volume::Integrate
 				if( depth == 0.0f )
 					continue;
 
-				float dist = -centerCamera.z;
+				float dist = dot( centerWorld - eye, forward );
 				float signedDist = depth - dist;
 				
 				if( dist < 0.8f || signedDist < -m_truncationMargin )

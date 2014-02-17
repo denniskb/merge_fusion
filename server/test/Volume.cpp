@@ -1,7 +1,6 @@
 #include <boost/test/auto_unit_test.hpp>
 
 #include <cstdio>
-#include <ctime>
 #include <vector>
 
 #include <DirectXMath.h>
@@ -10,10 +9,41 @@
 
 #include <server/DepthFrame.h>
 #include <server/DepthStream.h>
+#include <server/flink.h>
 #include <server/Volume.h>
 #include <server/Voxel.h>
 
-using namespace DirectX;
+using namespace flink;
+
+
+
+#define RUN_TESTS 0
+
+
+
+#if RUN_TESTS
+
+static void ComputeMatrices
+(
+	float4x4 const & view,
+	float4 & outEye,
+	float4 & outForward,
+	float4x4 & outViewProj
+)
+{
+	matrix _view = load( & view );
+	matrix _viewInv = XMMatrixInverse( nullptr, _view );
+	vector _eye = set( 0.0f, 0.0f, 0.0f, 1.0f ) * _viewInv;
+	vector _forward = set( 0.0f, 0.0f, -1.0f, 0.0f ) * _viewInv;
+
+	matrix _viewProj = _view * XMMatrixPerspectiveFovRH( 0.778633444f, 4.0f / 3.0f, 0.8f, 4.0f );
+
+	outEye = store( _eye );
+	outForward = store( _forward );
+	outViewProj = store( _viewProj );
+}
+
+#endif
 
 
 
@@ -47,19 +77,19 @@ BOOST_AUTO_TEST_CASE( Integrate )
 	all voxels near surface are stored as vertices to an .obj
 	*/
 
-#if 0
+#if RUN_TESTS
 
 	kppl::Volume v( 256, 2.0f, 0.04f );
 	kppl::DepthStream ds( ( boost::filesystem::current_path() / "content/imrod_v2.depth" ).string().c_str() );
 
-	XMMATRIX _proj = XMMatrixPerspectiveFovRH( 0.778633444f, 4.0f / 3.0f, 0.8f, 4.0f );
-	XMFLOAT4X4A proj;
-	XMStoreFloat4x4A( & proj, _proj );
-
 	kppl::DepthFrame depth;
-	XMFLOAT4X4A view;
+	float4x4 view, viewProj;
+	float4 eye, forward;
+
 	ds.NextFrame( depth, view );
-	v.Integrate( depth, view, proj );
+	ComputeMatrices( view, eye, forward, viewProj );
+
+	v.Integrate( depth, eye, forward, viewProj );
 
 	FILE * debug;
 	fopen_s( & debug, "C:/TEMP/volume_integrate.obj", "w" );
@@ -78,9 +108,9 @@ BOOST_AUTO_TEST_CASE( Integrate )
 	
 	fclose( debug );
 
-#endif
-
 	BOOST_REQUIRE( true );
+
+#endif
 }
 
 BOOST_AUTO_TEST_CASE( Triangulate )
@@ -91,24 +121,24 @@ BOOST_AUTO_TEST_CASE( Triangulate )
 	the volume is triangulated using mc and stored as an .obj
 	*/
 
-#if 0
+#if RUN_TESTS
 
 	kppl::Volume v( 256, 2.0f, 0.04f );
 	kppl::DepthStream ds( ( boost::filesystem::current_path() / "content/imrod_v2.depth" ).string().c_str() );
 
-	XMMATRIX _proj = XMMatrixPerspectiveFovRH( 0.778633444f, 4.0f / 3.0f, 0.8f, 4.0f );
-	XMFLOAT4X4A proj;
-	XMStoreFloat4x4A( & proj, _proj );
-
 	kppl::DepthFrame depth;
-	XMFLOAT4X4A view;
+	float4x4 view, viewProj;
+	float4 eye, forward;
+
 	ds.NextFrame( depth, view );
-	v.Integrate( depth, view, proj );
+	ComputeMatrices( view, eye, forward, viewProj );
+
+	v.Integrate( depth, eye, forward, viewProj );
 	v.Triangulate( "C:/TEMP/volume_triangulate.obj" );
 
-#endif
-
 	BOOST_REQUIRE( true );
+
+#endif
 }
 
 BOOST_AUTO_TEST_SUITE_END()

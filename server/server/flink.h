@@ -79,6 +79,17 @@ inline float4 operator+( float4 const & a, float4 const & b )
 	);
 }
 
+inline float4 operator-( float4 const & a, float4 const & b )
+{
+	return float4
+	(
+		a.x - b.x,
+		a.y - b.y,
+		a.z - b.z,
+		a.w - b.w
+	);
+}
+
 inline float4 operator*( float4 v, float s )
 {
 	return float4
@@ -105,7 +116,15 @@ inline float4 operator/( float4 v, float s )
 	);
 }
 
-inline float4 lerp( float4 a, float4 b, float weightA, float weightB )
+inline float dot( float4 const & a, float4 const & b )
+{
+	return
+		a.x * b.x + 
+		a.y * b.y + 
+		a.z * b.z;
+}
+
+inline float4 lerp( float4 const & a, float4 const & b, float weightA, float weightB )
 {
 	assert( weightA > 0.0f );
 	assert( weightB > 0.0f );
