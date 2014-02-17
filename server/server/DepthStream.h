@@ -38,7 +38,15 @@ public:
 	);
 
 private:
+	enum TexelType{ SHORT, FLOAT };
+
 	FILE * m_file;
+	
+	TexelType m_texelType;
+	
+	int m_frameWidth;
+	int m_frameHeight;
+
 	int m_nFrames;
 	int m_iFrame;
 

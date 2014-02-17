@@ -99,9 +99,9 @@ void kppl::Volume::Integrate
 				if( u < 0 || u >= frame.Width() || v < 0 || v >= frame.Height() )
 					continue;
 
-				float depth = frame( u, frame.Height() - v );
+				float depth = frame( u, frame.Height() - v - 1 );
 
-				if( depth == 0 )
+				if( depth == 0.0f )
 					continue;
 
 				float dist = -centerCamera.z;
