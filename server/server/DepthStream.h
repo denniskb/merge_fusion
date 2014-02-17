@@ -42,6 +42,8 @@ private:
 	int m_nFrames;
 	int m_iFrame;
 
+	std::vector< short > m_bufferDepth;
+
 	/*
 	Copy and assignment are forbidden since we hold an open file handle.
 	Hence, the main resource this class wraps would be unavailable anyway.

@@ -47,7 +47,7 @@ BOOST_AUTO_TEST_CASE( Integrate )
 	all voxels near surface are stored as vertices to an .obj
 	*/
 
-#if 0
+#if 1
 
 	kppl::Volume v( 256, 2.0f, 0.02f );
 	kppl::DepthStream ds( ( boost::filesystem::current_path() / "content/imrod_v1.depth" ).string().c_str() );
@@ -91,7 +91,7 @@ BOOST_AUTO_TEST_CASE( Triangulate )
 	the volume is triangulated using mc and stored as an .obj
 	*/
 
-#if 0
+#if 1
 
 	kppl::Volume v( 256, 2.0f, 0.04f );
 	kppl::DepthStream ds( ( boost::filesystem::current_path() / "content/imrod_v1.depth" ).string().c_str() );

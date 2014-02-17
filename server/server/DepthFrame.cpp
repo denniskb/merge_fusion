@@ -7,13 +7,10 @@
 
 
 kppl::DepthFrame::DepthFrame( int width, int height ) :
-	m_width( width ),
-	m_height( height )
+	m_width( 0 ),
+	m_height( 0 )
 {
-	assert( m_width >= 0 );
-	assert( m_height >= 0 );
-
-	m_data.resize( width * height );
+	Resize( width, height );
 }
 
 void kppl::DepthFrame::Resize( int newWidth, int newHeight )
@@ -22,7 +19,7 @@ void kppl::DepthFrame::Resize( int newWidth, int newHeight )
 	assert( newHeight >= 0 );
 
 	int newRes = newWidth * newHeight;
-	if( newRes != Resolution() )
+	if( Resolution() != newRes )
 		m_data.resize( newRes );
 
 	m_width = newWidth;
@@ -48,17 +45,24 @@ int kppl::DepthFrame::Resolution() const
 
 
 
-float kppl::DepthFrame::operator()( int x, int y ) const
+float & kppl::DepthFrame::operator()( int x, int y )
 {
-	assert( x >= 0 && x < Width() );
-	assert( y >= 0 && y < Height() );
+	return m_data[ Index2Dto1D( x, y ) ];
+}
 
-	return m_data[ x + y * m_width ] * 0.001f;
+float const & kppl::DepthFrame::operator()( int x, int y ) const
+{
+	return m_data[ Index2Dto1D( x, y ) ];
 }
 
 
 
-short * kppl::DepthFrame::data()
+int kppl::DepthFrame::Index2Dto1D( int x, int y ) const
 {
-	return & m_data[ 0 ];
+	assert( x >= 0 );
+	assert( y >= 0 );
+	assert( x < Width() );
+	assert( y < Height() );
+
+	return x + y * Width();
 }

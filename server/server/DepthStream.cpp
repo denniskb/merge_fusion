@@ -46,8 +46,13 @@ bool kppl::DepthStream::NextFrame
 
 	fread_s( outView.m, sizeof( outView.m ), 4, 16, m_file );
 
+	m_bufferDepth.resize( 640 * 480 );
+	fread_s( & m_bufferDepth[ 0 ], m_bufferDepth.size() * 2, 2, m_bufferDepth.size(), m_file );
+
 	outFrame.Resize( 640, 480 );
-	fread_s( outFrame.data(), outFrame.Resolution() * 2, 2, outFrame.Resolution(), m_file );
+	for( int y = 0; y < outFrame.Height(); y++ )
+		for( int x = 0; x < outFrame.Width(); x++ )
+			outFrame( x, y ) = m_bufferDepth[ x + y * outFrame.Width() ] * 0.001f;
 
 	m_iFrame++;
 	return true;

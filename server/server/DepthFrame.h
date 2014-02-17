@@ -23,18 +23,15 @@ public:
 	/*
 	Returns the depth value in meters at the specified texel.
 	*/
-	float operator()( int x, int y ) const;
-
-	/*
-	Returns a pointer to a continiuous block of memory,
-	which represents this frame in row-major layout.
-	*/
-	short * data();
+	float & operator()( int x, int y );
+	float const & operator()( int x, int y ) const;
 
 private:
 	int m_width;
 	int m_height;
-	std::vector< short > m_data;
+	std::vector< float > m_data;
+
+	int Index2Dto1D( int x, int y ) const;
 };
 
 }

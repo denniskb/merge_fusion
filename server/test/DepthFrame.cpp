@@ -19,7 +19,7 @@ BOOST_AUTO_TEST_CASE( default_ctor )
 BOOST_AUTO_TEST_CASE( ctor )
 {
 	kppl::DepthFrame df( 1, 1 );
-	df.data()[ 0 ] = 1234;
+	df( 0, 0 ) = 1.234f;
 
 	BOOST_REQUIRE( 1 == df.Width() );
 	BOOST_REQUIRE( 1 == df.Height() );
