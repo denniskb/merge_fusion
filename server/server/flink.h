@@ -124,6 +124,14 @@ inline float dot( float4 const & a, float4 const & b )
 		a.z * b.z;
 }
 
+inline float lerp( float a, float b, float weightA, float weightB )
+{
+	assert( weightA > 0.0f );
+	assert( weightB > 0.0f );
+
+	return ( a * weightA + b * weightB ) / ( weightA + weightB );
+}
+
 inline float4 lerp( float4 const & a, float4 const & b, float weightA, float weightB )
 {
 	assert( weightA > 0.0f );
