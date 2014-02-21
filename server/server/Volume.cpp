@@ -37,14 +37,14 @@ kppl::Voxel const & kppl::Volume::operator()( int x, int y, int z ) const
 {
 	assert( IndicesAreValid( x, y, z ) );
 
-	return m_data[ Index3Dto1D( x, y, z ) ];
+	return m_data[ Index3Dto1D( x, y, z, Resolution() ) ];
 }
 
 kppl::Voxel & kppl::Volume::operator()( int x, int y, int z )
 {
 	assert( IndicesAreValid( x, y, z ) );
 
-	return m_data[ Index3Dto1D( x, y, z ) ];
+	return m_data[ Index3Dto1D( x, y, z, Resolution() ) ];
 }
 
 
@@ -445,7 +445,7 @@ void kppl::Volume::Triangulate( char const * outOBJ )
 				d[ 6 ] = v[ 6 ].Distance( m_truncationMargin );
 
 				float4 vert000 = VoxelCenter( x0, y0, z0 );
-				unsigned i000 = Index3Dto1D( x0, y0, z0 );
+				unsigned i000 = Index3Dto1D( x0, y0, z0, Resolution() );
 
 				if( v[ 3 ].Weight() > 0 && d[ 2 ] * d[ 3 ] < 0.0f )
 					VB.push_back( Vertex
@@ -497,18 +497,18 @@ void kppl::Volume::Triangulate( char const * outOBJ )
 
 				// Maps local edge indices to global vertex indices
 				unsigned localToGlobal[ 12 ];
-				localToGlobal[  0 ] = Index3Dto1D( x0, y0, z1 ) * 3;
-				localToGlobal[  1 ] = Index3Dto1D( x0, y0, z0 ) * 3 + 2;
-				localToGlobal[  2 ] = Index3Dto1D( x0, y0, z0 ) * 3;
-				localToGlobal[  3 ] = Index3Dto1D( x1, y0, z0 ) * 3 + 2;
-				localToGlobal[  4 ] = Index3Dto1D( x0, y1, z1 ) * 3;
-				localToGlobal[  5 ] = Index3Dto1D( x0, y1, z0 ) * 3 + 2;
-				localToGlobal[  6 ] = Index3Dto1D( x0, y1, z0 ) * 3;
-				localToGlobal[  7 ] = Index3Dto1D( x1, y1, z0 ) * 3 + 2;
-				localToGlobal[  8 ] = Index3Dto1D( x1, y0, z1 ) * 3 + 1;
-				localToGlobal[  9 ] = Index3Dto1D( x0, y0, z1 ) * 3 + 1;
-				localToGlobal[ 10 ] = Index3Dto1D( x0, y0, z0 ) * 3 + 1;
-				localToGlobal[ 11 ] = Index3Dto1D( x1, y0, z0 ) * 3 + 1;
+				localToGlobal[  0 ] = Index3Dto1D( x0, y0, z1, Resolution() ) * 3;
+				localToGlobal[  1 ] = Index3Dto1D( x0, y0, z0, Resolution() ) * 3 + 2;
+				localToGlobal[  2 ] = Index3Dto1D( x0, y0, z0, Resolution() ) * 3;
+				localToGlobal[  3 ] = Index3Dto1D( x1, y0, z0, Resolution() ) * 3 + 2;
+				localToGlobal[  4 ] = Index3Dto1D( x0, y1, z1, Resolution() ) * 3;
+				localToGlobal[  5 ] = Index3Dto1D( x0, y1, z0, Resolution() ) * 3 + 2;
+				localToGlobal[  6 ] = Index3Dto1D( x0, y1, z0, Resolution() ) * 3;
+				localToGlobal[  7 ] = Index3Dto1D( x1, y1, z0, Resolution() ) * 3 + 2;
+				localToGlobal[  8 ] = Index3Dto1D( x1, y0, z1, Resolution() ) * 3 + 1;
+				localToGlobal[  9 ] = Index3Dto1D( x0, y0, z1, Resolution() ) * 3 + 1;
+				localToGlobal[ 10 ] = Index3Dto1D( x0, y0, z0, Resolution() ) * 3 + 1;
+				localToGlobal[ 11 ] = Index3Dto1D( x1, y0, z0, Resolution() ) * 3 + 1;
 
 				for( int i = 0; i < triTable[ lutIdx ][ 0 ]; i++ )
 					IB.push_back( localToGlobal[ triTable[ lutIdx ][ i + 1 ] ] );
@@ -541,22 +541,24 @@ void kppl::Volume::Triangulate( char const * outOBJ )
 
 
 
-bool kppl::Volume::IndicesAreValid( int x, int y, int z ) const
+// static
+bool kppl::Volume::IndicesAreValid( int x, int y, int z, int resolution )
 {
 	return
 		x >= 0 &&
 		y >= 0 &&
 		z >= 0 &&
 
-		x < Resolution() &&
-		y < Resolution() &&
-		z < Resolution();
+		x < resolution &&
+		y < resolution &&
+		z < resolution;
 }
 
-unsigned kppl::Volume::Index3Dto1D( unsigned x, unsigned y, unsigned z ) const
+// static
+unsigned kppl::Volume::Index3Dto1D( unsigned x, unsigned y, unsigned z, unsigned resolution )
 {
 	assert( IndicesAreValid( x, y, z ) );
-	assert( Resolution() <= 1024 );
+	assert( resolution <= 1024 );
 
-	return ( z * Resolution() + y ) * Resolution() + x;
+	return ( z * resolution + y ) * resolution + x;
 }

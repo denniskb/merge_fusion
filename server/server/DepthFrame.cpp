@@ -47,22 +47,23 @@ int kppl::DepthFrame::Resolution() const
 
 float & kppl::DepthFrame::operator()( int x, int y )
 {
-	return m_data[ Index2Dto1D( x, y ) ];
+	return m_data[ Index2Dto1D( x, y, Width() ) ];
 }
 
 float const & kppl::DepthFrame::operator()( int x, int y ) const
 {
-	return m_data[ Index2Dto1D( x, y ) ];
+	return m_data[ Index2Dto1D( x, y, Width() ) ];
 }
 
 
 
-int kppl::DepthFrame::Index2Dto1D( int x, int y ) const
+// static
+int kppl::DepthFrame::Index2Dto1D( int x, int y, int width )
 {
 	assert( x >= 0 );
 	assert( y >= 0 );
 	assert( x < Width() );
 	assert( y < Height() );
 
-	return x + y * Width();
+	return x + y * width;
 }

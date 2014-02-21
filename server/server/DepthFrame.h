@@ -31,7 +31,7 @@ private:
 	int m_height;
 	std::vector< float > m_data;
 
-	int Index2Dto1D( int x, int y ) const;
+	static int Index2Dto1D( int x, int y, int width );
 };
 
 }

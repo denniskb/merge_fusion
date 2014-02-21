@@ -67,8 +67,8 @@ private:
 
 	std::vector< Voxel > m_data;
 
-	bool IndicesAreValid( int x, int y, int z ) const;
-	unsigned Index3Dto1D( unsigned x, unsigned y, unsigned z ) const;
+	static bool IndicesAreValid( int x, int y, int z, int resolution );
+	static unsigned Index3Dto1D( unsigned x, unsigned y, unsigned z, unsigned resolution );
 };
 
 }
