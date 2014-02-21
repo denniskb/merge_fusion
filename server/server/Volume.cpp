@@ -6,7 +6,6 @@
 
 #include "DepthFrame.h"
 #include "flink.h"
-#include "Timer.h"
 #include "Voxel.h"
 
 using namespace flink;
@@ -413,8 +412,6 @@ void kppl::Volume::Triangulate( char const * outOBJ )
 	std::vector< Vertex > VB;
 	std::vector< unsigned > IB;
 
-	Timer timer;
-
 	int resMinus1 = Resolution() - 1;
 	float vLen = m_sideLen / Resolution();
 
@@ -526,9 +523,6 @@ void kppl::Volume::Triangulate( char const * outOBJ )
 		auto it = std::lower_bound( VB.cbegin(), VB.cend(), dummy, vertexCmp );
 		IB[ i ] = (unsigned) ( it - VB.cbegin() );
 	}
-
-	printf( "MC, gen vb+ib: %fs\n", timer.Time() );
-	timer.Reset();
 
 	// TODO: Remove unused vertices from VB
 	// or test how high their percentage is and possibly leave them in.
