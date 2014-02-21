@@ -24,7 +24,7 @@ public:
 	Opens the depth stream specified by 'file_name' and keeps it
 	open until the object is destroyed.
 	*/
-	DepthStream( char const * fileName );
+	explicit DepthStream( char const * fileName );
 	~DepthStream();
 
 	/*

@@ -15,12 +15,16 @@
     <ClInclude Include="DepthStream.h" />
     <ClInclude Include="DeviceDepthFrame.h" />
     <ClInclude Include="flink.h" />
+    <ClInclude Include="KernelDepthFrame.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="util.h" />
     <ClInclude Include="Volume.h" />
     <ClInclude Include="Voxel.h" />
   </ItemGroup>
   <ItemGroup>
+    <CudaCompile Include="DeviceDepthFrame.cu">
+      <FileType>CppCode</FileType>
+    </CudaCompile>
     <ClCompile Include="HostDepthFrame.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>

@@ -4,8 +4,8 @@
 #include <cassert>
 #include <cstdio>
 
-#include "HostDepthFrame.h"
 #include "flink.h"
+#include "HostDepthFrame.h"
 #include "Voxel.h"
 
 using namespace flink;
@@ -78,7 +78,7 @@ void kppl::Volume::Integrate
 
 	matrix _viewProj = load( & viewProjection );
 	vector _ndcToUV = set( frame.Width() / 2.0f, frame.Height() / 2.0f, 0, 0 );
-
+	
 	for( int z = 0; z < Resolution(); z++ )
 		for( int y = 0; y < Resolution(); y++ )
 			for( int x = 0; x < Resolution(); x++ )
@@ -419,12 +419,16 @@ void kppl::Volume::Triangulate( char const * outOBJ )
 		for( int y0 = 0; y0 < Resolution(); y0++ )
 			for( int x0 = 0; x0 < Resolution(); x0++ )
 			{
+				Voxel v[ 8 ];
+				v[ 2 ] = (*this)( x0, y0, z0 );
+
+				if( 0 == v[ 2 ].Weight() )
+					continue;
+
 				int x1 = std::min( x0 + 1, resMinus1 );
 				int y1 = std::min( y0 + 1, resMinus1 );
 				int z1 = std::min( z0 + 1, resMinus1 );
 
-				Voxel v[ 8 ];
-				v[ 2 ] = (*this)( x0, y0, z0 );
 				v[ 3 ] = (*this)( x1, y0, z0 );
 				v[ 6 ] = (*this)( x0, y1, z0 );
 				v[ 7 ] = (*this)( x1, y1, z0 );
@@ -435,9 +439,6 @@ void kppl::Volume::Triangulate( char const * outOBJ )
 				v[ 4 ] = (*this)( x1, y1, z1 );
 
 				// Generate vertices
-				if( 0 == v[ 2 ].Weight() )
-					continue;
-
 				float d[ 8 ];
 				d[ 1 ] = v[ 1 ].Distance( m_truncationMargin );
 				d[ 2 ] = v[ 2 ].Distance( m_truncationMargin );

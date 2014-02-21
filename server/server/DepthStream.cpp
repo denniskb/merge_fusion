@@ -5,8 +5,8 @@
 #include <utility>
 #include <vector>
 
-#include "HostDepthFrame.h"
 #include "flink.h"
+#include "HostDepthFrame.h"
 #include "util.h"
 
 using namespace flink;
@@ -72,11 +72,20 @@ bool kppl::DepthStream::NextFrame
 		break;
 
 	case SHORT:
-		fread_s( & m_bufferDepth[ 0 ], m_bufferDepth.size() * 2, 2, m_bufferDepth.size(), m_file );
-		for( int y = 0; y < outFrame.Height(); y++ )
-			for( int x = 0; x < outFrame.Width(); x++ )
-				outFrame( x, y ) = m_bufferDepth[ x + y * outFrame.Width() ] * 0.001f;
+		{
+			fread_s( & m_bufferDepth[ 0 ], m_bufferDepth.size() * 2, 2, m_bufferDepth.size(), m_file );
 
+			unsigned const * inBuffer = reinterpret_cast< unsigned const * >( & m_bufferDepth[ 0 ] );
+			float * outBuffer = & outFrame( 0, 0 );
+
+			assert( 0 == outFrame.Width() % 2 );
+			for( int i = 0, halfRes = outFrame.Resolution() / 2; i < halfRes; i++ )
+			{
+				unsigned pxpair = inBuffer[ i ];
+				outBuffer[ 2 * i ] = ( pxpair & 0xffff ) * 0.001f;
+				outBuffer[ 2 * i + 1 ] = ( pxpair >> 16 ) * 0.001f;
+			}
+		}
 		break;
 
 	default:
