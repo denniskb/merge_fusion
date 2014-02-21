@@ -15,7 +15,7 @@ namespace kppl {
 
 using namespace flink;
 
-class DepthFrame;
+class HostDepthFrame;
 
 class DepthStream
 {
@@ -33,7 +33,7 @@ public:
 	*/
 	bool NextFrame
 	(
-		DepthFrame & outFrame,
+		HostDepthFrame & outFrame,
 		float4x4 & outView
 	);
 

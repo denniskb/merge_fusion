@@ -7,7 +7,7 @@
 
 #include <boost/filesystem/operations.hpp>
 
-#include <server/DepthFrame.h>
+#include <server/HostDepthFrame.h>
 #include <server/DepthStream.h>
 #include <server/flink.h>
 #include <server/Volume.h>
@@ -17,7 +17,9 @@ using namespace flink;
 
 
 
-#define RUN_TESTS 0
+// turn off long running tests during debugging periods.
+// don't forget to turn back on before commiting.
+#define RUN_TESTS 1
 
 
 
@@ -82,7 +84,7 @@ BOOST_AUTO_TEST_CASE( Integrate )
 	kppl::Volume v( 256, 2.0f, 0.04f );
 	kppl::DepthStream ds( ( boost::filesystem::current_path() / "content/imrod_v2.depth" ).string().c_str() );
 
-	kppl::DepthFrame depth;
+	kppl::HostDepthFrame depth;
 	float4x4 view, viewProj;
 	float4 eye, forward;
 
@@ -126,7 +128,7 @@ BOOST_AUTO_TEST_CASE( Triangulate )
 	kppl::Volume v( 256, 2.0f, 0.04f );
 	kppl::DepthStream ds( ( boost::filesystem::current_path() / "content/imrod_v2.depth" ).string().c_str() );
 
-	kppl::DepthFrame depth;
+	kppl::HostDepthFrame depth;
 	float4x4 view, viewProj;
 	float4 eye, forward;
 

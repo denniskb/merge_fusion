@@ -5,7 +5,7 @@
 
 #include <DirectXMath.h>
 
-#include <server/DepthFrame.h>
+#include <server/HostDepthFrame.h>
 #include <server/DepthStream.h>
 
 using namespace DirectX;
@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE( NextFrame_v1 )
 	fclose( file );
 
 	XMFLOAT4X4A view;
-	kppl::DepthFrame depth;
+	kppl::HostDepthFrame depth;
 
 	kppl::DepthStream ds( fileName );
 	BOOST_CHECK( ds.NextFrame( depth, view ) );
@@ -101,7 +101,7 @@ BOOST_AUTO_TEST_CASE( NextFrame_v2_short )
 	fclose( file );
 
 	XMFLOAT4X4A view;
-	kppl::DepthFrame depth;
+	kppl::HostDepthFrame depth;
 
 	kppl::DepthStream ds( fileName );
 	BOOST_CHECK( ds.NextFrame( depth, view ) );
@@ -139,7 +139,7 @@ BOOST_AUTO_TEST_CASE( NextFrame_v2_float )
 	fclose( file );
 
 	XMFLOAT4X4A view;
-	kppl::DepthFrame depth;
+	kppl::HostDepthFrame depth;
 
 	kppl::DepthStream ds( fileName );
 	BOOST_CHECK( ds.NextFrame( depth, view ) );

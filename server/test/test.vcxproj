@@ -61,7 +61,7 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="DepthFrame.cpp" />
+    <ClCompile Include="HostDepthFrame.cpp" />
     <ClCompile Include="DepthStream.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="util.cpp" />

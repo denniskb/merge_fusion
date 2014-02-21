@@ -4,7 +4,7 @@
 #include <cassert>
 #include <cstdio>
 
-#include "DepthFrame.h"
+#include "HostDepthFrame.h"
 #include "flink.h"
 #include "Voxel.h"
 
@@ -68,7 +68,7 @@ float4 kppl::Volume::VoxelCenter( int x, int y, int z ) const
 
 void kppl::Volume::Integrate
 (
-	kppl::DepthFrame const & frame, 
+	kppl::HostDepthFrame const & frame, 
 	float4 const & eye,
 	float4 const & forward,
 	float4x4 const & viewProjection

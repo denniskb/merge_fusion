@@ -6,14 +6,14 @@
 
 namespace kppl {
 
-class DepthFrame
+class HostDepthFrame
 {
 public:
 	/*
 	@precond width >= 0
 	@precond height >= 0
 	*/
-	DepthFrame( int width = 0, int height = 0 );
+	HostDepthFrame( int width = 0, int height = 0 );
 	void Resize( int newWidth, int newHeight );
 
 	int Width() const;

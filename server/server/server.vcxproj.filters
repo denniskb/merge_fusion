@@ -30,10 +30,13 @@
     <ClInclude Include="flink.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DepthFrame.h">
+    <ClInclude Include="Timer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Timer.h">
+    <ClInclude Include="DeviceDepthFrame.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HostDepthFrame.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -50,10 +53,10 @@
     <ClCompile Include="Volume.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DepthFrame.cpp">
+    <ClCompile Include="Timer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Timer.cpp">
+    <ClCompile Include="HostDepthFrame.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

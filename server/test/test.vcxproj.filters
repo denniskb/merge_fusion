@@ -30,7 +30,7 @@
     <ClCompile Include="Volume.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DepthFrame.cpp">
+    <ClCompile Include="HostDepthFrame.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

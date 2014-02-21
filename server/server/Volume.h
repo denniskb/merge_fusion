@@ -14,7 +14,7 @@ namespace kppl {
 
 using namespace flink;
 
-class DepthFrame;
+class HostDepthFrame;
 class Voxel;
 
 class Volume
@@ -48,7 +48,7 @@ public:
 	*/
 	void Integrate
 	(
-		DepthFrame const & frame,
+		HostDepthFrame const & frame,
 		float4 const & eye,
 		float4 const & forward,
 		float4x4 const & viewProjection

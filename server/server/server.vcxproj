@@ -11,8 +11,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="DepthFrame.h" />
+    <ClInclude Include="HostDepthFrame.h" />
     <ClInclude Include="DepthStream.h" />
+    <ClInclude Include="DeviceDepthFrame.h" />
     <ClInclude Include="flink.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="util.h" />
@@ -20,7 +21,7 @@
     <ClInclude Include="Voxel.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="DepthFrame.cpp">
+    <ClCompile Include="HostDepthFrame.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="DepthStream.cpp" />

@@ -5,7 +5,7 @@
 #include <utility>
 #include <vector>
 
-#include "DepthFrame.h"
+#include "HostDepthFrame.h"
 #include "flink.h"
 #include "util.h"
 
@@ -55,7 +55,7 @@ kppl::DepthStream::~DepthStream()
 
 bool kppl::DepthStream::NextFrame
 (
-	kppl::DepthFrame & outFrame,
+	kppl::HostDepthFrame & outFrame,
 	float4x4 & outView
 )
 {
