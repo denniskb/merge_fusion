@@ -8,9 +8,9 @@
 #include <boost/filesystem/operations.hpp>
 
 #include <server/HostDepthFrame.h>
+#include <server/HostVolume.h>
 #include <server/DepthStream.h>
 #include <server/flink.h>
-#include <server/Volume.h>
 #include <server/Voxel.h>
 
 using namespace flink;
@@ -53,7 +53,7 @@ BOOST_AUTO_TEST_SUITE( Volume )
 
 BOOST_AUTO_TEST_CASE( getset )
 {
-	kppl::Volume vol( 10, 1.0f, 0.02f );
+	kppl::HostVolume vol( 10, 1.0f, 0.02f );
 	BOOST_REQUIRE( 10 == vol.Resolution() );
 
 	kppl::Voxel v;
@@ -81,7 +81,7 @@ BOOST_AUTO_TEST_CASE( Integrate )
 
 #if RUN_TESTS
 
-	kppl::Volume v( 256, 2.0f, 0.04f );
+	kppl::HostVolume v( 256, 2.0f, 0.04f );
 	kppl::DepthStream ds( ( boost::filesystem::current_path() / "content/imrod_v2.depth" ).string().c_str() );
 
 	kppl::HostDepthFrame depth;
@@ -125,7 +125,7 @@ BOOST_AUTO_TEST_CASE( Triangulate )
 
 #if RUN_TESTS
 
-	kppl::Volume v( 256, 2.0f, 0.04f );
+	kppl::HostVolume v( 256, 2.0f, 0.04f );
 	kppl::DepthStream ds( ( boost::filesystem::current_path() / "content/imrod_v2.depth" ).string().c_str() );
 
 	kppl::HostDepthFrame depth;

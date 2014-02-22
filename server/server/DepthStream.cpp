@@ -82,6 +82,7 @@ bool kppl::DepthStream::NextFrame
 			for( int i = 0, halfRes = outFrame.Resolution() / 2; i < halfRes; i++ )
 			{
 				unsigned pxpair = inBuffer[ i ];
+				// little endian
 				outBuffer[ 2 * i ] = ( pxpair & 0xffff ) * 0.001f;
 				outBuffer[ 2 * i + 1 ] = ( pxpair >> 16 ) * 0.001f;
 			}

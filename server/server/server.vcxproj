@@ -18,7 +18,7 @@
     <ClInclude Include="KernelDepthFrame.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="util.h" />
-    <ClInclude Include="Volume.h" />
+    <ClInclude Include="HostVolume.h" />
     <ClInclude Include="Voxel.h" />
   </ItemGroup>
   <ItemGroup>
@@ -31,7 +31,7 @@
     <ClCompile Include="DepthStream.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="util.cpp" />
-    <ClCompile Include="Volume.cpp" />
+    <ClCompile Include="HostVolume.cpp" />
     <ClCompile Include="Voxel.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

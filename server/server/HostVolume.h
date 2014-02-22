@@ -17,7 +17,7 @@ using namespace flink;
 class HostDepthFrame;
 class Voxel;
 
-class Volume
+class HostVolume
 {
 public:
 	/*
@@ -25,7 +25,7 @@ public:
 	a side length of sideLength meters, centered at the origin.
 	We use a right-handed coordinate system.
 	*/
-	Volume( int resolution, float sideLength, float truncationMargin );
+	HostVolume( int resolution, float sideLength, float truncationMargin );
 
 	int Resolution() const;
 
@@ -42,9 +42,6 @@ public:
 
 	/*
 	Integrates a depth frame into the volume using the KinectFusion algorithm.
-	@param frame raw depth in mm (0 meaning invalid measurement)
-	@param view matrix describing the perspective from which the frame was observed
-	@param projection matrix describing the camera lens parameters
 	*/
 	void Integrate
 	(

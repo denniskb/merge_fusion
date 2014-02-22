@@ -1,4 +1,4 @@
-#include "Volume.h"
+#include "HostVolume.h"
 
 #include <algorithm>
 #include <cassert>
@@ -12,7 +12,7 @@ using namespace flink;
 
 
 
-kppl::Volume::Volume( int resolution, float sideLength, float truncationMargin ) :
+kppl::HostVolume::HostVolume( int resolution, float sideLength, float truncationMargin ) :
 	m_res( resolution ),
 	m_sideLen( sideLength ),
 	m_truncationMargin( truncationMargin )
@@ -26,21 +26,21 @@ kppl::Volume::Volume( int resolution, float sideLength, float truncationMargin )
 
 
 
-int kppl::Volume::Resolution() const
+int kppl::HostVolume::Resolution() const
 {
 	return m_res;
 }
 
 
 
-kppl::Voxel const & kppl::Volume::operator()( int x, int y, int z ) const
+kppl::Voxel const & kppl::HostVolume::operator()( int x, int y, int z ) const
 {
 	assert( IndicesAreValid( x, y, z ) );
 
 	return m_data[ Index3Dto1D( x, y, z, Resolution() ) ];
 }
 
-kppl::Voxel & kppl::Volume::operator()( int x, int y, int z )
+kppl::Voxel & kppl::HostVolume::operator()( int x, int y, int z )
 {
 	assert( IndicesAreValid( x, y, z ) );
 
@@ -49,7 +49,7 @@ kppl::Voxel & kppl::Volume::operator()( int x, int y, int z )
 
 
 
-float4 kppl::Volume::VoxelCenter( int x, int y, int z ) const
+float4 kppl::HostVolume::VoxelCenter( int x, int y, int z ) const
 {
 	float4 result;
 
@@ -66,7 +66,7 @@ float4 kppl::Volume::VoxelCenter( int x, int y, int z ) const
 
 
 
-void kppl::Volume::Integrate
+void kppl::HostVolume::Integrate
 (
 	kppl::HostDepthFrame const & frame, 
 	float4 const & eye,
@@ -114,7 +114,7 @@ void kppl::Volume::Integrate
 
 
 
-void kppl::Volume::Triangulate( char const * outOBJ )
+void kppl::HostVolume::Triangulate( char const * outOBJ )
 {
 #pragma region Type Defs
 
@@ -543,7 +543,7 @@ void kppl::Volume::Triangulate( char const * outOBJ )
 
 
 // static
-bool kppl::Volume::IndicesAreValid( int x, int y, int z, int resolution )
+bool kppl::HostVolume::IndicesAreValid( int x, int y, int z, int resolution )
 {
 	return
 		x >= 0 &&
@@ -556,7 +556,7 @@ bool kppl::Volume::IndicesAreValid( int x, int y, int z, int resolution )
 }
 
 // static
-unsigned kppl::Volume::Index3Dto1D( unsigned x, unsigned y, unsigned z, unsigned resolution )
+unsigned kppl::HostVolume::Index3Dto1D( unsigned x, unsigned y, unsigned z, unsigned resolution )
 {
 	assert( IndicesAreValid( x, y, z ) );
 	assert( resolution <= 1024 );

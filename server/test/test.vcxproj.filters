@@ -27,13 +27,13 @@
     <ClCompile Include="Voxel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Volume.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="HostDepthFrame.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DeviceDepthFrame.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HostVolume.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
