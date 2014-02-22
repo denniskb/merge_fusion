@@ -12,7 +12,7 @@ kppl::DeviceDepthFrame::DeviceDepthFrame( HostDepthFrame const & copy )
 	CopyFrom( copy );
 }
 
-kppl::DeviceDepthFrame & kppl::DeviceDepthFrame::operator=( HostDepthFrame const & rhs )
+kppl::DeviceDepthFrame & kppl::DeviceDepthFrame::operator<<( HostDepthFrame const & rhs )
 {
 	CopyFrom( rhs );
 	return * this;
@@ -20,7 +20,7 @@ kppl::DeviceDepthFrame & kppl::DeviceDepthFrame::operator=( HostDepthFrame const
 
 
 
-void kppl::DeviceDepthFrame::CopyTo( HostDepthFrame & outFrame ) const
+void kppl::DeviceDepthFrame::operator>>( HostDepthFrame & outFrame ) const
 {
 	outFrame.Resize( m_width, m_height );
 	thrust::copy( m_data.cbegin(), m_data.cend(), & outFrame( 0, 0 ) );

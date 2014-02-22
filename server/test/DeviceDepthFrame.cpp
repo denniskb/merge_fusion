@@ -18,7 +18,7 @@ BOOST_AUTO_TEST_CASE( copy )
 	
 	kppl::DeviceDepthFrame ddf( hdf );
 	hdf( 57, 209 ) = 0.0f;
-	ddf.CopyTo( hdf );
+	ddf >> hdf;
 
 	BOOST_REQUIRE_CLOSE( 2.13f, hdf( 57, 209 ), 0.1f );
 }
@@ -29,9 +29,9 @@ BOOST_AUTO_TEST_CASE( assign )
 	kppl::DeviceDepthFrame ddf( hdf1 );
 
 	kppl::HostDepthFrame hdf2( 128, 128 );
-	ddf = hdf2;
+	ddf << hdf2;
 
-	ddf.CopyTo( hdf1 );
+	ddf >> hdf1;
 
 	BOOST_REQUIRE( 128 == hdf1.Width() );
 	BOOST_REQUIRE( 128 == hdf1.Height() );
