@@ -55,6 +55,9 @@ BOOST_AUTO_TEST_CASE( getset )
 {
 	kppl::HostVolume vol( 10, 1.0f, 0.02f );
 	BOOST_REQUIRE( 10 == vol.Resolution() );
+	BOOST_REQUIRE_CLOSE( 1.0f, vol.SideLength(), 0.1f );
+	BOOST_REQUIRE_CLOSE( 0.02f, vol.TrunactionMargin(), 0.1f );
+	BOOST_REQUIRE_CLOSE( 0.1f, vol.VoxelLength(), 0.1f );
 
 	kppl::Voxel v;
 	BOOST_REQUIRE( vol( 0, 0, 0 ) == v );

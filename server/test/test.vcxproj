@@ -64,6 +64,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="DeviceDepthFrame.cpp" />
+    <ClCompile Include="DeviceVolume.cpp" />
     <ClCompile Include="HostDepthFrame.cpp" />
     <ClCompile Include="DepthStream.cpp" />
     <ClCompile Include="main.cpp" />

@@ -12,13 +12,13 @@ kppl::DeviceDepthFrame::DeviceDepthFrame( HostDepthFrame const & copy )
 	CopyFrom( copy );
 }
 
+
+
 kppl::DeviceDepthFrame & kppl::DeviceDepthFrame::operator<<( HostDepthFrame const & rhs )
 {
 	CopyFrom( rhs );
 	return * this;
 }
-
-
 
 void kppl::DeviceDepthFrame::operator>>( HostDepthFrame & outFrame ) const
 {

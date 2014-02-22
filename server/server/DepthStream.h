@@ -13,8 +13,6 @@ The file format documentation can be found in poly2depth/readme.txt.
 
 namespace kppl {
 
-using namespace flink;
-
 class HostDepthFrame;
 
 class DepthStream
@@ -34,7 +32,7 @@ public:
 	bool NextFrame
 	(
 		HostDepthFrame & outFrame,
-		float4x4 & outView
+		flink::float4x4 & outView
 	);
 
 private:

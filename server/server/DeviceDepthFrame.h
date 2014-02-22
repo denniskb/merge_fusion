@@ -14,8 +14,8 @@ class DeviceDepthFrame
 {
 public:
 	explicit DeviceDepthFrame( HostDepthFrame const & copy );
-	DeviceDepthFrame & operator<<( HostDepthFrame const & rhs );
 
+	DeviceDepthFrame & operator<<( HostDepthFrame const & rhs );
 	void operator>>( HostDepthFrame & outFrame ) const;
 
 	KernelDepthFrame KernelObject() const;

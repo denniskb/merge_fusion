@@ -27,9 +27,9 @@ public:
 	float const & operator()( int x, int y ) const;
 
 private:
+	std::vector< float > m_data;
 	int m_width;
 	int m_height;
-	std::vector< float > m_data;
 
 	static int Index2Dto1D( int x, int y, int width );
 };

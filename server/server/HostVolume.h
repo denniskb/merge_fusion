@@ -12,8 +12,6 @@ Voxel volume as used in KinectFusion
 
 namespace kppl {
 
-using namespace flink;
-
 class HostDepthFrame;
 class Voxel;
 
@@ -28,6 +26,9 @@ public:
 	HostVolume( int resolution, float sideLength, float truncationMargin );
 
 	int Resolution() const;
+	float SideLength() const;
+	float VoxelLength() const;
+	float TrunactionMargin() const;
 
 	/*
 	x, y and z map directly to the world coordinate system axes.
@@ -38,7 +39,7 @@ public:
 	/*
 	Returns the world position of the voxel at index (x, y, z)
 	*/
-	float4 VoxelCenter( int x, int y, int z ) const;
+	flink::float4 VoxelCenter( int x, int y, int z ) const;
 
 	/*
 	Integrates a depth frame into the volume using the KinectFusion algorithm.
@@ -46,23 +47,22 @@ public:
 	void Integrate
 	(
 		HostDepthFrame const & frame,
-		float4 const & eye,
-		float4 const & forward,
-		float4x4 const & viewProjection
+		flink::float4 const & eye,
+		flink::float4 const & forward,
+		flink::float4x4 const & viewProjection
 	);
 
 	/*
 	Marching cubes ported from http://paulbourke.net/geometry/polygonise/
 	@param outOBJ path to a .obj file.
 	*/
-	void Triangulate( char const * outOBJ );
+	void Triangulate( char const * outOBJ ) const;
 
 private:
+	std::vector< Voxel > m_data;
 	int m_res;
 	float m_sideLen;
-	float m_truncationMargin;
-
-	std::vector< Voxel > m_data;
+	float m_truncMargin;
 
 	static bool IndicesAreValid( int x, int y, int z, int resolution );
 	static unsigned Index3Dto1D( unsigned x, unsigned y, unsigned z, unsigned resolution );

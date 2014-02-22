@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="DeviceVolume.h" />
     <ClInclude Include="HostDepthFrame.h" />
     <ClInclude Include="DepthStream.h" />
     <ClInclude Include="DeviceDepthFrame.h" />
@@ -24,6 +25,9 @@
   <ItemGroup>
     <CudaCompile Include="DeviceDepthFrame.cu">
       <FileType>CppCode</FileType>
+    </CudaCompile>
+    <CudaCompile Include="DeviceVolume.cu">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </CudaCompile>
     <ClCompile Include="HostDepthFrame.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>

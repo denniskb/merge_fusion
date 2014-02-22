@@ -15,7 +15,7 @@ using namespace flink;
 kppl::HostVolume::HostVolume( int resolution, float sideLength, float truncationMargin ) :
 	m_res( resolution ),
 	m_sideLen( sideLength ),
-	m_truncationMargin( truncationMargin )
+	m_truncMargin( truncationMargin )
 {
 	assert( resolution > 0 );
 	assert( sideLength > 0.0f );
@@ -29,6 +29,21 @@ kppl::HostVolume::HostVolume( int resolution, float sideLength, float truncation
 int kppl::HostVolume::Resolution() const
 {
 	return m_res;
+}
+
+float kppl::HostVolume::SideLength() const
+{
+	return m_sideLen;
+}
+
+float kppl::HostVolume::VoxelLength() const
+{
+	return SideLength() / Resolution();
+}
+
+float kppl::HostVolume::TrunactionMargin() const
+{
+	return m_truncMargin;
 }
 
 
@@ -54,7 +69,7 @@ float4 kppl::HostVolume::VoxelCenter( int x, int y, int z ) const
 	float4 result;
 
 	int halfRes = Resolution() / 2;
-	float voxelLen = m_sideLen / Resolution();
+	float voxelLen = VoxelLength();
 
 	result.x = ( x - halfRes + 0.5f ) * voxelLen;
 	result.y = ( y - halfRes + 0.5f ) * voxelLen;
@@ -105,16 +120,16 @@ void kppl::HostVolume::Integrate
 				float dist = dot( centerWorld - eye, forward );
 				float signedDist = depth - dist;
 				
-				if( dist < 0.8f || signedDist < -m_truncationMargin )
+				if( dist < 0.8f || signedDist < -TrunactionMargin() )
 					continue;
 
-				(*this)( x, y, z ).Update( signedDist, m_truncationMargin );
+				(*this)( x, y, z ).Update( signedDist, TrunactionMargin() );
 			}
 }
 
 
 
-void kppl::HostVolume::Triangulate( char const * outOBJ )
+void kppl::HostVolume::Triangulate( char const * outOBJ ) const
 {
 #pragma region Type Defs
 
@@ -413,7 +428,7 @@ void kppl::HostVolume::Triangulate( char const * outOBJ )
 	std::vector< unsigned > IB;
 
 	int resMinus1 = Resolution() - 1;
-	float vLen = m_sideLen / Resolution();
+	float vLen = VoxelLength();
 
 	for( int z0 = 0; z0 < Resolution(); z0++ )
 		for( int y0 = 0; y0 < Resolution(); y0++ )
@@ -440,10 +455,10 @@ void kppl::HostVolume::Triangulate( char const * outOBJ )
 
 				// Generate vertices
 				float d[ 8 ];
-				d[ 1 ] = v[ 1 ].Distance( m_truncationMargin );
-				d[ 2 ] = v[ 2 ].Distance( m_truncationMargin );
-				d[ 3 ] = v[ 3 ].Distance( m_truncationMargin );
-				d[ 6 ] = v[ 6 ].Distance( m_truncationMargin );
+				d[ 1 ] = v[ 1 ].Distance( TrunactionMargin() );
+				d[ 2 ] = v[ 2 ].Distance( TrunactionMargin() );
+				d[ 3 ] = v[ 3 ].Distance( TrunactionMargin() );
+				d[ 6 ] = v[ 6 ].Distance( TrunactionMargin() );
 
 				float4 vert000 = VoxelCenter( x0, y0, z0 );
 				unsigned i000 = Index3Dto1D( x0, y0, z0, Resolution() );
@@ -486,10 +501,10 @@ void kppl::HostVolume::Triangulate( char const * outOBJ )
 					z0 == resMinus1 )
 					continue;
 
-				d[ 0 ] = v[ 0 ].Distance( m_truncationMargin );
-				d[ 4 ] = v[ 4 ].Distance( m_truncationMargin );
-				d[ 5 ] = v[ 5 ].Distance( m_truncationMargin );
-				d[ 7 ] = v[ 7 ].Distance( m_truncationMargin );
+				d[ 0 ] = v[ 0 ].Distance( TrunactionMargin() );
+				d[ 4 ] = v[ 4 ].Distance( TrunactionMargin() );
+				d[ 5 ] = v[ 5 ].Distance( TrunactionMargin() );
+				d[ 7 ] = v[ 7 ].Distance( TrunactionMargin() );
 
 				int lutIdx = 0;
 				for( int i = 0; i < 8; i++ )

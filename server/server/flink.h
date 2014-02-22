@@ -105,15 +105,7 @@ inline float4 operator/( float4 v, float s )
 {
 	assert( s != 0.0f );
 
-	float s1 = 1.0f / s;
-
-	return float4
-	(
-		v.x * s1,
-		v.y * s1,
-		v.z * s1,
-		v.w * s1
-	);
+	return v * ( 1.0f / s );
 }
 
 inline float dot( float4 const & a, float4 const & b )
