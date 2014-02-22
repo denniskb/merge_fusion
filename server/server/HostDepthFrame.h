@@ -31,7 +31,7 @@ private:
 	int m_width;
 	int m_height;
 
-	static int Index2Dto1D( int x, int y, int width );
+	static int Index2Dto1D( int x, int y, int width, int height );
 };
 
 }

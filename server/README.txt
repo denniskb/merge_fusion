@@ -1,5 +1,5 @@
 Requires:
-- Visual Studio 2012 (express version OK, but must be 2012(!))
+- Visual Studio 2012 (does not work with Express or 2013)
 - Boost 1.55.0 
 - CUDA 5.5 and
 - a Nvidia GPU with compute capability >= 3.0

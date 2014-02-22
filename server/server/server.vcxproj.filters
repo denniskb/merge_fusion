@@ -21,9 +21,6 @@
     <ClInclude Include="DepthStream.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Voxel.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="flink.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -36,13 +33,25 @@
     <ClInclude Include="HostDepthFrame.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="KernelDepthFrame.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="HostVolume.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DeviceVolume.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="force_nvcc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="KernelDepthFrame.cuh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="KernelVolume.cuh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cuda_directives.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Voxel.m">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -51,9 +60,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DepthStream.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Voxel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Timer.cpp">
@@ -73,5 +79,10 @@
     <CudaCompile Include="DeviceVolume.cu">
       <Filter>Source Files</Filter>
     </CudaCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="helper_math_ext.cuh">
+      <Filter>Header Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

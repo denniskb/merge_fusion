@@ -22,6 +22,9 @@ public:
 	Creates a cubic voxel volume with resolution^3 voxels and
 	a side length of sideLength meters, centered at the origin.
 	We use a right-handed coordinate system.
+	@precond resolution > 0
+	@precond sideLength > 0
+	@precond truncationMargin > 0
 	*/
 	HostVolume( int resolution, float sideLength, float truncationMargin );
 
@@ -35,6 +38,13 @@ public:
 	*/
 	Voxel const & operator()( int x, int y, int z ) const;
 	Voxel & operator()( int x, int y, int z );
+
+	bool operator==( HostVolume const & rhs ) const;
+	/*
+	Returns true iff all voxels of this and rhs are pairwise 'close'.
+	(See Voxel::Close for details.)
+	*/
+	bool Close( HostVolume const & rhs, float delta ) const;
 
 	/*
 	Returns the world position of the voxel at index (x, y, z)
@@ -59,10 +69,19 @@ public:
 	void Triangulate( char const * outOBJ ) const;
 
 private:
+	HostVolume & operator=( HostVolume const & rhs );
+
 	std::vector< Voxel > m_data;
-	int m_res;
-	float m_sideLen;
-	float m_truncMargin;
+	int const m_res;
+	float const m_sideLen;
+	float const m_truncMargin;
+	int m_nUpdates;
+
+	//cached values
+	float const m_voxelLen;
+	float const m_resOver2MinusPoint5TimesVoxelLenNeg;
+	float const m_packScale;
+	float const m_unpackScale;
 
 	static bool IndicesAreValid( int x, int y, int z, int resolution );
 	static unsigned Index3Dto1D( unsigned x, unsigned y, unsigned z, unsigned resolution );

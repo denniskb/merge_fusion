@@ -1,7 +1,3 @@
-/*
-A collection of un-related utility functions
-*/
-
 #pragma once
 
 namespace kppl {

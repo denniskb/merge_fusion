@@ -14,6 +14,30 @@ kppl::DeviceDepthFrame::DeviceDepthFrame( HostDepthFrame const & copy )
 
 
 
+int kppl::DeviceDepthFrame::Width() const
+{
+	return m_width;
+}
+
+int kppl::DeviceDepthFrame::Height() const
+{
+	return m_height;
+}
+
+
+	
+float * kppl::DeviceDepthFrame::Data()
+{
+	return thrust::raw_pointer_cast( m_data.data() );
+}
+
+float const * kppl::DeviceDepthFrame::Data() const
+{
+	return thrust::raw_pointer_cast( m_data.data() );
+}
+
+
+
 kppl::DeviceDepthFrame & kppl::DeviceDepthFrame::operator<<( HostDepthFrame const & rhs )
 {
 	CopyFrom( rhs );
@@ -28,18 +52,13 @@ void kppl::DeviceDepthFrame::operator>>( HostDepthFrame & outFrame ) const
 
 
 
-kppl::KernelDepthFrame kppl::DeviceDepthFrame::KernelObject() const
-{
-	return KernelDepthFrame( thrust::raw_pointer_cast( m_data.data() ), m_width, m_height );
-}
-
-
-
 void kppl::DeviceDepthFrame::CopyFrom( HostDepthFrame const & copy )
 {
 	m_width = copy.Width();
 	m_height = copy.Height();
 
 	m_data.resize( copy.Resolution() );
-	thrust::copy( & copy( 0, 0 ), & copy( 0, 0 ) + copy.Resolution(), m_data.begin() );
+	
+	if( copy.Resolution() > 0 )
+		thrust::copy( & copy( 0, 0 ), & copy( 0, 0 ) + copy.Resolution(), m_data.begin() );
 }

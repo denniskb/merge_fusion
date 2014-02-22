@@ -6,16 +6,20 @@
 
 #include "flink.h"
 #include "HostDepthFrame.h"
-#include "Voxel.h"
-
-using namespace flink;
+#include "Voxel.m"
 
 
 
 kppl::HostVolume::HostVolume( int resolution, float sideLength, float truncationMargin ) :
 	m_res( resolution ),
 	m_sideLen( sideLength ),
-	m_truncMargin( truncationMargin )
+	m_truncMargin( truncationMargin ),
+	m_nUpdates( 0 ),
+
+	m_voxelLen( sideLength / resolution ),
+	m_resOver2MinusPoint5TimesVoxelLenNeg( -( resolution / 2 - 0.5f ) * ( sideLength / resolution ) ),
+	m_packScale( Voxel::PACK_SCALE( truncationMargin ) ),
+	m_unpackScale( Voxel::UNPACK_SCALE( truncationMargin ) )
 {
 	assert( resolution > 0 );
 	assert( sideLength > 0.0f );
@@ -38,7 +42,7 @@ float kppl::HostVolume::SideLength() const
 
 float kppl::HostVolume::VoxelLength() const
 {
-	return SideLength() / Resolution();
+	return m_voxelLen;
 }
 
 float kppl::HostVolume::TrunactionMargin() const
@@ -50,33 +54,63 @@ float kppl::HostVolume::TrunactionMargin() const
 
 kppl::Voxel const & kppl::HostVolume::operator()( int x, int y, int z ) const
 {
-	assert( IndicesAreValid( x, y, z ) );
+	assert( IndicesAreValid( x, y, z, Resolution() ) );
 
 	return m_data[ Index3Dto1D( x, y, z, Resolution() ) ];
 }
 
 kppl::Voxel & kppl::HostVolume::operator()( int x, int y, int z )
 {
-	assert( IndicesAreValid( x, y, z ) );
+	assert( IndicesAreValid( x, y, z, Resolution() ) );
 
 	return m_data[ Index3Dto1D( x, y, z, Resolution() ) ];
 }
 
 
 
-float4 kppl::HostVolume::VoxelCenter( int x, int y, int z ) const
+bool kppl::HostVolume::operator==( HostVolume const & rhs ) const
 {
-	float4 result;
+	if( this == & rhs )
+		return true;
 
-	int halfRes = Resolution() / 2;
-	float voxelLen = VoxelLength();
+	if( Resolution() != rhs.Resolution() ||
+		TrunactionMargin() != rhs.TrunactionMargin() )
+		return false;
 
-	result.x = ( x - halfRes + 0.5f ) * voxelLen;
-	result.y = ( y - halfRes + 0.5f ) * voxelLen;
-	result.z = ( z - halfRes + 0.5f ) * voxelLen;
-	result.w = 1.0f;
+	for( int i = 0; i < m_data.size(); i++ )
+		if( m_data[ i ] != rhs.m_data[ i ] )
+			return false;
 
-	return result;
+	return true;
+}
+
+bool kppl::HostVolume::Close( HostVolume const & rhs, float delta ) const
+{
+	if( this == & rhs )
+		return true;
+
+	if( Resolution() != rhs.Resolution() ||
+		TrunactionMargin() != rhs.TrunactionMargin() )
+		return false;
+
+	for( int i = 0; i < m_data.size(); i++ )
+		if( ! m_data[ i ].Close( rhs.m_data[ i ], TrunactionMargin(), delta ) )
+			return false;
+
+	return true;
+}
+
+
+
+flink::float4 kppl::HostVolume::VoxelCenter( int x, int y, int z ) const
+{
+	return flink::float4
+	(
+		x * VoxelLength() + m_resOver2MinusPoint5TimesVoxelLenNeg,
+		y * VoxelLength() + m_resOver2MinusPoint5TimesVoxelLenNeg,
+		z * VoxelLength() + m_resOver2MinusPoint5TimesVoxelLenNeg,
+		1.0f
+	);
 }
 
 
@@ -84,27 +118,28 @@ float4 kppl::HostVolume::VoxelCenter( int x, int y, int z ) const
 void kppl::HostVolume::Integrate
 (
 	kppl::HostDepthFrame const & frame, 
-	float4 const & eye,
-	float4 const & forward,
-	float4x4 const & viewProjection
+	flink::float4 const & eye,
+	flink::float4 const & forward,
+	flink::float4x4 const & viewProjection
 )
 {
 	assert( 0 == Resolution() % 2 );
+	assert( m_nUpdates < Voxel::MAX_WEIGHT() );
 
-	matrix _viewProj = load( & viewProjection );
-	vector _ndcToUV = set( frame.Width() / 2.0f, frame.Height() / 2.0f, 0, 0 );
-	
+	flink::matrix _viewProj = flink::load( & viewProjection );
+	flink::vector _ndcToUV = flink::set( frame.Width() / 2.0f, frame.Height() / 2.0f, 0, 0 );
+
 	for( int z = 0; z < Resolution(); z++ )
 		for( int y = 0; y < Resolution(); y++ )
 			for( int x = 0; x < Resolution(); x++ )
 			{
-				float4 centerWorld = VoxelCenter( x, y, z );
-				vector _centerWorld = load( & centerWorld );
+				flink::float4 centerWorld = VoxelCenter( x, y, z );
+				flink::vector _centerWorld = flink::load( & centerWorld );
 
-				vector _centerNDC = homogenize( _centerWorld * _viewProj );
+				flink::vector _centerNDC = flink::homogenize( _centerWorld * _viewProj );
 
-				vector _centerScreen = _centerNDC * _ndcToUV + _ndcToUV;
-				float4 centerScreen = store( _centerScreen );
+				flink::vector _centerScreen = _centerNDC * _ndcToUV + _ndcToUV;
+				flink::float4 centerScreen = flink::store( _centerScreen );
 
 				int u = (int) centerScreen.x;
 				int v = (int) centerScreen.y;
@@ -117,14 +152,16 @@ void kppl::HostVolume::Integrate
 				if( depth == 0.0f )
 					continue;
 
-				float dist = dot( centerWorld - eye, forward );
+				float dist = flink::dot( centerWorld - eye, forward );
 				float signedDist = depth - dist;
 				
 				if( dist < 0.8f || signedDist < -TrunactionMargin() )
 					continue;
 
-				(*this)( x, y, z ).Update( signedDist, TrunactionMargin() );
+				(*this)( x, y, z ).Update( signedDist, TrunactionMargin(), m_packScale, m_unpackScale );
 			}
+
+	m_nUpdates++;
 }
 
 
@@ -428,7 +465,6 @@ void kppl::HostVolume::Triangulate( char const * outOBJ ) const
 	std::vector< unsigned > IB;
 
 	int resMinus1 = Resolution() - 1;
-	float vLen = VoxelLength();
 
 	for( int z0 = 0; z0 < Resolution(); z0++ )
 		for( int y0 = 0; y0 < Resolution(); y0++ )
@@ -455,19 +491,19 @@ void kppl::HostVolume::Triangulate( char const * outOBJ ) const
 
 				// Generate vertices
 				float d[ 8 ];
-				d[ 1 ] = v[ 1 ].Distance( TrunactionMargin() );
-				d[ 2 ] = v[ 2 ].Distance( TrunactionMargin() );
-				d[ 3 ] = v[ 3 ].Distance( TrunactionMargin() );
-				d[ 6 ] = v[ 6 ].Distance( TrunactionMargin() );
+				d[ 1 ] = v[ 1 ].Distance( TrunactionMargin(), m_unpackScale );
+				d[ 2 ] = v[ 2 ].Distance( TrunactionMargin(), m_unpackScale );
+				d[ 3 ] = v[ 3 ].Distance( TrunactionMargin(), m_unpackScale );
+				d[ 6 ] = v[ 6 ].Distance( TrunactionMargin(), m_unpackScale );
 
-				float4 vert000 = VoxelCenter( x0, y0, z0 );
+				flink::float4 vert000 = VoxelCenter( x0, y0, z0 );
 				unsigned i000 = Index3Dto1D( x0, y0, z0, Resolution() );
 
 				if( v[ 3 ].Weight() > 0 && d[ 2 ] * d[ 3 ] < 0.0f )
 					VB.push_back( Vertex
 					(
 						3 * i000,
-						vert000.x + lerp( 0.0f, vLen, v[ 2 ].Weight() * abs( d[ 3 ] ), v[ 3 ].Weight() * abs( d[ 2 ] ) ),
+						vert000.x + flink::lerp( 0.0f, VoxelLength(), v[ 2 ].Weight() * abs( d[ 3 ] ), v[ 3 ].Weight() * abs( d[ 2 ] ) ),
 						vert000.y,
 						vert000.z
 					));
@@ -477,7 +513,7 @@ void kppl::HostVolume::Triangulate( char const * outOBJ ) const
 					(
 						3 * i000 + 1,
 						vert000.x,
-						vert000.y + lerp( 0.0f, vLen, v[ 2 ].Weight() * abs( d[ 6 ] ), v[ 6 ].Weight() * abs( d[ 2 ] ) ),
+						vert000.y + flink::lerp( 0.0f, VoxelLength(), v[ 2 ].Weight() * abs( d[ 6 ] ), v[ 6 ].Weight() * abs( d[ 2 ] ) ),
 						vert000.z
 					));
 				
@@ -487,7 +523,7 @@ void kppl::HostVolume::Triangulate( char const * outOBJ ) const
 						3 * i000 + 2,
 						vert000.x,
 						vert000.y,
-						vert000.z + lerp( 0.0f, vLen, v[ 2 ].Weight() * abs( d[ 1 ] ), v[ 1 ].Weight() * abs( d[ 2 ] ) )
+						vert000.z + flink::lerp( 0.0f, VoxelLength(), v[ 2 ].Weight() * abs( d[ 1 ] ), v[ 1 ].Weight() * abs( d[ 2 ] ) )
 					));
 
 				// Generate indices
@@ -501,10 +537,10 @@ void kppl::HostVolume::Triangulate( char const * outOBJ ) const
 					z0 == resMinus1 )
 					continue;
 
-				d[ 0 ] = v[ 0 ].Distance( TrunactionMargin() );
-				d[ 4 ] = v[ 4 ].Distance( TrunactionMargin() );
-				d[ 5 ] = v[ 5 ].Distance( TrunactionMargin() );
-				d[ 7 ] = v[ 7 ].Distance( TrunactionMargin() );
+				d[ 0 ] = v[ 0 ].Distance( TrunactionMargin(), m_unpackScale );
+				d[ 4 ] = v[ 4 ].Distance( TrunactionMargin(), m_unpackScale );
+				d[ 5 ] = v[ 5 ].Distance( TrunactionMargin(), m_unpackScale );
+				d[ 7 ] = v[ 7 ].Distance( TrunactionMargin(), m_unpackScale );
 
 				int lutIdx = 0;
 				for( int i = 0; i < 8; i++ )
@@ -529,7 +565,7 @@ void kppl::HostVolume::Triangulate( char const * outOBJ ) const
 				for( int i = 0; i < triTable[ lutIdx ][ 0 ]; i++ )
 					IB.push_back( localToGlobal[ triTable[ lutIdx ][ i + 1 ] ] );
 			}
-
+			
 	std::sort( VB.begin(), VB.end(), vertexCmp );
 
 	Vertex dummy;
@@ -573,7 +609,7 @@ bool kppl::HostVolume::IndicesAreValid( int x, int y, int z, int resolution )
 // static
 unsigned kppl::HostVolume::Index3Dto1D( unsigned x, unsigned y, unsigned z, unsigned resolution )
 {
-	assert( IndicesAreValid( x, y, z ) );
+	assert( IndicesAreValid( x, y, z, resolution ) );
 	assert( resolution <= 1024 );
 
 	return ( z * resolution + y ) * resolution + x;

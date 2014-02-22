@@ -9,11 +9,11 @@ implement some missing functions.
 
 #include <DirectXMath.h>
 
+using namespace DirectX;
+
 
 
 namespace flink {
-
-using namespace DirectX;
 
 // abbreviated type names
 
@@ -54,58 +54,11 @@ inline float4x4 store( matrix m )
 	return result;
 }
 
-// arithmetic operators
-
-inline vector operator*( vector v, matrix m )
-{
-	return XMVector4Transform( v, m );
-}
-
 // extra functions
 
 inline vector homogenize( vector v )
 {
 	return v / XMVectorPermute< 3, 3, 3, 3 >( v, v );
-}
-
-inline float4 operator+( float4 const & a, float4 const & b )
-{
-	return float4
-	(
-		a.x + b.x,
-		a.y + b.y,
-		a.z + b.z,
-		a.w + b.w
-	);
-}
-
-inline float4 operator-( float4 const & a, float4 const & b )
-{
-	return float4
-	(
-		a.x - b.x,
-		a.y - b.y,
-		a.z - b.z,
-		a.w - b.w
-	);
-}
-
-inline float4 operator*( float4 v, float s )
-{
-	return float4
-	(
-		v.x * s,
-		v.y * s,
-		v.z * s,
-		v.w * s
-	);
-}
-
-inline float4 operator/( float4 v, float s )
-{
-	assert( s != 0.0f );
-
-	return v * ( 1.0f / s );
 }
 
 inline float dot( float4 const & a, float4 const & b )
@@ -124,12 +77,22 @@ inline float lerp( float a, float b, float weightA, float weightB )
 	return ( a * weightA + b * weightB ) / ( weightA + weightB );
 }
 
-inline float4 lerp( float4 const & a, float4 const & b, float weightA, float weightB )
-{
-	assert( weightA > 0.0f );
-	assert( weightB > 0.0f );
-
-	return ( a * weightA + b * weightB ) / ( weightA + weightB );
 }
 
+// arithmetic operators
+
+inline flink::vector operator*( flink::vector v, flink::matrix m )
+{
+	return XMVector4Transform( v, m );
+}
+
+inline flink::float4 operator-( flink::float4 const & a, flink::float4 const & b )
+{
+	return flink::float4
+	(
+		a.x - b.x,
+		a.y - b.y,
+		a.z - b.z,
+		a.w - b.w
+	);
 }

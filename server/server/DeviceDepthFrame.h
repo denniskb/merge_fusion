@@ -2,8 +2,6 @@
 
 #include <thrust/device_vector.h>
 
-#include "KernelDepthFrame.h"
-
 
 
 namespace kppl {
@@ -15,10 +13,14 @@ class DeviceDepthFrame
 public:
 	explicit DeviceDepthFrame( HostDepthFrame const & copy );
 
+	int Width() const;
+	int Height() const;
+	
+	float * Data();
+	float const * Data() const;
+
 	DeviceDepthFrame & operator<<( HostDepthFrame const & rhs );
 	void operator>>( HostDepthFrame & outFrame ) const;
-
-	KernelDepthFrame KernelObject() const;
 
 private:
 	thrust::device_vector< float > m_data;

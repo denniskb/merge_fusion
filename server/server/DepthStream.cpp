@@ -5,11 +5,8 @@
 #include <utility>
 #include <vector>
 
-#include "flink.h"
 #include "HostDepthFrame.h"
 #include "util.h"
-
-using namespace flink;
 
 
 
@@ -56,7 +53,7 @@ kppl::DepthStream::~DepthStream()
 bool kppl::DepthStream::NextFrame
 (
 	kppl::HostDepthFrame & outFrame,
-	float4x4 & outView
+	flink::float4x4 & outView
 )
 {
 	if( m_iFrame >= m_nFrames )

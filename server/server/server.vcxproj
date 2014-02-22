@@ -11,16 +11,19 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="cuda_directives.h" />
     <ClInclude Include="DeviceVolume.h" />
+    <ClInclude Include="force_nvcc.h" />
     <ClInclude Include="HostDepthFrame.h" />
     <ClInclude Include="DepthStream.h" />
     <ClInclude Include="DeviceDepthFrame.h" />
     <ClInclude Include="flink.h" />
-    <ClInclude Include="KernelDepthFrame.h" />
+    <ClInclude Include="KernelDepthFrame.cuh" />
+    <ClInclude Include="KernelVolume.cuh" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="util.h" />
     <ClInclude Include="HostVolume.h" />
-    <ClInclude Include="Voxel.h" />
+    <ClInclude Include="Voxel.m" />
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="DeviceDepthFrame.cu">
@@ -36,7 +39,9 @@
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="util.cpp" />
     <ClCompile Include="HostVolume.cpp" />
-    <ClCompile Include="Voxel.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="helper_math_ext.cuh" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{6372D9A0-C97E-4758-8039-31C3B26F0963}</ProjectGuid>
@@ -75,15 +80,22 @@
       <AdditionalDependencies />
     </Link>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(CUDA_PATH)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(CUDA_PATH)\include;$(NVCUDASAMPLES_ROOT)\common\inc</AdditionalIncludeDirectories>
     </ClCompile>
+    <CudaCompile>
+      <Include>$(CUDA_PATH)\include;$(NVCUDASAMPLES_ROOT)\common\inc</Include>
+    </CudaCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile />
     <Link />
     <ClCompile>
-      <AdditionalIncludeDirectories>$(CUDA_PATH)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(CUDA_PATH)\include;$(NVCUDASAMPLES_ROOT)\common\inc</AdditionalIncludeDirectories>
     </ClCompile>
+    <CudaCompile>
+      <Include>$(CUDA_PATH)\include;$(NVCUDASAMPLES_ROOT)\common\inc</Include>
+      <PtxAsOptionV>false</PtxAsOptionV>
+    </CudaCompile>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

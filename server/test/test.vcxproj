@@ -44,7 +44,7 @@
     <ClCompile />
     <Link />
     <ClCompile>
-      <AdditionalIncludeDirectories>$(BOOST_ROOT);..;$(CUDA_PATH)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(BOOST_ROOT);..;$(CUDA_PATH)\include;$(NVCUDASAMPLES_ROOT)\common\inc</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(BOOST_LIB_PATH_X64);$(CUDA_PATH)\lib\x64</AdditionalLibraryDirectories>
@@ -59,7 +59,7 @@
       <AdditionalDependencies>cudart.lib</AdditionalDependencies>
     </Link>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(BOOST_ROOT);..;$(CUDA_PATH)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(BOOST_ROOT);..;$(CUDA_PATH)\include;$(NVCUDASAMPLES_ROOT)\common\inc</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -76,6 +76,9 @@
     <ProjectReference Include="..\server\server.vcxproj">
       <Project>{6372d9a0-c97e-4758-8039-31c3b26f0963}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="util.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
