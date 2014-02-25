@@ -40,9 +40,11 @@ public:
 		flink::float4x4 const & viewProjection
 	);
 
+	void Triangulate( char const * outObj ) const;
+
 private:
 	// stupid thrust doesn't recognize Voxel as a POD
-	thrust::device_vector< short > m_data;
+	thrust::device_vector< unsigned > m_data;
 	int m_res;
 	float m_sideLen;
 	float m_truncMargin;

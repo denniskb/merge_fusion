@@ -64,3 +64,8 @@ inline __device__ float4 homogenize( float4 const & v )
 {
 	return v / v.w;
 }
+
+inline __device__ float lerp( float a, float b, float weightA, float weightB )
+{
+	return ( a * weightA + b * weightB ) / ( weightA + weightB );
+}

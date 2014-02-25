@@ -36,8 +36,11 @@ public:
 	/*
 	x, y and z map directly to the world coordinate system axes.
 	*/
-	Voxel const & operator()( int x, int y, int z ) const;
-	Voxel & operator()( int x, int y, int z );
+	Voxel operator()( int x, int y, int z ) const;
+	void operator()( int x, int y, int z, Voxel v );
+
+	Voxel * Data();
+	Voxel const * Data() const;
 
 	bool operator==( HostVolume const & rhs ) const;
 	/*
@@ -68,6 +71,11 @@ public:
 	*/
 	void Triangulate( char const * outOBJ ) const;
 
+	/*
+	LUT used for Triangulate
+	*/
+	static int const * TriTable();
+
 private:
 	HostVolume & operator=( HostVolume const & rhs );
 
@@ -80,8 +88,6 @@ private:
 	//cached values
 	float const m_voxelLen;
 	float const m_resOver2MinusPoint5TimesVoxelLenNeg;
-	float const m_packScale;
-	float const m_unpackScale;
 
 	static bool IndicesAreValid( int x, int y, int z, int resolution );
 	static unsigned Index3Dto1D( unsigned x, unsigned y, unsigned z, unsigned resolution );

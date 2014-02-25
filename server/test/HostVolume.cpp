@@ -32,11 +32,7 @@ BOOST_AUTO_TEST_CASE( getset )
 	v.Update( 1.0f, 1.0f );
 	BOOST_REQUIRE( vol( 2, 7, 1 ) != v );
 
-	vol( 1, 1, 1 ) = v;
-	BOOST_REQUIRE( vol( 1, 1, 1 ) == v );
-
-	v.Update( 0.0f, 1.0f );
-	vol( 1, 1, 1 ).Update( 0.0f, 1.0f );
+	vol( 1, 1, 1, v );
 	BOOST_REQUIRE( vol( 1, 1, 1 ) == v );
 }
 
@@ -49,11 +45,15 @@ BOOST_AUTO_TEST_CASE( op_equals )
 	BOOST_REQUIRE( vol1 == vol2 );
 	BOOST_REQUIRE( ! ( vol1 == vol3 ) );
 
-	vol1( 0, 0, 0 ).Update( 0.02f, 0.02f );
+	kppl::Voxel v = vol1( 0, 0, 0 );
+	v.Update( 0.02f, 0.02f );
+	vol1( 0, 0, 0, v );
 	
 	BOOST_REQUIRE( ! ( vol1 == vol2 ) );
 
-	vol2( 0, 0, 0 ).Update( 0.02f, 0.02f );
+	v = vol2( 0, 0, 0 );
+	v.Update( 0.02f, 0.02f );
+	vol2( 0, 0, 0, v );
 
 	BOOST_REQUIRE( vol1 == vol2 );
 }

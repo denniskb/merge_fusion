@@ -9,3 +9,6 @@
 
 /test/bin
 /test/obj
+
+/perf/bin
+/perf/obj
