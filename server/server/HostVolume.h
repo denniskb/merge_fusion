@@ -36,18 +36,18 @@ public:
 	/*
 	x, y and z map directly to the world coordinate system axes.
 	*/
-	Voxel operator()( int x, int y, int z ) const;
-	void operator()( int x, int y, int z, Voxel v );
+	//Voxel operator()( int x, int y, int z ) const;
+	//void operator()( int x, int y, int z, Voxel v );
 
-	Voxel * Data();
-	Voxel const * Data() const;
+	std::vector< Voxel > const & Voxels() const;
+	std::vector< int > const & VoxelIndices() const;
 
-	bool operator==( HostVolume const & rhs ) const;
+	//bool operator==( HostVolume const & rhs ) const;
 	/*
 	Returns true iff all voxels of this and rhs are pairwise 'close'.
 	(See Voxel::Close for details.)
 	*/
-	bool Close( HostVolume const & rhs, float delta ) const;
+	//bool Close( HostVolume const & rhs, float delta ) const;
 
 	/*
 	Returns the world position of the voxel at index (x, y, z)
@@ -62,14 +62,15 @@ public:
 		HostDepthFrame const & frame,
 		flink::float4 const & eye,
 		flink::float4 const & forward,
-		flink::float4x4 const & viewProjection
+		flink::float4x4 const & viewProjection,
+		flink::float4x4 const & viewToWorld
 	);
 
 	/*
 	Marching cubes ported from http://paulbourke.net/geometry/polygonise/
 	@param outOBJ path to a .obj file.
 	*/
-	void Triangulate( char const * outOBJ ) const;
+	//void Triangulate( char const * outOBJ ) const;
 
 	/*
 	LUT used for Triangulate
@@ -79,7 +80,9 @@ public:
 private:
 	HostVolume & operator=( HostVolume const & rhs );
 
-	std::vector< Voxel > m_data;
+	std::vector< int > m_voxelIndices;
+	std::vector< Voxel > m_voxels;
+
 	int const m_res;
 	float const m_sideLen;
 	float const m_truncMargin;

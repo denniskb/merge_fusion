@@ -9,7 +9,8 @@ inline void ComputeMatrices
 	flink::float4x4 const & view,
 	flink::float4 & outEye,
 	flink::float4 & outForward,
-	flink::float4x4 & outViewProj
+	flink::float4x4 & outViewProj,
+	flink::float4x4 & outViewToWorld
 )
 {
 	flink::matrix _view = flink::load( & view );
@@ -22,4 +23,5 @@ inline void ComputeMatrices
 	outEye = flink::store( _eye );
 	outForward = flink::store( _forward );
 	outViewProj = flink::store( _viewProj );
+	outViewToWorld = flink::store( _viewInv );
 }

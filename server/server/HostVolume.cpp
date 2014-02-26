@@ -22,8 +22,6 @@ kppl::HostVolume::HostVolume( int resolution, float sideLength, float truncation
 	assert( resolution > 0 );
 	assert( sideLength > 0.0f );
 	assert( truncationMargin > 0.0f );
-
-	m_data.resize( resolution * resolution * resolution );
 }
 
 
@@ -49,7 +47,7 @@ float kppl::HostVolume::TrunactionMargin() const
 }
 
 
-
+#if 0
 kppl::Voxel kppl::HostVolume::operator()( int x, int y, int z ) const
 {
 	assert( IndicesAreValid( x, y, z, Resolution() ) );
@@ -63,19 +61,21 @@ void kppl::HostVolume::operator()( int x, int y, int z, Voxel v )
 
 	m_data[ Index3Dto1D( x, y, z, Resolution() ) ] = v;
 }
+#endif
 
-kppl::Voxel * kppl::HostVolume::Data()
+std::vector< kppl::Voxel > const & kppl::HostVolume::Voxels() const
 {
-	return & m_data[ 0 ];
+	return m_voxels;
 }
 
-kppl::Voxel const * kppl::HostVolume::Data() const
+std::vector< int > const & kppl::HostVolume::VoxelIndices() const
 {
-	return & m_data[ 0 ];
+	return m_voxelIndices;
 }
 
 
 
+#if 0
 bool kppl::HostVolume::operator==( HostVolume const & rhs ) const
 {
 	if( this == & rhs )
@@ -102,12 +102,12 @@ bool kppl::HostVolume::Close( HostVolume const & rhs, float delta ) const
 		return false;
 
 	for( int i = 0; i < m_data.size(); i++ )
-		if( ! m_data[ i ].Close( rhs.m_data[ i ], TrunactionMargin(), delta ) )
+		if( ! m_voxels[ i ].Close( rhs.m_voxels[ i ], TrunactionMargin(), delta ) )
 			return false;
 
 	return true;
 }
-
+#endif
 
 
 flink::float4 kppl::HostVolume::VoxelCenter( int x, int y, int z ) const
@@ -128,54 +128,123 @@ void kppl::HostVolume::Integrate
 	kppl::HostDepthFrame const & frame, 
 	flink::float4 const & eye,
 	flink::float4 const & forward,
-	flink::float4x4 const & viewProjection
+	flink::float4x4 const & viewProjection,
+	flink::float4x4 const & viewToWorld
 )
 {
 	assert( 0 == Resolution() % 2 );
 	assert( m_nUpdates < Voxel::MAX_WEIGHT() );
 
-	flink::matrix _viewProj = flink::load( & viewProjection );
-	flink::vector _ndcToUV = flink::set( frame.Width() / 2.0f, frame.Height() / 2.0f, 0, 0 );
+	{
+		m_voxelIndices.clear();
 
-	for( int z = 0; z < Resolution(); z++ )
-		for( int y = 0; y < Resolution(); y++ )
-			for( int x = 0; x < Resolution(); x++ )
+		flink::float4 volMax( SideLength() / 2.0f, SideLength() / 2.0f, SideLength() / 2.0f, 1.0f );
+		flink::float4 volMin( -volMax.x, -volMax.y, -volMax.z, 1.0f );
+
+		flink::matrix _viewToWorld = flink::load( & viewToWorld );
+
+		for( int y = 0; y < frame.Height(); y++ )
+			for( int x = 0; x < frame.Width(); x++ )
 			{
-				flink::float4 centerWorld = VoxelCenter( x, y, z );
-				flink::vector _centerWorld = flink::load( & centerWorld );
-
-				flink::vector _centerNDC = flink::homogenize( _centerWorld * _viewProj );
-
-				flink::vector _centerScreen = _centerNDC * _ndcToUV + _ndcToUV;
-				flink::float4 centerScreen = flink::store( _centerScreen );
-
-				int u = (int) centerScreen.x;
-				int v = (int) centerScreen.y;
-
-				if( u < 0 || u >= frame.Width() || v < 0 || v >= frame.Height() )
+				float depth = frame( x, y );
+				if( 0.0f == depth )
 					continue;
 
-				float depth = frame( u, frame.Height() - v - 1 );
+				float xNdc = ( x - 319.5f ) / 319.5f;
+				float yNdc = ( 239.5f - y ) / 239.5f;
 
-				if( depth == 0.0f )
+				flink::float4 pxView
+				(
+					xNdc * 0.54698249f * depth,
+					yNdc * 0.41023687f * depth,
+					-depth,
+					1.0f
+				);
+
+				flink::vector _pxView = flink::load( & pxView );
+				flink::vector _pxWorld = _pxView * _viewToWorld;
+
+				flink::float4 pxWorld = flink::store( _pxWorld );
+
+				// TODO: Write convenience functions for these ops
+				if( pxWorld.x < volMin.x || pxWorld.y < volMin.y || pxWorld.z < volMin.z ||
+					pxWorld.x >= volMax.x || pxWorld.y >= volMax.y || pxWorld.z >= volMax.z )
 					continue;
 
-				float dist = flink::dot( centerWorld - eye, forward );
-				float signedDist = depth - dist;
-				
-				if( dist < 0.8f || signedDist < -TrunactionMargin() )
-					continue;
+				int volx = std::min< int >( (int) ( ( pxWorld.x - volMin.x ) / SideLength() * Resolution() ), Resolution() - 1 );
+				int voly = std::min< int >( (int) ( ( pxWorld.y - volMin.y ) / SideLength() * Resolution() ), Resolution() - 1 );
+				int volz = std::min< int >( (int) ( ( pxWorld.z - volMin.z ) / SideLength() * Resolution() ), Resolution() - 1 );
 
-				Voxel vx = (*this)( x, y, z );
-				vx.Update( signedDist, TrunactionMargin() );
-				(*this)( x, y, z, vx );
+				// TODO: Splat entire bounding box
+				m_voxelIndices.push_back( Index3Dto1D( volx, voly, volz, Resolution() ) );
 			}
+	}
+
+	{
+		std::sort( m_voxelIndices.begin(), m_voxelIndices.end() );
+		int i = 0;
+		for( int j = 1; j < m_voxelIndices.size(); j++ )
+		{
+			int jj = m_voxelIndices[ j ];
+			if( m_voxelIndices[ i ] != jj )
+			{
+				m_voxelIndices[ i + 1 ] = jj;
+				i ++;
+			}
+		}
+	}
+
+	{
+		m_voxels.resize( m_voxelIndices.size() );
+
+		flink::matrix _viewProj = flink::load( & viewProjection );
+		flink::vector _ndcToUV = flink::set( frame.Width() / 2.0f, frame.Height() / 2.0f, 0, 0 );
+		
+		int const slice = Resolution() * Resolution();
+
+		for( int i = 0; i < m_voxelIndices.size(); i++ )
+		{
+			int vxIdx = m_voxelIndices[ i ];
+			int z = vxIdx / slice;
+			int y = ( vxIdx - z * slice ) / Resolution();
+			int x = vxIdx % Resolution();
+
+			flink::float4 centerWorld = VoxelCenter( x, y, z );
+			flink::vector _centerWorld = flink::load( & centerWorld );
+
+			flink::vector _centerNDC = flink::homogenize( _centerWorld * _viewProj );
+
+			flink::vector _centerScreen = _centerNDC * _ndcToUV + _ndcToUV;
+			flink::float4 centerScreen = flink::store( _centerScreen );
+
+			int u = (int) centerScreen.x;
+			int v = (int) centerScreen.y;
+
+			if( u < 0 || u >= frame.Width() || v < 0 || v >= frame.Height() )
+				continue;
+
+			float depth = frame( u, frame.Height() - v - 1 );
+
+			if( depth == 0.0f )
+				continue;
+
+			float dist = flink::dot( centerWorld - eye, forward );
+			float signedDist = depth - dist;
+				
+			if( dist < 0.8f || signedDist < -TrunactionMargin() )
+				continue;
+
+			Voxel vx;
+			vx.Update( signedDist, TrunactionMargin() );
+			m_voxels[ i ] = vx;
+		}
+	}
 
 	m_nUpdates++;
 }
 
 
-
+#if 0
 void kppl::HostVolume::Triangulate( char const * outOBJ ) const
 {
 #pragma region Type Defs
@@ -337,6 +406,7 @@ void kppl::HostVolume::Triangulate( char const * outOBJ ) const
 
 	fclose( file );
 }
+#endif
 
 // static
 int const * kppl::HostVolume::TriTable()

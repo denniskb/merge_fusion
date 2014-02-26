@@ -24,11 +24,11 @@ BOOST_AUTO_TEST_CASE( Integrate )
 	kppl::DepthStream ds( ( boost::filesystem::current_path() / "../test/content/imrod_v2.depth" ).string().c_str() );
 
 	kppl::HostDepthFrame depth;
-	flink::float4x4 view, viewProj;
+	flink::float4x4 view, viewProj, viewToWorld;
 	flink::float4 eye, forward;
 
 	ds.NextFrame( depth, view );
-	ComputeMatrices( view, eye, forward, viewProj );
+	ComputeMatrices( view, eye, forward, viewProj, viewToWorld );
 	kppl::DeviceDepthFrame ddepth( depth );
 
 	kppl::DeviceVolume test( 512, 2.0f, 0.04f );

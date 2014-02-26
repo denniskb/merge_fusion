@@ -61,6 +61,11 @@ inline vector homogenize( vector v )
 	return v / XMVectorPermute< 3, 3, 3, 3 >( v, v );
 }
 
+inline vector normalize( vector v )
+{
+	return XMVector4Normalize( v );
+}
+
 inline float dot( float4 const & a, float4 const & b )
 {
 	return

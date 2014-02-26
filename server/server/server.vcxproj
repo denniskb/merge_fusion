@@ -26,12 +26,6 @@
     <ClInclude Include="Voxel.m" />
   </ItemGroup>
   <ItemGroup>
-    <CudaCompile Include="DeviceDepthFrame.cu">
-      <FileType>CppCode</FileType>
-    </CudaCompile>
-    <CudaCompile Include="DeviceVolume.cu">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
-    </CudaCompile>
     <ClCompile Include="HostDepthFrame.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
@@ -42,6 +36,16 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="helper_math_ext.cuh" />
+  </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="DeviceDepthFrame.cu">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </CudaCompile>
+    <CudaCompile Include="DeviceVolume.cu">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </CudaCompile>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{6372D9A0-C97E-4758-8039-31C3B26F0963}</ProjectGuid>

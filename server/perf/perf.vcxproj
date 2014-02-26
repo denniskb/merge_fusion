@@ -61,7 +61,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\test\main.cpp" />
-    <ClCompile Include="DeviceVolume.cpp" />
+    <ClCompile Include="DeviceVolume.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\server\server.vcxproj">

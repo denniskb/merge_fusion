@@ -73,16 +73,16 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="helper_math_ext.cuh">
+      <Filter>Header Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
     <CudaCompile Include="DeviceDepthFrame.cu">
       <Filter>Source Files</Filter>
     </CudaCompile>
     <CudaCompile Include="DeviceVolume.cu">
       <Filter>Source Files</Filter>
     </CudaCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="helper_math_ext.cuh">
-      <Filter>Header Files</Filter>
-    </None>
   </ItemGroup>
 </Project>
