@@ -122,7 +122,7 @@
     <Content Include="GameThumbnail.png" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\poly2depthContent\kinect2depthContent.contentproj">
+    <ProjectReference Include="..\kinect2depthContent\kinect2depthContent.contentproj">
       <Name>kinect2depthContent %28Content%29</Name>
       <XnaReferenceType>Content</XnaReferenceType>
       <Project>{986817AB-E12E-4AE7-B660-A7A8AF677267}</Project>
