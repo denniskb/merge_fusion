@@ -12,3 +12,6 @@
 
 /perf/bin
 /perf/obj
+
+/live/bin
+/live/obj

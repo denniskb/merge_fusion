@@ -134,6 +134,8 @@ void kppl::HostVolume::Integrate
 	assert( 0 == Resolution() % 2 );
 	assert( m_nUpdates < Voxel::MAX_WEIGHT() );
 
+	m_data.assign( m_data.size(), Voxel() );
+
 	flink::matrix _viewProj = flink::load( & viewProjection );
 	flink::vector _ndcToUV = flink::set( frame.Width() / 2.0f, frame.Height() / 2.0f, 0, 0 );
 

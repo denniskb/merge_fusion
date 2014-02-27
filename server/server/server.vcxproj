@@ -80,7 +80,7 @@
       <AdditionalDependencies />
     </Link>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(CUDA_PATH)\include;$(NVCUDASAMPLES_ROOT)\common\inc</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(CUDA_PATH)\include;$(NVCUDASAMPLES_ROOT)\common\inc;$(KINECTSDK10_DIR)inc</AdditionalIncludeDirectories>
     </ClCompile>
     <CudaCompile>
       <Include>$(CUDA_PATH)\include;$(NVCUDASAMPLES_ROOT)\common\inc</Include>
@@ -90,7 +90,7 @@
     <ClCompile />
     <Link />
     <ClCompile>
-      <AdditionalIncludeDirectories>$(CUDA_PATH)\include;$(NVCUDASAMPLES_ROOT)\common\inc</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(CUDA_PATH)\include;$(NVCUDASAMPLES_ROOT)\common\inc;$(KINECTSDK10_DIR)inc</AdditionalIncludeDirectories>
     </ClCompile>
     <CudaCompile>
       <Include>$(CUDA_PATH)\include;$(NVCUDASAMPLES_ROOT)\common\inc</Include>
