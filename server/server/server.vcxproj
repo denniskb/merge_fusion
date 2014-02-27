@@ -23,6 +23,7 @@
     <ClInclude Include="Timer.h" />
     <ClInclude Include="util.h" />
     <ClInclude Include="HostVolume.h" />
+    <ClInclude Include="vector.h" />
     <ClInclude Include="Voxel.m" />
   </ItemGroup>
   <ItemGroup>

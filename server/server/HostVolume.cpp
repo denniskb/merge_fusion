@@ -6,6 +6,7 @@
 
 #include "flink.h"
 #include "HostDepthFrame.h"
+#include "util.h"
 #include "Voxel.m"
 
 
@@ -20,6 +21,7 @@ kppl::HostVolume::HostVolume( int resolution, float sideLength, float truncation
 	m_resOver2MinusPoint5TimesVoxelLenNeg( -( resolution / 2 - 0.5f ) * ( sideLength / resolution ) )
 {
 	assert( resolution > 0 );
+	assert( resolution <= 1024 );
 	assert( sideLength > 0.0f );
 	assert( truncationMargin > 0.0f );
 }
@@ -47,67 +49,17 @@ float kppl::HostVolume::TrunactionMargin() const
 }
 
 
-#if 0
-kppl::Voxel kppl::HostVolume::operator()( int x, int y, int z ) const
-{
-	assert( IndicesAreValid( x, y, z, Resolution() ) );
 
-	return m_data[ Index3Dto1D( x, y, z, Resolution() ) ];
-}
-
-void kppl::HostVolume::operator()( int x, int y, int z, Voxel v )
-{
-	assert( IndicesAreValid( x, y, z, Resolution() ) );
-
-	m_data[ Index3Dto1D( x, y, z, Resolution() ) ] = v;
-}
-#endif
-
-std::vector< kppl::Voxel > const & kppl::HostVolume::Voxels() const
-{
-	return m_voxels;
-}
-
-std::vector< int > const & kppl::HostVolume::VoxelIndices() const
+kppl::vector< unsigned > const & kppl::HostVolume::VoxelIndices() const
 {
 	return m_voxelIndices;
 }
 
-
-
-#if 0
-bool kppl::HostVolume::operator==( HostVolume const & rhs ) const
+kppl::vector< unsigned > const & kppl::HostVolume::Voxels() const
 {
-	if( this == & rhs )
-		return true;
-
-	if( Resolution() != rhs.Resolution() ||
-		TrunactionMargin() != rhs.TrunactionMargin() )
-		return false;
-
-	for( int i = 0; i < m_data.size(); i++ )
-		if( m_data[ i ] != rhs.m_data[ i ] )
-			return false;
-
-	return true;
+	return m_voxels;
 }
 
-bool kppl::HostVolume::Close( HostVolume const & rhs, float delta ) const
-{
-	if( this == & rhs )
-		return true;
-
-	if( Resolution() != rhs.Resolution() ||
-		TrunactionMargin() != rhs.TrunactionMargin() )
-		return false;
-
-	for( int i = 0; i < m_data.size(); i++ )
-		if( ! m_voxels[ i ].Close( rhs.m_voxels[ i ], TrunactionMargin(), delta ) )
-			return false;
-
-	return true;
-}
-#endif
 
 
 flink::float4 kppl::HostVolume::VoxelCenter( int x, int y, int z ) const
@@ -136,7 +88,8 @@ void kppl::HostVolume::Integrate
 	assert( m_nUpdates < Voxel::MAX_WEIGHT() );
 
 	{
-		m_voxelIndices.clear();
+		m_voxelIndices.resize( frame.Resolution() );
+		int counter = 0;
 
 		flink::float4 volMax( SideLength() / 2.0f, SideLength() / 2.0f, SideLength() / 2.0f, 1.0f );
 		flink::float4 volMin( -volMax.x, -volMax.y, -volMax.z, 1.0f );
@@ -176,22 +129,27 @@ void kppl::HostVolume::Integrate
 				int volz = std::min< int >( (int) ( ( pxWorld.z - volMin.z ) / SideLength() * Resolution() ), Resolution() - 1 );
 
 				// TODO: Splat entire bounding box
-				m_voxelIndices.push_back( Index3Dto1D( volx, voly, volz, Resolution() ) );
+				m_voxelIndices[ counter++ ] = packInts< 10 >( volx, voly, volz );
 			}
+
+		m_voxelIndices.resize( counter );
 	}
 
 	{
 		std::sort( m_voxelIndices.begin(), m_voxelIndices.end() );
+		
 		int i = 0;
 		for( int j = 1; j < m_voxelIndices.size(); j++ )
 		{
-			int jj = m_voxelIndices[ j ];
+			unsigned jj = m_voxelIndices[ j ];
 			if( m_voxelIndices[ i ] != jj )
 			{
 				m_voxelIndices[ i + 1 ] = jj;
-				i ++;
+				i++;
 			}
 		}
+		
+		m_voxelIndices.resize( i + 1 );
 	}
 
 	{
@@ -200,14 +158,10 @@ void kppl::HostVolume::Integrate
 		flink::matrix _viewProj = flink::load( & viewProjection );
 		flink::vector _ndcToUV = flink::set( frame.Width() / 2.0f, frame.Height() / 2.0f, 0, 0 );
 		
-		int const slice = Resolution() * Resolution();
-
 		for( int i = 0; i < m_voxelIndices.size(); i++ )
 		{
-			int vxIdx = m_voxelIndices[ i ];
-			int z = vxIdx / slice;
-			int y = ( vxIdx - z * slice ) / Resolution();
-			int x = vxIdx % Resolution();
+			unsigned x, y, z;
+			unpackInts< 10 >( m_voxelIndices[ i ], x, y, z );
 
 			flink::float4 centerWorld = VoxelCenter( x, y, z );
 			flink::vector _centerWorld = flink::load( & centerWorld );
@@ -236,7 +190,7 @@ void kppl::HostVolume::Integrate
 
 			Voxel vx;
 			vx.Update( signedDist, TrunactionMargin() );
-			m_voxels[ i ] = vx;
+			m_voxels[ i ] = vx.data;
 		}
 	}
 
@@ -675,28 +629,4 @@ int const * kppl::HostVolume::TriTable()
 #pragma endregion
 
 	return triTable;
-}
-
-
-
-// static
-bool kppl::HostVolume::IndicesAreValid( int x, int y, int z, int resolution )
-{
-	return
-		x >= 0 &&
-		y >= 0 &&
-		z >= 0 &&
-
-		x < resolution &&
-		y < resolution &&
-		z < resolution;
-}
-
-// static
-unsigned kppl::HostVolume::Index3Dto1D( unsigned x, unsigned y, unsigned z, unsigned resolution )
-{
-	assert( IndicesAreValid( x, y, z, resolution ) );
-	assert( resolution <= 1024 );
-
-	return ( z * resolution + y ) * resolution + x;
 }

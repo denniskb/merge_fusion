@@ -45,28 +45,30 @@ int kppl::HostDepthFrame::Resolution() const
 
 
 
-float & kppl::HostDepthFrame::operator()( int x, int y )
-{
-	return m_data[ Index2Dto1D( x, y, Width(), Height() ) ];
-}
-
-float const & kppl::HostDepthFrame::operator()( int x, int y ) const
-{
-	return m_data[ Index2Dto1D( x, y, Width(), Height() ) ];
-}
-
-
-
-#pragma warning( push )
-#pragma warning( disable: 4100 ) // height = unreferenced param in release build
-// static
-int kppl::HostDepthFrame::Index2Dto1D( int x, int y, int width, int height )
+float kppl::HostDepthFrame::operator()( int x, int y ) const
 {
 	assert( x >= 0 );
 	assert( y >= 0 );
-	assert( x < width );
-	assert( y < height );
+	assert( x < Width() );
+	assert( y < Height() );
 
+	return m_data[ Index2Dto1D( x, y, Width() ) ];
+}
+
+float & kppl::HostDepthFrame::operator()( int x, int y )
+{
+	assert( x >= 0 );
+	assert( y >= 0 );
+	assert( x < Width() );
+	assert( y < Height() );
+
+	return m_data[ Index2Dto1D( x, y, Width() ) ];
+}
+
+
+
+// static
+int kppl::HostDepthFrame::Index2Dto1D( int x, int y, int width )
+{
 	return x + y * width;
 }
-#pragma warning( pop )

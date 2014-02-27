@@ -27,7 +27,11 @@ public:
 		return 65535;
 	}
 
-	kppl_both inline Voxel() : m_data( 0 )
+	kppl_both inline Voxel() : data( 0 )
+	{
+	}
+
+	kppl_both inline Voxel( unsigned data ) : data( data )
 	{
 	}
 
@@ -35,12 +39,12 @@ public:
 	{
 		kppl_assert( truncationMargin > 0.0f );
 
-		return UnpackDistance( m_data >> 16, truncationMargin );
+		return UnpackDistance( data >> 16, truncationMargin );
 	}
 	
 	kppl_both inline int Weight() const
 	{
-		return m_data & 0xff;
+		return data & 0xff;
 	}
 
 	kppl_both inline void Update( float newDistance, float truncationMargin )
@@ -52,7 +56,7 @@ public:
 
 		float d = ( w * Distance( truncationMargin ) + clamp( newDistance, -truncationMargin, truncationMargin ) ) / w1;
 
-		m_data = PackDistance( d, truncationMargin ) << 16 | w1;
+		data = PackDistance( d, truncationMargin ) << 16 | w1;
 	}
 
 	/*
@@ -60,12 +64,12 @@ public:
 	*/
 	kppl_host inline bool operator==( Voxel const rhs ) const
 	{
-		return m_data == rhs.m_data;
+		return data == rhs.data;
 	}
 
 	kppl_host inline bool operator!=( Voxel const rhs ) const
 	{
-		return m_data != rhs.m_data;
+		return data != rhs.data;
 	}
 
 	/*
@@ -79,8 +83,8 @@ public:
 			std::abs( Distance( truncationMargin ) - rhs.Distance( truncationMargin ) ) <= delta;
 	}
 
-//private:
-	unsigned m_data;
+	unsigned data;
+
 private:
 	/*
 	Maps distance from [-truncMargin, truncMargin] to [0, 63]

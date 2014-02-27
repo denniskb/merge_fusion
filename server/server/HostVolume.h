@@ -4,7 +4,7 @@ Voxel volume as used in KinectFusion
 
 #pragma once
 
-#include <vector>
+#include "vector.h"
 
 #include "flink.h"
 
@@ -33,25 +33,9 @@ public:
 	float VoxelLength() const;
 	float TrunactionMargin() const;
 
-	/*
-	x, y and z map directly to the world coordinate system axes.
-	*/
-	//Voxel operator()( int x, int y, int z ) const;
-	//void operator()( int x, int y, int z, Voxel v );
+	kppl::vector< unsigned > const & VoxelIndices() const;
+	kppl::vector< unsigned > const & Voxels() const;
 
-	std::vector< Voxel > const & Voxels() const;
-	std::vector< int > const & VoxelIndices() const;
-
-	//bool operator==( HostVolume const & rhs ) const;
-	/*
-	Returns true iff all voxels of this and rhs are pairwise 'close'.
-	(See Voxel::Close for details.)
-	*/
-	//bool Close( HostVolume const & rhs, float delta ) const;
-
-	/*
-	Returns the world position of the voxel at index (x, y, z)
-	*/
 	flink::float4 VoxelCenter( int x, int y, int z ) const;
 
 	/*
@@ -80,8 +64,8 @@ public:
 private:
 	HostVolume & operator=( HostVolume const & rhs );
 
-	std::vector< int > m_voxelIndices;
-	std::vector< Voxel > m_voxels;
+	kppl::vector< unsigned > m_voxelIndices;
+	kppl::vector< unsigned > m_voxels;
 
 	int const m_res;
 	float const m_sideLen;
@@ -91,9 +75,6 @@ private:
 	//cached values
 	float const m_voxelLen;
 	float const m_resOver2MinusPoint5TimesVoxelLenNeg;
-
-	static bool IndicesAreValid( int x, int y, int z, int resolution );
-	static unsigned Index3Dto1D( unsigned x, unsigned y, unsigned z, unsigned resolution );
 };
 
 }
