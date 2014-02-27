@@ -36,7 +36,7 @@ namespace poly2depth
             if (KinectSensor.KinectSensors.Count > 0)
                 if (KinectSensor.KinectSensors[0].Status == KinectStatus.Connected)
                 {
-                    DepthImageFrame frame = KinectSensor.KinectSensors[0].DepthStream.OpenNextFrame(100);
+                    DepthImageFrame frame = KinectSensor.KinectSensors[0].DepthStream.OpenNextFrame(1000);
                     frame.CopyPixelDataTo(cache);
                     frame.Dispose();
 
