@@ -1,0 +1,10 @@
+*.cachefile
+*.suo
+*.user
+desktop.ini
+
+
+/kinect2depth/kinect2depth/bin
+/kinect2depth/kinect2depth/obj
+/kinect2depth/kinect2depthContent/bin
+/kinect2depth/kinect2depthContent/obj

@@ -1,0 +1,24 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual C# Express 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "kinect2depth", "kinect2depth\kinect2depth\kinect2depth.csproj", "{41181603-3F3F-485A-9D1A-90E4CD302520}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "kinect2depthContent", "kinect2depth\kinect2depthContent\kinect2depthContent.contentproj", "{986817AB-E12E-4AE7-B660-A7A8AF677267}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{41181603-3F3F-485A-9D1A-90E4CD302520}.Debug|x86.ActiveCfg = Debug|x86
+		{41181603-3F3F-485A-9D1A-90E4CD302520}.Debug|x86.Build.0 = Debug|x86
+		{41181603-3F3F-485A-9D1A-90E4CD302520}.Release|x86.ActiveCfg = Release|x86
+		{41181603-3F3F-485A-9D1A-90E4CD302520}.Release|x86.Build.0 = Release|x86
+		{986817AB-E12E-4AE7-B660-A7A8AF677267}.Debug|x86.ActiveCfg = Debug|x86
+		{986817AB-E12E-4AE7-B660-A7A8AF677267}.Release|x86.ActiveCfg = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
