@@ -53,7 +53,7 @@ BOOST_AUTO_TEST_CASE( Integrate )
 		if( vx.Weight() > 0 && vx.Distance( v.TrunactionMargin() ) < 0.004f )
 		{
 			unsigned x, y, z;
-			kppl::unpackInts< 10 >( v.VoxelIndices()[ i ], x, y, z );
+			kppl::unpackInts( v.VoxelIndices()[ i ], x, y, z );
 			flink::float4 pos = v.VoxelCenter( x, y, z );
 			fprintf_s( debug, "v %f %f %f\n", pos.x, pos.y, pos.z );
 		}

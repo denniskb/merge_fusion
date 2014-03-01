@@ -129,7 +129,7 @@ void kppl::HostVolume::Integrate
 				int volz = std::min< int >( (int) ( ( pxWorld.z - volMin.z ) / SideLength() * Resolution() ), Resolution() - 1 );
 
 				// TODO: Splat entire bounding box
-				m_voxelIndices[ counter++ ] = packInts< 10 >( volx, voly, volz );
+				m_voxelIndices[ counter++ ] = packInts( volx, voly, volz );
 			}
 
 		m_voxelIndices.resize( counter );
@@ -161,7 +161,7 @@ void kppl::HostVolume::Integrate
 		for( int i = 0; i < m_voxelIndices.size(); i++ )
 		{
 			unsigned x, y, z;
-			unpackInts< 10 >( m_voxelIndices[ i ], x, y, z );
+			unpackInts( m_voxelIndices[ i ], x, y, z );
 
 			flink::float4 centerWorld = VoxelCenter( x, y, z );
 			flink::vector _centerWorld = flink::load( & centerWorld );
