@@ -4,7 +4,7 @@ Voxel volume as used in KinectFusion
 
 #pragma once
 
-#include "vector.h"
+#include <vector>
 
 #include "flink.h"
 
@@ -33,8 +33,8 @@ public:
 	float VoxelLength() const;
 	float TrunactionMargin() const;
 
-	kppl::vector< unsigned > const & VoxelIndices() const;
-	kppl::vector< unsigned > const & Voxels() const;
+	std::vector< unsigned > const & VoxelIndices() const;
+	std::vector< unsigned > const & Voxels() const;
 
 	flink::float4 VoxelCenter( int x, int y, int z ) const;
 
@@ -64,17 +64,13 @@ public:
 private:
 	HostVolume & operator=( HostVolume const & rhs );
 
-	kppl::vector< unsigned > m_voxelIndices;
-	kppl::vector< unsigned > m_voxels;
+	std::vector< unsigned > m_voxelIndices;
+	std::vector< unsigned > m_voxels;
 
 	int const m_res;
 	float const m_sideLen;
 	float const m_truncMargin;
 	int m_nUpdates;
-
-	//cached values
-	float const m_voxelLen;
-	float const m_resOver2MinusPoint5TimesVoxelLenNeg;
 };
 
 }

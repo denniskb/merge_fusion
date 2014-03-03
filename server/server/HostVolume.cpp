@@ -15,10 +15,7 @@ kppl::HostVolume::HostVolume( int resolution, float sideLength, float truncation
 	m_res( resolution ),
 	m_sideLen( sideLength ),
 	m_truncMargin( truncationMargin ),
-	m_nUpdates( 0 ),
-
-	m_voxelLen( sideLength / resolution ),
-	m_resOver2MinusPoint5TimesVoxelLenNeg( -( resolution / 2 - 0.5f ) * ( sideLength / resolution ) )
+	m_nUpdates( 0 )
 {
 	assert( resolution > 0 );
 	assert( resolution <= 1024 );
@@ -40,7 +37,7 @@ float kppl::HostVolume::SideLength() const
 
 float kppl::HostVolume::VoxelLength() const
 {
-	return m_voxelLen;
+	return SideLength() / Resolution();
 }
 
 float kppl::HostVolume::TrunactionMargin() const
@@ -50,12 +47,12 @@ float kppl::HostVolume::TrunactionMargin() const
 
 
 
-kppl::vector< unsigned > const & kppl::HostVolume::VoxelIndices() const
+std::vector< unsigned > const & kppl::HostVolume::VoxelIndices() const
 {
 	return m_voxelIndices;
 }
 
-kppl::vector< unsigned > const & kppl::HostVolume::Voxels() const
+std::vector< unsigned > const & kppl::HostVolume::Voxels() const
 {
 	return m_voxels;
 }
@@ -64,11 +61,18 @@ kppl::vector< unsigned > const & kppl::HostVolume::Voxels() const
 
 flink::float4 kppl::HostVolume::VoxelCenter( int x, int y, int z ) const
 {
+	assert( x >= 0 && x < Resolution() );
+	assert( y >= 0 && y < Resolution() );
+	assert( z >= 0 && z < Resolution() );
+
+	float const halfRes = 0.5f * Resolution();
+	float const halfSideLen = 0.5f * SideLength();
+
 	return flink::float4
 	(
-		x * VoxelLength() + m_resOver2MinusPoint5TimesVoxelLenNeg,
-		y * VoxelLength() + m_resOver2MinusPoint5TimesVoxelLenNeg,
-		z * VoxelLength() + m_resOver2MinusPoint5TimesVoxelLenNeg,
+		( x - halfRes + 0.5f ) / halfRes * halfSideLen,
+		( y - halfRes + 0.5f ) / halfRes * halfSideLen,
+		( z - halfRes + 0.5f ) / halfRes * halfSideLen,
 		1.0f
 	);
 }
