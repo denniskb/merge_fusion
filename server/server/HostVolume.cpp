@@ -11,16 +11,18 @@
 
 
 
-kppl::HostVolume::HostVolume( int resolution, float sideLength, float truncationMargin ) :
+kppl::HostVolume::HostVolume( int resolution, float sideLength, int truncationMargin ) :
 	m_res( resolution ),
 	m_sideLen( sideLength ),
 	m_truncMargin( truncationMargin ),
 	m_nUpdates( 0 )
 {
-	assert( resolution > 0 );
-	assert( resolution <= 1024 );
+	assert( resolution > 0 && resolution <= 1024 );
 	assert( sideLength > 0.0f );
-	assert( truncationMargin > 0.0f );
+	assert( truncationMargin > 0 && truncationMargin <= resolution );
+
+	assert( powerOf2( resolution ) );
+	assert( powerOf2( truncationMargin ) );
 }
 
 
@@ -40,9 +42,9 @@ float kppl::HostVolume::VoxelLength() const
 	return SideLength() / Resolution();
 }
 
-float kppl::HostVolume::TrunactionMargin() const
+float kppl::HostVolume::TruncationMargin() const
 {
-	return m_truncMargin;
+	return m_truncMargin * VoxelLength();
 }
 
 
@@ -189,11 +191,11 @@ void kppl::HostVolume::Integrate
 			float dist = flink::dot( centerWorld - eye, forward );
 			float signedDist = depth - dist;
 				
-			if( dist < 0.8f || signedDist < -TrunactionMargin() )
+			if( dist < 0.8f || signedDist < -TruncationMargin() )
 				continue;
 
 			Voxel vx;
-			vx.Update( signedDist, TrunactionMargin() );
+			vx.Update( signedDist, TruncationMargin() );
 			m_voxels[ i ] = vx.data;
 		}
 	}

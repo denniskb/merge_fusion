@@ -1,7 +1,3 @@
-/*
-Voxel volume as used in KinectFusion
-*/
-
 #pragma once
 
 #include <vector>
@@ -21,17 +17,19 @@ public:
 	/*
 	Creates a cubic voxel volume with resolution^3 voxels and
 	a side length of sideLength meters, centered at the origin.
-	We use a right-handed coordinate system.
-	@precond resolution > 0
+	
+	'truncationMargin' is in voxels.
+	
+	@precond resolution \in [1, 1024] and power of 2
 	@precond sideLength > 0
-	@precond truncationMargin > 0
+	@precond truncationMargin \in [1, resolution] and power of 2
 	*/
-	HostVolume( int resolution, float sideLength, float truncationMargin );
+	HostVolume( int resolution, float sideLength, int truncationMargin );
 
 	int Resolution() const;
 	float SideLength() const;
 	float VoxelLength() const;
-	float TrunactionMargin() const;
+	float TruncationMargin() const; // in meters
 
 	std::vector< unsigned > const & VoxelIndices() const;
 	std::vector< unsigned > const & Voxels() const;
@@ -69,7 +67,7 @@ private:
 
 	int const m_res;
 	float const m_sideLen;
-	float const m_truncMargin;
+	int const m_truncMargin;
 	int m_nUpdates;
 };
 

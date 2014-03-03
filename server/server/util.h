@@ -16,4 +16,9 @@ inline void unpackInts( unsigned packedInt, unsigned & outX, unsigned & outY, un
 	outX = packedInt & 0x3ff;
 }
 
+inline bool powerOf2( int x )
+{
+	return x > 0 && ! ( x & ( x - 1 ) );
+}
+
 }

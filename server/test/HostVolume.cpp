@@ -27,7 +27,7 @@ BOOST_AUTO_TEST_CASE( Integrate )
 	all voxels near surface are stored as vertices to an .obj
 	*/
 
-	kppl::HostVolume v( 512, 2.0f, 0.02f );
+	kppl::HostVolume v( 512, 2.0f, 4 );
 	kppl::DepthStream ds( ( boost::filesystem::current_path() / "content/imrod_v2.depth" ).string().c_str() );
 
 	kppl::HostDepthFrame depth;
@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_CASE( Integrate )
 	for( int i = 0; i < v.Voxels().size(); i++ )
 	{
 		kppl::Voxel vx( v.Voxels()[ i ] );
-		if( vx.Weight() > 0 && vx.Distance( v.TrunactionMargin() ) < 0.004f )
+		if( vx.Weight() > 0 && vx.Distance( v.TruncationMargin() ) < 0.004f )
 		{
 			unsigned x, y, z;
 			kppl::unpackInts( v.VoxelIndices()[ i ], x, y, z );
