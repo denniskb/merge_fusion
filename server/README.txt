@@ -3,6 +3,7 @@ Requires:
 - Boost 1.55.0 
 - CUDA 5.5 and
 - a Nvidia GPU with compute capability >= 3.0
+- Kinect SDK (Toolkit and Runtime are optional)
 
 Build instructions follow.
 
@@ -28,3 +29,9 @@ CUDA
 2. During installation select "user defined" and only check
    "Toolkit" and "Samples"
 3. Should work out of the box ;)
+
+Kinect SDK
+----------
+1. Download and install the Kinect SDK version 1.8
+   (the "Toolkit" and "Runtime" are optional).
+2. Should work out of the box ;)

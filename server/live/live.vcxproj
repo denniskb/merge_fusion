@@ -11,8 +11,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{3BA94A62-E12C-428B-B53C-3D6D4CBD76AE}</ProjectGuid>
-    <RootNamespace>perf</RootNamespace>
+    <ProjectGuid>{F1597F74-F995-4739-9B15-009009FAD8E1}</ProjectGuid>
+    <RootNamespace>live</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -25,8 +25,8 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v110</PlatformToolset>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -40,31 +40,32 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <ClCompile>
-      <AdditionalIncludeDirectories>$(BOOST_ROOT);..;$(CUDA_PATH)\include;$(NVCUDASAMPLES_ROOT)\common\inc</AdditionalIncludeDirectories>
-    </ClCompile>
+    <ClCompile />
     <Link />
+    <ClCompile>
+      <AdditionalIncludeDirectories>..;$(CUDA_PATH)\include;$(NVCUDASAMPLES_ROOT)\common\inc;$(KINECTSDK10_DIR)inc</AdditionalIncludeDirectories>
+    </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(BOOST_LIB_PATH_X64);$(CUDA_PATH)\lib\x64;$(KINECTSDK10_DIR)lib\amd64</AdditionalLibraryDirectories>
       <AdditionalDependencies>cudart.lib;Kinect10.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(CUDA_PATH)\lib\x64;$(KINECTSDK10_DIR)lib\amd64</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <ClCompile>
-      <AdditionalIncludeDirectories>$(BOOST_ROOT);..;$(CUDA_PATH)\include;$(NVCUDASAMPLES_ROOT)\common\inc</AdditionalIncludeDirectories>
-    </ClCompile>
+    <ClCompile />
     <Link />
+    <ClCompile>
+      <AdditionalIncludeDirectories>..;$(CUDA_PATH)\include;$(NVCUDASAMPLES_ROOT)\common\inc;$(KINECTSDK10_DIR)inc</AdditionalIncludeDirectories>
+    </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(BOOST_LIB_PATH_X64);$(CUDA_PATH)\lib\x64;$(KINECTSDK10_DIR)lib\amd64</AdditionalLibraryDirectories>
       <AdditionalDependencies>cudart.lib;Kinect10.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(CUDA_PATH)\lib\x64;$(KINECTSDK10_DIR)lib\amd64</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\test\main.cpp" />
-    <ClCompile Include="DeviceVolume.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="util.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\server\server.vcxproj">

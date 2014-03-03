@@ -304,6 +304,8 @@ void kppl::DeviceVolume::Integrate
 {
 	assert( m_nUpdates < Voxel::MAX_WEIGHT() );
 
+	m_data.assign( m_data.size(), 0 );
+
 	IntegrateKernel<<< 64, 128 >>>
 	(
 		KernelVolume( * this ),
