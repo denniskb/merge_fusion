@@ -31,10 +31,14 @@ public:
 	float VoxelLength() const;
 	float TruncationMargin() const; // in meters
 
+	flink::float4 Minimum() const;
+	flink::float4 Maximum() const;
+
 	std::vector< unsigned > const & VoxelIndices() const;
 	std::vector< unsigned > const & Voxels() const;
 
 	flink::float4 VoxelCenter( int x, int y, int z ) const;
+	flink::float4 BrickIndex( flink::float4 const & world ) const;
 
 	/*
 	Integrates a depth frame into the volume using the KinectFusion algorithm.

@@ -49,6 +49,34 @@ float kppl::HostVolume::TruncationMargin() const
 
 
 
+flink::float4 kppl::HostVolume::Minimum() const
+{
+	float minimum = -SideLength() * 0.5f;
+
+	return flink::float4
+	(
+		minimum,
+		minimum,
+		minimum,
+		1.0f
+	);
+}
+
+flink::float4 kppl::HostVolume::Maximum() const
+{
+	float maximum = 0.5f * SideLength();
+
+	return flink::float4
+	(
+		maximum,
+		maximum,
+		maximum,
+		1.0f
+	);
+}
+
+
+
 std::vector< unsigned > const & kppl::HostVolume::VoxelIndices() const
 {
 	return m_voxelIndices;
@@ -67,16 +95,23 @@ flink::float4 kppl::HostVolume::VoxelCenter( int x, int y, int z ) const
 	assert( y >= 0 && y < Resolution() );
 	assert( z >= 0 && z < Resolution() );
 
-	float const halfRes = 0.5f * Resolution();
-	float const halfSideLen = 0.5f * SideLength();
+	return 
+		Minimum() +
+		flink::float4
+		( 
+			( x + 0.5f ) / Resolution(), 
+			( y + 0.5f ) / Resolution(), 
+			( z + 0.5f ) / Resolution(), 
+			1.0f
+		) *
+		( Maximum() - Minimum() );
+}
 
-	return flink::float4
-	(
-		( x - halfRes + 0.5f ) / halfRes * halfSideLen,
-		( y - halfRes + 0.5f ) / halfRes * halfSideLen,
-		( z - halfRes + 0.5f ) / halfRes * halfSideLen,
-		1.0f
-	);
+flink::float4 kppl::HostVolume::BrickIndex( flink::float4 const & world ) const
+{
+	float brickRes = (float) ( Resolution() / m_truncMargin );
+
+	return ( world - Minimum() ) / ( Maximum() - Minimum() ) * brickRes;
 }
 
 
@@ -94,8 +129,7 @@ void kppl::HostVolume::Integrate
 	assert( m_nUpdates < Voxel::MAX_WEIGHT() );
 
 	{
-		m_voxelIndices.resize( frame.Resolution() );
-		int counter = 0;
+		m_voxelIndices.clear();
 
 		flink::float4 volMax( SideLength() / 2.0f, SideLength() / 2.0f, SideLength() / 2.0f, 1.0f );
 		flink::float4 volMin( -volMax.x, -volMax.y, -volMax.z, 1.0f );
@@ -124,21 +158,22 @@ void kppl::HostVolume::Integrate
 				flink::vector _pxWorld = _pxView * _viewToWorld;
 
 				flink::float4 pxWorld = flink::store( _pxWorld );
+				flink::float4 pxVol = BrickIndex( pxWorld );
 
-				// TODO: Write convenience functions for these ops
-				if( pxWorld.x < volMin.x || pxWorld.y < volMin.y || pxWorld.z < volMin.z ||
-					pxWorld.x >= volMax.x || pxWorld.y >= volMax.y || pxWorld.z >= volMax.z )
+				// TODO: Extract Resolution() / m_truncMargin
+				if( pxVol < 0.5f || pxVol >= Resolution() / m_truncMargin - 0.5f )
 					continue;
 
-				int volx = std::min< int >( (int) ( ( pxWorld.x - volMin.x ) / SideLength() * Resolution() ), Resolution() - 1 );
-				int voly = std::min< int >( (int) ( ( pxWorld.y - volMin.y ) / SideLength() * Resolution() ), Resolution() - 1 );
-				int volz = std::min< int >( (int) ( ( pxWorld.z - volMin.z ) / SideLength() * Resolution() ), Resolution() - 1 );
-
-				// TODO: Splat entire bounding box
-				m_voxelIndices[ counter++ ] = packInts( volx, voly, volz );
+				m_voxelIndices.push_back( packInts( (unsigned) pxVol.x + 0, (unsigned) pxVol.y + 0, (unsigned) pxVol.z + 0 ) );
+				m_voxelIndices.push_back( packInts( (unsigned) pxVol.x + 1, (unsigned) pxVol.y + 0, (unsigned) pxVol.z + 0 ) );
+				m_voxelIndices.push_back( packInts( (unsigned) pxVol.x + 0, (unsigned) pxVol.y + 1, (unsigned) pxVol.z + 0 ) );
+				m_voxelIndices.push_back( packInts( (unsigned) pxVol.x + 1, (unsigned) pxVol.y + 1, (unsigned) pxVol.z + 0 ) );
+				
+				m_voxelIndices.push_back( packInts( (unsigned) pxVol.x + 0, (unsigned) pxVol.y + 0, (unsigned) pxVol.z + 1 ) );
+				m_voxelIndices.push_back( packInts( (unsigned) pxVol.x + 1, (unsigned) pxVol.y + 0, (unsigned) pxVol.z + 1 ) );
+				m_voxelIndices.push_back( packInts( (unsigned) pxVol.x + 0, (unsigned) pxVol.y + 1, (unsigned) pxVol.z + 1 ) );
+				m_voxelIndices.push_back( packInts( (unsigned) pxVol.x + 1, (unsigned) pxVol.y + 1, (unsigned) pxVol.z + 1 ) );
 			}
-
-		m_voxelIndices.resize( counter );
 	}
 
 	{
@@ -159,44 +194,50 @@ void kppl::HostVolume::Integrate
 	}
 
 	{
-		m_voxels.resize( m_voxelIndices.size() );
+		int const brickSize = m_truncMargin * m_truncMargin * m_truncMargin;
+		m_voxels.resize( m_voxelIndices.size() * brickSize );
 
 		flink::matrix _viewProj = flink::load( & viewProjection );
 		flink::vector _ndcToUV = flink::set( frame.Width() / 2.0f, frame.Height() / 2.0f, 0, 0 );
 		
 		for( int i = 0; i < m_voxelIndices.size(); i++ )
 		{
-			unsigned x, y, z;
-			unpackInts( m_voxelIndices[ i ], x, y, z );
+			unsigned brickX, brickY, brickZ;
+			unpackInts( m_voxelIndices[ i ], brickX, brickY, brickZ );
 
-			flink::float4 centerWorld = VoxelCenter( x, y, z );
-			flink::vector _centerWorld = flink::load( & centerWorld );
+			for( unsigned z = brickZ; z < brickZ + m_truncMargin; z++ )
+				for( unsigned y = brickY; y < brickY + m_truncMargin; y++ )
+					for( unsigned x = brickX; x < brickX + m_truncMargin; x++ )
+					{
+						flink::float4 centerWorld = VoxelCenter( x, y, z );
+						flink::vector _centerWorld = flink::load( & centerWorld );
 
-			flink::vector _centerNDC = flink::homogenize( _centerWorld * _viewProj );
+						flink::vector _centerNDC = flink::homogenize( _centerWorld * _viewProj );
 
-			flink::vector _centerScreen = _centerNDC * _ndcToUV + _ndcToUV;
-			flink::float4 centerScreen = flink::store( _centerScreen );
+						flink::vector _centerScreen = _centerNDC * _ndcToUV + _ndcToUV;
+						flink::float4 centerScreen = flink::store( _centerScreen );
 
-			int u = (int) centerScreen.x;
-			int v = (int) centerScreen.y;
+						int u = (int) centerScreen.x;
+						int v = (int) centerScreen.y;
 
-			if( u < 0 || u >= frame.Width() || v < 0 || v >= frame.Height() )
-				continue;
+						if( u < 0 || u >= frame.Width() || v < 0 || v >= frame.Height() )
+							continue;
 
-			float depth = frame( u, frame.Height() - v - 1 );
+						float depth = frame( u, frame.Height() - v - 1 );
 
-			if( depth == 0.0f )
-				continue;
+						if( depth == 0.0f )
+							continue;
 
-			float dist = flink::dot( centerWorld - eye, forward );
-			float signedDist = depth - dist;
+						float dist = flink::dot( centerWorld - eye, forward );
+						float signedDist = depth - dist;
 				
-			if( dist < 0.8f || signedDist < -TruncationMargin() )
-				continue;
+						if( dist < 0.8f || signedDist < -TruncationMargin() )
+							continue;
 
-			Voxel vx;
-			vx.Update( signedDist, TruncationMargin() );
-			m_voxels[ i ] = vx.data;
+						Voxel vx;
+						vx.Update( signedDist, TruncationMargin() );
+						m_voxels[ i ] = vx.data;
+					}
 		}
 	}
 

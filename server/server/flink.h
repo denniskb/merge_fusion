@@ -91,6 +91,17 @@ inline flink::vector operator*( flink::vector v, flink::matrix m )
 	return XMVector4Transform( v, m );
 }
 
+inline flink::float4 operator+( flink::float4 const & a, flink::float4 const & b )
+{
+	return flink::float4
+	(
+		a.x + b.x,
+		a.y + b.y,
+		a.z + b.z,
+		a.w + b.w
+	);
+}
+
 inline flink::float4 operator-( flink::float4 const & a, flink::float4 const & b )
 {
 	return flink::float4
@@ -100,4 +111,57 @@ inline flink::float4 operator-( flink::float4 const & a, flink::float4 const & b
 		a.z - b.z,
 		a.w - b.w
 	);
+}
+
+inline flink::float4 operator*( flink::float4 const & a, flink::float4 const & b )
+{
+	return flink::float4
+	(
+		a.x * b.x,
+		a.y * b.y,
+		a.z * b.z,
+		0.0f
+	);
+}
+
+inline flink::float4 operator*( flink::float4 const & a, float s )
+{
+	return a * flink::float4( s, s, s, 0.0f );
+}
+
+inline flink::float4 operator/( flink::float4 const & a, flink::float4 const & b )
+{
+	return flink::float4
+	(
+		a.x / b.x,
+		a.y / b.y,
+		a.z / b.z,
+		0.0f
+	);
+}
+
+inline bool operator<( flink::float4 const & a, flink::float4 const & b )
+{
+	return
+		a.x < b.x &&
+		a.y < b.y &&
+		a.z < b.z;
+}
+
+inline bool operator<( flink::float4 const & a, float s )
+{
+	return a < flink::float4( s, s, s, s );
+}
+
+inline bool operator>=( flink::float4 const & a, flink::float4 const & b )
+{
+	return
+		a.x >= b.x &&
+		a.y >= b.y &&
+		a.z >= b.z;
+}
+
+inline bool operator>=( flink::float4 const & a, float s )
+{
+	return a >= flink::float4( s, s, s, s );
 }
