@@ -194,8 +194,10 @@ void kppl::HostVolume::Integrate
 	}
 
 	{
-		int const brickSize = m_truncMargin * m_truncMargin * m_truncMargin;
-		m_voxels.resize( m_voxelIndices.size() * brickSize );
+		int const brickSlice = m_truncMargin * m_truncMargin;
+		int const brickVolume = brickSlice * m_truncMargin;
+
+		m_voxels.resize( m_voxelIndices.size() * brickVolume );
 
 		flink::matrix _viewProj = flink::load( & viewProjection );
 		flink::vector _ndcToUV = flink::set( frame.Width() / 2.0f, frame.Height() / 2.0f, 0, 0 );
@@ -205,39 +207,46 @@ void kppl::HostVolume::Integrate
 			unsigned brickX, brickY, brickZ;
 			unpackInts( m_voxelIndices[ i ], brickX, brickY, brickZ );
 
-			for( unsigned z = brickZ; z < brickZ + m_truncMargin; z++ )
-				for( unsigned y = brickY; y < brickY + m_truncMargin; y++ )
-					for( unsigned x = brickX; x < brickX + m_truncMargin; x++ )
-					{
-						flink::float4 centerWorld = VoxelCenter( x, y, z );
-						flink::vector _centerWorld = flink::load( & centerWorld );
+			for( int j = 0; j < brickVolume; j++ )
+			{
+				unsigned z = j / brickSlice;
+				unsigned y = ( j - z * brickSlice ) / m_truncMargin;
+				unsigned x = j % m_truncMargin;
 
-						flink::vector _centerNDC = flink::homogenize( _centerWorld * _viewProj );
+				flink::float4 centerWorld = VoxelCenter
+				(
+					m_truncMargin * brickX + x,
+					m_truncMargin * brickY + y,
+					m_truncMargin * brickZ + z
+				);
+				flink::vector _centerWorld = flink::load( & centerWorld );
 
-						flink::vector _centerScreen = _centerNDC * _ndcToUV + _ndcToUV;
-						flink::float4 centerScreen = flink::store( _centerScreen );
+				flink::vector _centerNDC = flink::homogenize( _centerWorld * _viewProj );
 
-						int u = (int) centerScreen.x;
-						int v = (int) centerScreen.y;
+				flink::vector _centerScreen = _centerNDC * _ndcToUV + _ndcToUV;
+				flink::float4 centerScreen = flink::store( _centerScreen );
 
-						if( u < 0 || u >= frame.Width() || v < 0 || v >= frame.Height() )
-							continue;
+				int u = (int) centerScreen.x;
+				int v = (int) centerScreen.y;
 
-						float depth = frame( u, frame.Height() - v - 1 );
+				if( u < 0 || u >= frame.Width() || v < 0 || v >= frame.Height() )
+					continue;
 
-						if( depth == 0.0f )
-							continue;
+				float depth = frame( u, frame.Height() - v - 1 );
 
-						float dist = flink::dot( centerWorld - eye, forward );
-						float signedDist = depth - dist;
+				if( depth == 0.0f )
+					continue;
+
+				float dist = flink::dot( centerWorld - eye, forward );
+				float signedDist = depth - dist;
 				
-						if( dist < 0.8f || signedDist < -TruncationMargin() )
-							continue;
+				if( dist < 0.8f || signedDist < -TruncationMargin() )
+					continue;
 
-						Voxel vx;
-						vx.Update( signedDist, TruncationMargin() );
-						m_voxels[ i ] = vx.data;
-					}
+				Voxel vx;
+				vx.Update( signedDist, TruncationMargin() );
+				m_voxels[ i * brickVolume + j ] = vx.data;
+			}
 		}
 	}
 
