@@ -6,6 +6,7 @@
 
 #include "flink.h"
 #include "HostDepthFrame.h"
+#include "radix_sort.h"
 #include "util.h"
 #include "Voxel.m"
 
@@ -77,9 +78,9 @@ flink::float4 kppl::HostVolume::Maximum() const
 
 
 
-std::vector< unsigned > const & kppl::HostVolume::VoxelIndices() const
+std::vector< unsigned > const & kppl::HostVolume::BrickIndices() const
 {
-	return m_voxelIndices;
+	return m_brickIndices;
 }
 
 std::vector< unsigned > const & kppl::HostVolume::Voxels() const
@@ -129,7 +130,7 @@ void kppl::HostVolume::Integrate
 	assert( m_nUpdates < Voxel::MAX_WEIGHT() );
 
 	{
-		m_voxelIndices.clear();
+		m_brickIndices.clear();
 
 		flink::float4 volMax( SideLength() / 2.0f, SideLength() / 2.0f, SideLength() / 2.0f, 1.0f );
 		flink::float4 volMin( -volMax.x, -volMax.y, -volMax.z, 1.0f );
@@ -164,48 +165,48 @@ void kppl::HostVolume::Integrate
 				if( pxVol < 0.5f || pxVol >= Resolution() / m_truncMargin - 0.5f )
 					continue;
 
-				m_voxelIndices.push_back( packInts( (unsigned) pxVol.x + 0, (unsigned) pxVol.y + 0, (unsigned) pxVol.z + 0 ) );
-				m_voxelIndices.push_back( packInts( (unsigned) pxVol.x + 1, (unsigned) pxVol.y + 0, (unsigned) pxVol.z + 0 ) );
-				m_voxelIndices.push_back( packInts( (unsigned) pxVol.x + 0, (unsigned) pxVol.y + 1, (unsigned) pxVol.z + 0 ) );
-				m_voxelIndices.push_back( packInts( (unsigned) pxVol.x + 1, (unsigned) pxVol.y + 1, (unsigned) pxVol.z + 0 ) );
+				m_brickIndices.push_back( packInts( (unsigned) pxVol.x + 0, (unsigned) pxVol.y + 0, (unsigned) pxVol.z + 0 ) );
+				m_brickIndices.push_back( packInts( (unsigned) pxVol.x + 1, (unsigned) pxVol.y + 0, (unsigned) pxVol.z + 0 ) );
+				m_brickIndices.push_back( packInts( (unsigned) pxVol.x + 0, (unsigned) pxVol.y + 1, (unsigned) pxVol.z + 0 ) );
+				m_brickIndices.push_back( packInts( (unsigned) pxVol.x + 1, (unsigned) pxVol.y + 1, (unsigned) pxVol.z + 0 ) );
 				
-				m_voxelIndices.push_back( packInts( (unsigned) pxVol.x + 0, (unsigned) pxVol.y + 0, (unsigned) pxVol.z + 1 ) );
-				m_voxelIndices.push_back( packInts( (unsigned) pxVol.x + 1, (unsigned) pxVol.y + 0, (unsigned) pxVol.z + 1 ) );
-				m_voxelIndices.push_back( packInts( (unsigned) pxVol.x + 0, (unsigned) pxVol.y + 1, (unsigned) pxVol.z + 1 ) );
-				m_voxelIndices.push_back( packInts( (unsigned) pxVol.x + 1, (unsigned) pxVol.y + 1, (unsigned) pxVol.z + 1 ) );
+				m_brickIndices.push_back( packInts( (unsigned) pxVol.x + 0, (unsigned) pxVol.y + 0, (unsigned) pxVol.z + 1 ) );
+				m_brickIndices.push_back( packInts( (unsigned) pxVol.x + 1, (unsigned) pxVol.y + 0, (unsigned) pxVol.z + 1 ) );
+				m_brickIndices.push_back( packInts( (unsigned) pxVol.x + 0, (unsigned) pxVol.y + 1, (unsigned) pxVol.z + 1 ) );
+				m_brickIndices.push_back( packInts( (unsigned) pxVol.x + 1, (unsigned) pxVol.y + 1, (unsigned) pxVol.z + 1 ) );
 			}
 	}
 
 	{
-		std::sort( m_voxelIndices.begin(), m_voxelIndices.end() );
+		radix_sort( m_brickIndices, m_scratchPad );
 		
 		int i = 0;
-		for( int j = 1; j < m_voxelIndices.size(); j++ )
+		for( int j = 1; j < m_brickIndices.size(); j++ )
 		{
-			unsigned jj = m_voxelIndices[ j ];
-			if( m_voxelIndices[ i ] != jj )
+			unsigned jj = m_brickIndices[ j ];
+			if( m_brickIndices[ i ] != jj )
 			{
-				m_voxelIndices[ i + 1 ] = jj;
+				m_brickIndices[ i + 1 ] = jj;
 				i++;
 			}
 		}
 		
-		m_voxelIndices.resize( i + 1 );
+		m_brickIndices.resize( i + 1 );
 	}
 
 	{
 		int const brickSlice = m_truncMargin * m_truncMargin;
 		int const brickVolume = brickSlice * m_truncMargin;
 
-		m_voxels.resize( m_voxelIndices.size() * brickVolume );
+		m_voxels.resize( m_brickIndices.size() * brickVolume );
 
 		flink::matrix _viewProj = flink::load( & viewProjection );
 		flink::vector _ndcToUV = flink::set( frame.Width() / 2.0f, frame.Height() / 2.0f, 0, 0 );
 		
-		for( int i = 0; i < m_voxelIndices.size(); i++ )
+		for( int i = 0; i < m_brickIndices.size(); i++ )
 		{
 			unsigned brickX, brickY, brickZ;
-			unpackInts( m_voxelIndices[ i ], brickX, brickY, brickZ );
+			unpackInts( m_brickIndices[ i ], brickX, brickY, brickZ );
 
 			for( int j = 0; j < brickVolume; j++ )
 			{

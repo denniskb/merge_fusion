@@ -34,7 +34,7 @@ public:
 	flink::float4 Minimum() const;
 	flink::float4 Maximum() const;
 
-	std::vector< unsigned > const & VoxelIndices() const;
+	std::vector< unsigned > const & BrickIndices() const;
 	std::vector< unsigned > const & Voxels() const;
 
 	flink::float4 VoxelCenter( int x, int y, int z ) const;
@@ -66,8 +66,10 @@ public:
 private:
 	HostVolume & operator=( HostVolume const & rhs );
 
-	std::vector< unsigned > m_voxelIndices;
+	std::vector< unsigned > m_brickIndices;
 	std::vector< unsigned > m_voxels;
+
+	mutable std::vector< unsigned > m_scratchPad;
 
 	int const m_res;
 	float const m_sideLen;

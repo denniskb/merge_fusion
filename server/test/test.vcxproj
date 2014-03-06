@@ -80,6 +80,7 @@
     <ClCompile Include="HostDepthFrame.cpp" />
     <ClCompile Include="DepthStream.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="radix_sort.cpp" />
     <ClCompile Include="util.cpp" />
     <ClCompile Include="HostVolume.cpp" />
     <ClCompile Include="Voxel.cpp" />
