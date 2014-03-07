@@ -47,14 +47,14 @@ public:
 		return data & 0xff;
 	}
 
-	kppl_both inline void Update( float newDistance, float truncationMargin )
+	kppl_both inline void Update( float newDistance, float truncationMargin, int newWeight = 1 )
 	{
 		kppl_assert( truncationMargin > 0.0f );
 
 		unsigned w = Weight();
-		unsigned w1 = w + 1;
+		unsigned w1 = w + newWeight;
 
-		float d = ( w * Distance( truncationMargin ) + clamp( newDistance, -truncationMargin, truncationMargin ) ) / w1;
+		float d = ( w * Distance( truncationMargin ) + newWeight * clamp( newDistance, -truncationMargin, truncationMargin ) ) / w1;
 
 		data = PackDistance( d, truncationMargin ) << 16 | w1;
 	}

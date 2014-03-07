@@ -165,6 +165,10 @@ void kppl::HostVolume::Integrate
 				if( pxVol < 0.5f || pxVol >= Resolution() / m_truncMargin - 0.5f )
 					continue;
 
+				pxVol.x -= 0.5f;
+				pxVol.y -= 0.5f;
+				pxVol.z -= 0.5f;
+
 				m_brickIndices.push_back( packInts( (unsigned) pxVol.x + 0, (unsigned) pxVol.y + 0, (unsigned) pxVol.z + 0 ) );
 				m_brickIndices.push_back( packInts( (unsigned) pxVol.x + 1, (unsigned) pxVol.y + 0, (unsigned) pxVol.z + 0 ) );
 				m_brickIndices.push_back( packInts( (unsigned) pxVol.x + 0, (unsigned) pxVol.y + 1, (unsigned) pxVol.z + 0 ) );
@@ -230,22 +234,20 @@ void kppl::HostVolume::Integrate
 				int u = (int) centerScreen.x;
 				int v = (int) centerScreen.y;
 
-				if( u < 0 || u >= frame.Width() || v < 0 || v >= frame.Height() )
-					continue;
+				float depth = 0.0f;
+				// CUDA: Clamp out of bounds access to 0 to avoid divergence
+				if( u >= 0 && u < frame.Width() && v >= 0 && v < frame.Height() )
+					depth = frame( u, frame.Height() - v - 1 );
 
-				float depth = frame( u, frame.Height() - v - 1 );
-
-				if( depth == 0.0f )
-					continue;
+				bool update = ( depth != 0.0f );
 
 				float dist = flink::dot( centerWorld - eye, forward );
 				float signedDist = depth - dist;
 				
-				if( dist < 0.8f || signedDist < -TruncationMargin() )
-					continue;
+				update = update && ( dist >= 0.8f && signedDist >= -TruncationMargin() );
 
 				Voxel vx;
-				vx.Update( signedDist, TruncationMargin() );
+				vx.Update( signedDist, TruncationMargin(), (int) update );
 				m_voxels[ i * brickVolume + j ] = vx.data;
 			}
 		}
