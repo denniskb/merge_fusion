@@ -56,7 +56,7 @@ public:
 	Marching cubes ported from http://paulbourke.net/geometry/polygonise/
 	@param outOBJ path to a .obj file.
 	*/
-	//void Triangulate( char const * outOBJ ) const;
+	void Triangulate( char const * outOBJ ) const;
 
 	/*
 	LUT used for Triangulate

@@ -259,7 +259,7 @@ void kppl::HostVolume::Integrate
 }
 
 
-#if 0
+
 void kppl::HostVolume::Triangulate( char const * outOBJ ) const
 {
 #pragma region Type Defs
@@ -295,108 +295,151 @@ void kppl::HostVolume::Triangulate( char const * outOBJ ) const
 	std::vector< Vertex > VB;
 	std::vector< unsigned > IB;
 
-	int resMinus1 = Resolution() - 1;
+	// great it was the lookup =D
+	// test multiple passes for mc
+	// I know: double bandwidth etc, but:
+	// micro kernels.. might be faster in the end
+	// also: test splatting version.. might make more sense than bin search all the time
 
-	for( int z0 = 0; z0 < Resolution(); z0++ )
-		for( int y0 = 0; y0 < Resolution(); y0++ )
-			for( int x0 = 0; x0 < Resolution(); x0++ )
-			{
-				Voxel v[ 8 ];
-				v[ 2 ] = (*this)( x0, y0, z0 );
+	auto start = m_brickIndices.cbegin();
+	auto end   = m_brickIndices.cend();
+	unsigned const resMinus1 = Resolution() - 1;
 
-				if( 0 == v[ 2 ].Weight() )
-					continue;
+	for( int i = 1; i < m_brickIndices.size(); i++ )
+	{
+		Voxel v[ 8 ];
+		v[ 2 ] = m_voxels[ i ];
 
-				int x1 = std::min( x0 + 1, resMinus1 );
-				int y1 = std::min( y0 + 1, resMinus1 );
-				int z1 = std::min( z0 + 1, resMinus1 );
+		if( 0 == v[ 2 ].Weight() )
+			continue;
 
-				v[ 3 ] = (*this)( x1, y0, z0 );
-				v[ 6 ] = (*this)( x0, y1, z0 );
-				v[ 7 ] = (*this)( x1, y1, z0 );
+		std::vector< unsigned >::const_iterator it;
+		unsigned bi010 =
+			( it = std::lower_bound( start, end, m_brickIndices[ i ] + 1024 ) ) != end &&
+			*it == m_brickIndices[ i ] + 1024 ? (unsigned) ( it - start ) : 0;
 
-				v[ 1 ] = (*this)( x0, y0, z1 );
-				v[ 0 ] = (*this)( x1, y0, z1 );
-				v[ 5 ] = (*this)( x0, y1, z1 );
-				v[ 4 ] = (*this)( x1, y1, z1 );
+		unsigned bi100 =
+			( it = std::lower_bound( start, end, m_brickIndices[ i ] + 1048576 ) ) != end &&
+			*it == m_brickIndices[ i ] + 1048576 ? (unsigned) ( it - start ) : 0;
 
-				// Generate vertices
-				float d[ 8 ];
-				d[ 1 ] = v[ 1 ].Distance( TrunactionMargin() );
-				d[ 2 ] = v[ 2 ].Distance( TrunactionMargin() );
-				d[ 3 ] = v[ 3 ].Distance( TrunactionMargin() );
-				d[ 6 ] = v[ 6 ].Distance( TrunactionMargin() );
+		unsigned bi110 =
+			( it = std::lower_bound( start, end, m_brickIndices[ i ] + 1049600 ) ) != end &&
+			*it == m_brickIndices[ i ] + 1049600 ? (unsigned) ( it - start ) : 0;
 
-				flink::float4 vert000 = VoxelCenter( x0, y0, z0 );
-				unsigned i000 = Index3Dto1D( x0, y0, z0, Resolution() );
+		unsigned bi001 =
+			i + 1 < m_brickIndices.size() && 
+			m_brickIndices[ i + 1 ] == m_brickIndices[ i ] + 1 ?
+			i + 1 : 0;
 
-				if( v[ 3 ].Weight() > 0 && d[ 2 ] * d[ 3 ] < 0.0f )
-					VB.push_back( Vertex
-					(
-						3 * i000,
-						vert000.x + flink::lerp( 0.0f, VoxelLength(), v[ 2 ].Weight() * abs( d[ 3 ] ), v[ 3 ].Weight() * abs( d[ 2 ] ) ),
-						vert000.y,
-						vert000.z
-					));
+		unsigned bi011 =
+			bi010 + 1 < m_brickIndices.size() && 
+			m_brickIndices[ bi010 + 1 ] == m_brickIndices[ bi010 ] + 1 ?
+			bi010 + 1 : 0;
+
+		unsigned bi101 =
+			bi100 + 1 < m_brickIndices.size() &&
+			m_brickIndices[ bi100 + 1 ] == m_brickIndices[ bi100 ] + 1 ?
+			bi100 + 1 : 0;
+
+		unsigned bi111 =
+			bi110 + 1 < m_brickIndices.size() && 
+			m_brickIndices[ bi110 + 1 ] == m_brickIndices[ bi110 ] + 1 ?
+			bi110 + 1 : 0;
+
+		v[ 3 ] = m_voxels[ bi001 ];
+		v[ 6 ] = m_voxels[ bi010 ];
+		v[ 7 ] = m_voxels[ bi011 ];
+					
+		v[ 1 ] = m_voxels[ bi100 ];
+		v[ 0 ] = m_voxels[ bi101 ];
+		v[ 5 ] = m_voxels[ bi110 ];
+		v[ 4 ] = m_voxels[ bi111 ];
+
+		unsigned x0, y0, z0;
+		unpackInts( m_brickIndices[ i ], x0, y0, z0 );
+
+		unsigned x1 = std::min( x0 + 1, resMinus1 );
+		unsigned y1 = std::min( y0 + 1, resMinus1 );
+		unsigned z1 = std::min( z0 + 1, resMinus1 );
+
+		// Generate vertices
+		float d[ 8 ];
+		d[ 1 ] = v[ 1 ].Distance( TruncationMargin() );
+		d[ 2 ] = v[ 2 ].Distance( TruncationMargin() );
+		d[ 3 ] = v[ 3 ].Distance( TruncationMargin() );
+		d[ 6 ] = v[ 6 ].Distance( TruncationMargin() );
+
+		flink::float4 vert000 = VoxelCenter( x0, y0, z0 );
+		unsigned i000 = packInts( x0, y0, z0 );
+
+		if( v[ 3 ].Weight() > 0 && d[ 2 ] * d[ 3 ] < 0.0f )
+			VB.push_back( Vertex
+			(
+				3 * i000,
+				vert000.x + flink::lerp( 0.0f, VoxelLength(), v[ 2 ].Weight() * abs( d[ 3 ] ), v[ 3 ].Weight() * abs( d[ 2 ] ) ),
+				vert000.y,
+				vert000.z
+			));
 				
-				if( v[ 6 ].Weight() > 0 && d[ 2 ] * d[ 6 ] < 0.0f )
-					VB.push_back( Vertex
-					(
-						3 * i000 + 1,
-						vert000.x,
-						vert000.y + flink::lerp( 0.0f, VoxelLength(), v[ 2 ].Weight() * abs( d[ 6 ] ), v[ 6 ].Weight() * abs( d[ 2 ] ) ),
-						vert000.z
-					));
+		if( v[ 6 ].Weight() > 0 && d[ 2 ] * d[ 6 ] < 0.0f )
+			VB.push_back( Vertex
+			(
+				3 * i000 + 1,
+				vert000.x,
+				vert000.y + flink::lerp( 0.0f, VoxelLength(), v[ 2 ].Weight() * abs( d[ 6 ] ), v[ 6 ].Weight() * abs( d[ 2 ] ) ),
+				vert000.z
+			));
 				
-				if( v[ 1 ].Weight() > 0 && d[ 2 ] * d[ 1 ] < 0.0f )
-					VB.push_back( Vertex
-					(
-						3 * i000 + 2,
-						vert000.x,
-						vert000.y,
-						vert000.z + flink::lerp( 0.0f, VoxelLength(), v[ 2 ].Weight() * abs( d[ 1 ] ), v[ 1 ].Weight() * abs( d[ 2 ] ) )
-					));
+		if( v[ 1 ].Weight() > 0 && d[ 2 ] * d[ 1 ] < 0.0f )
+			VB.push_back( Vertex
+			(
+				3 * i000 + 2,
+				vert000.x,
+				vert000.y,
+				vert000.z + flink::lerp( 0.0f, VoxelLength(), v[ 2 ].Weight() * abs( d[ 1 ] ), v[ 1 ].Weight() * abs( d[ 2 ] ) )
+			));
 
-				// Generate indices
-				bool skip = false;
-				for( int i = 0; i < 8; i++ )
-					skip |= ( 0 == v[ i ].Weight() );
+		// Generate indices
+		bool skip = false;
+		for( int i = 0; i < 8; i++ )
+			skip = skip || ( 0 == v[ i ].Weight() );
 
-				if( skip ||					
-					x0 == resMinus1 ||
-					y0 == resMinus1 ||
-					z0 == resMinus1 )
-					continue;
+		if( skip ||					
+			x0 == resMinus1 ||
+			y0 == resMinus1 ||
+			z0 == resMinus1 )
+			continue;
 
-				d[ 0 ] = v[ 0 ].Distance( TrunactionMargin() );
-				d[ 4 ] = v[ 4 ].Distance( TrunactionMargin() );
-				d[ 5 ] = v[ 5 ].Distance( TrunactionMargin() );
-				d[ 7 ] = v[ 7 ].Distance( TrunactionMargin() );
+		d[ 0 ] = v[ 0 ].Distance( TruncationMargin() );
+		d[ 4 ] = v[ 4 ].Distance( TruncationMargin() );
+		d[ 5 ] = v[ 5 ].Distance( TruncationMargin() );
+		d[ 7 ] = v[ 7 ].Distance( TruncationMargin() );
 
-				int lutIdx = 0;
-				for( int i = 0; i < 8; i++ )
-					if( d[ i ] < 0 )
-						lutIdx |= ( 1u << i );
+		int lutIdx = 0;
+		for( int i = 0; i < 8; i++ )
+			if( d[ i ] < 0 )
+				lutIdx |= ( 1u << i );
 
-				// Maps local edge indices to global vertex indices
-				unsigned localToGlobal[ 12 ];
-				localToGlobal[  0 ] = Index3Dto1D( x0, y0, z1, Resolution() ) * 3;
-				localToGlobal[  1 ] = Index3Dto1D( x0, y0, z0, Resolution() ) * 3 + 2;
-				localToGlobal[  2 ] = Index3Dto1D( x0, y0, z0, Resolution() ) * 3;
-				localToGlobal[  3 ] = Index3Dto1D( x1, y0, z0, Resolution() ) * 3 + 2;
-				localToGlobal[  4 ] = Index3Dto1D( x0, y1, z1, Resolution() ) * 3;
-				localToGlobal[  5 ] = Index3Dto1D( x0, y1, z0, Resolution() ) * 3 + 2;
-				localToGlobal[  6 ] = Index3Dto1D( x0, y1, z0, Resolution() ) * 3;
-				localToGlobal[  7 ] = Index3Dto1D( x1, y1, z0, Resolution() ) * 3 + 2;
-				localToGlobal[  8 ] = Index3Dto1D( x1, y0, z1, Resolution() ) * 3 + 1;
-				localToGlobal[  9 ] = Index3Dto1D( x0, y0, z1, Resolution() ) * 3 + 1;
-				localToGlobal[ 10 ] = Index3Dto1D( x0, y0, z0, Resolution() ) * 3 + 1;
-				localToGlobal[ 11 ] = Index3Dto1D( x1, y0, z0, Resolution() ) * 3 + 1;
+		// Maps local edge indices to global vertex indices
+		unsigned localToGlobal[ 12 ];
+		localToGlobal[  0 ] = packInts( x0, y0, z1 ) * 3;
+		localToGlobal[  1 ] = packInts( x0, y0, z0 ) * 3 + 2;
+		localToGlobal[  2 ] = packInts( x0, y0, z0 ) * 3;
+		localToGlobal[  3 ] = packInts( x1, y0, z0 ) * 3 + 2;
+		localToGlobal[  4 ] = packInts( x0, y1, z1 ) * 3;
+		localToGlobal[  5 ] = packInts( x0, y1, z0 ) * 3 + 2;
+		localToGlobal[  6 ] = packInts( x0, y1, z0 ) * 3;
+		localToGlobal[  7 ] = packInts( x1, y1, z0 ) * 3 + 2;
+		localToGlobal[  8 ] = packInts( x1, y0, z1 ) * 3 + 1;
+		localToGlobal[  9 ] = packInts( x0, y0, z1 ) * 3 + 1;
+		localToGlobal[ 10 ] = packInts( x0, y0, z0 ) * 3 + 1;
+		localToGlobal[ 11 ] = packInts( x1, y0, z0 ) * 3 + 1;
 
-				for( int i = 0; i < TriTable()[ 16 * lutIdx ]; i++ )
-					IB.push_back( localToGlobal[ TriTable()[ 16 * lutIdx + i + 1 ] ] );
-			}
+		for( int i = 0; i < TriTable()[ 16 * lutIdx ]; i++ )
+			IB.push_back( localToGlobal[ TriTable()[ 16 * lutIdx + i + 1 ] ] );
+	}
 			
+	// TODO: Replace with radix sort
 	std::sort( VB.begin(), VB.end(), vertexCmp );
 
 	Vertex dummy;
@@ -421,7 +464,6 @@ void kppl::HostVolume::Triangulate( char const * outOBJ ) const
 
 	fclose( file );
 }
-#endif
 
 // static
 int const * kppl::HostVolume::TriTable()

@@ -37,18 +37,17 @@ BOOST_AUTO_TEST_CASE( Integrate )
 	ds.NextFrame( depth, view );
 	ComputeMatrices( view, eye, forward, viewProj, viewToWorld );
 
-	for( int i = 0; i < 10; i++ )
-		v.Integrate( depth, eye, forward, viewProj, viewToWorld );
-
-	kppl::Timer timer;
 	v.Integrate( depth, eye, forward, viewProj, viewToWorld );
-	printf( "integrate: %fms\n", timer.Time() * 1000.0 );
 
 	FILE * debug;
 	fopen_s( & debug, "C:/TEMP/volume_integrate.obj", "w" );
 
 	for( int i = 0; i < v.BrickIndices().size(); i++ )
 	{
+		kppl::Voxel vx = v.Voxels()[ i ];
+		if( vx.Weight() == 0 )
+			continue;
+
 		unsigned x, y, z;
 		kppl::unpackInts( v.BrickIndices()[ i ], x, y, z );
 		flink::float4 pos = v.VoxelCenter( x, y, z );
@@ -60,7 +59,6 @@ BOOST_AUTO_TEST_CASE( Integrate )
 	BOOST_REQUIRE( true );
 }
 
-#if 0
 BOOST_AUTO_TEST_CASE( Triangulate )
 {
 	/*
@@ -69,7 +67,7 @@ BOOST_AUTO_TEST_CASE( Triangulate )
 	the volume is triangulated using mc and stored as an .obj
 	*/
 
-	kppl::HostVolume v( 256, 2.0f, 0.04f );
+	kppl::HostVolume v( 512, 2.0f, 1 );
 	kppl::DepthStream ds( ( boost::filesystem::current_path() / "content/imrod_v2.depth" ).string().c_str() );
 
 	kppl::HostDepthFrame depth;
@@ -80,10 +78,11 @@ BOOST_AUTO_TEST_CASE( Triangulate )
 	ComputeMatrices( view, eye, forward, viewProj, viewToWorld );
 
 	v.Integrate( depth, eye, forward, viewProj, viewToWorld );
+	kppl::Timer timer;
 	v.Triangulate( "C:/TEMP/volume_triangulate.obj" );
+	printf( "tri: %fms\n", timer.Time() * 1000.0 );
 
 	BOOST_REQUIRE( true );
 }
-#endif
 
 BOOST_AUTO_TEST_SUITE_END()
