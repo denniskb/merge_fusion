@@ -137,6 +137,7 @@ void kppl::HostVolume::Integrate
 
 		flink::matrix _viewToWorld = flink::load( & viewToWorld );
 
+		m_brickIndices.push_back( 0 );
 		for( int y = 0; y < frame.Height(); y++ )
 			for( int x = 0; x < frame.Width(); x++ )
 			{
@@ -197,7 +198,7 @@ void kppl::HostVolume::Integrate
 		
 		m_brickIndices.resize( i + 1 );
 	}
-
+	
 	{
 		int const brickSlice = m_truncMargin * m_truncMargin;
 		int const brickVolume = brickSlice * m_truncMargin;
@@ -207,7 +208,8 @@ void kppl::HostVolume::Integrate
 		flink::matrix _viewProj = flink::load( & viewProjection );
 		flink::vector _ndcToUV = flink::set( frame.Width() / 2.0f, frame.Height() / 2.0f, 0, 0 );
 		
-		for( int i = 0; i < m_brickIndices.size(); i++ )
+		std::memset( & m_voxels[ 0 ], 0, brickVolume * 4 );
+		for( int i = 1; i < m_brickIndices.size(); i++ )
 		{
 			unsigned brickX, brickY, brickZ;
 			unpackInts( m_brickIndices[ i ], brickX, brickY, brickZ );
