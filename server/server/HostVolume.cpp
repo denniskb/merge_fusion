@@ -15,8 +15,7 @@
 kppl::HostVolume::HostVolume( int resolution, float sideLength, int truncationMargin ) :
 	m_res( resolution ),
 	m_sideLen( sideLength ),
-	m_truncMargin( truncationMargin ),
-	m_nUpdates( 0 )
+	m_truncMargin( truncationMargin )
 {
 	assert( resolution > 0 && resolution <= 1024 );
 	assert( sideLength > 0.0f );
@@ -50,6 +49,28 @@ float kppl::HostVolume::TruncationMargin() const
 
 
 
+int kppl::HostVolume::BrickResolution() const
+{
+	return m_truncMargin;
+}
+
+int kppl::HostVolume::BrickSlice() const
+{
+	return BrickResolution() * BrickResolution();
+}
+
+int kppl::HostVolume::BrickVolume() const
+{
+	return BrickResolution() * BrickSlice();
+}
+
+int kppl::HostVolume::NumBricksInVolume() const
+{
+	return Resolution() / m_truncMargin;
+}
+
+
+
 flink::float4 kppl::HostVolume::Minimum() const
 {
 	float minimum = -SideLength() * 0.5f;
@@ -78,12 +99,12 @@ flink::float4 kppl::HostVolume::Maximum() const
 
 
 
-std::vector< unsigned > const & kppl::HostVolume::BrickIndices() const
+kppl::vector< unsigned > & kppl::HostVolume::Indices()
 {
-	return m_brickIndices;
+	return m_indices;
 }
 
-std::vector< unsigned > const & kppl::HostVolume::Voxels() const
+kppl::vector< unsigned > & kppl::HostVolume::Voxels()
 {
 	return m_voxels;
 }
@@ -110,152 +131,7 @@ flink::float4 kppl::HostVolume::VoxelCenter( int x, int y, int z ) const
 
 flink::float4 kppl::HostVolume::BrickIndex( flink::float4 const & world ) const
 {
-	float brickRes = (float) ( Resolution() / m_truncMargin );
-
-	return ( world - Minimum() ) / ( Maximum() - Minimum() ) * brickRes;
-}
-
-
-
-void kppl::HostVolume::Integrate
-(
-	kppl::HostDepthFrame const & frame, 
-	flink::float4 const & eye,
-	flink::float4 const & forward,
-	flink::float4x4 const & viewProjection,
-	flink::float4x4 const & viewToWorld
-)
-{
-	assert( 0 == Resolution() % 2 );
-	assert( m_nUpdates < Voxel::MAX_WEIGHT() );
-
-	{
-		m_brickIndices.clear();
-
-		flink::float4 volMax( SideLength() / 2.0f, SideLength() / 2.0f, SideLength() / 2.0f, 1.0f );
-		flink::float4 volMin( -volMax.x, -volMax.y, -volMax.z, 1.0f );
-
-		flink::matrix _viewToWorld = flink::load( & viewToWorld );
-
-		m_brickIndices.push_back( 0 );
-		for( int y = 0; y < frame.Height(); y++ )
-			for( int x = 0; x < frame.Width(); x++ )
-			{
-				float depth = frame( x, y );
-				if( 0.0f == depth )
-					continue;
-
-				float xNdc = ( x - 319.5f ) / 319.5f;
-				float yNdc = ( 239.5f - y ) / 239.5f;
-
-				flink::float4 pxView
-				(
-					xNdc * 0.54698249f * depth,
-					yNdc * 0.41023687f * depth,
-					-depth,
-					1.0f
-				);
-
-				flink::vector _pxView = flink::load( & pxView );
-				flink::vector _pxWorld = _pxView * _viewToWorld;
-
-				flink::float4 pxWorld = flink::store( _pxWorld );
-				flink::float4 pxVol = BrickIndex( pxWorld );
-
-				// TODO: Extract Resolution() / m_truncMargin
-				if( pxVol < 0.5f || pxVol >= Resolution() / m_truncMargin - 0.5f )
-					continue;
-
-				pxVol.x -= 0.5f;
-				pxVol.y -= 0.5f;
-				pxVol.z -= 0.5f;
-
-				m_brickIndices.push_back( packInts( (unsigned) pxVol.x + 0, (unsigned) pxVol.y + 0, (unsigned) pxVol.z + 0 ) );
-				m_brickIndices.push_back( packInts( (unsigned) pxVol.x + 1, (unsigned) pxVol.y + 0, (unsigned) pxVol.z + 0 ) );
-				m_brickIndices.push_back( packInts( (unsigned) pxVol.x + 0, (unsigned) pxVol.y + 1, (unsigned) pxVol.z + 0 ) );
-				m_brickIndices.push_back( packInts( (unsigned) pxVol.x + 1, (unsigned) pxVol.y + 1, (unsigned) pxVol.z + 0 ) );
-				
-				m_brickIndices.push_back( packInts( (unsigned) pxVol.x + 0, (unsigned) pxVol.y + 0, (unsigned) pxVol.z + 1 ) );
-				m_brickIndices.push_back( packInts( (unsigned) pxVol.x + 1, (unsigned) pxVol.y + 0, (unsigned) pxVol.z + 1 ) );
-				m_brickIndices.push_back( packInts( (unsigned) pxVol.x + 0, (unsigned) pxVol.y + 1, (unsigned) pxVol.z + 1 ) );
-				m_brickIndices.push_back( packInts( (unsigned) pxVol.x + 1, (unsigned) pxVol.y + 1, (unsigned) pxVol.z + 1 ) );
-			}
-	}
-
-	{
-		radix_sort( m_brickIndices, m_scratchPad );
-		
-		int i = 0;
-		for( int j = 1; j < m_brickIndices.size(); j++ )
-		{
-			unsigned jj = m_brickIndices[ j ];
-			if( m_brickIndices[ i ] != jj )
-			{
-				m_brickIndices[ i + 1 ] = jj;
-				i++;
-			}
-		}
-		
-		m_brickIndices.resize( i + 1 );
-	}
-	
-	{
-		int const brickSlice = m_truncMargin * m_truncMargin;
-		int const brickVolume = brickSlice * m_truncMargin;
-
-		m_voxels.resize( m_brickIndices.size() * brickVolume );
-
-		flink::matrix _viewProj = flink::load( & viewProjection );
-		flink::vector _ndcToUV = flink::set( frame.Width() / 2.0f, frame.Height() / 2.0f, 0, 0 );
-		
-		std::memset( & m_voxels[ 0 ], 0, brickVolume * 4 );
-		for( int i = 1; i < m_brickIndices.size(); i++ )
-		{
-			unsigned brickX, brickY, brickZ;
-			unpackInts( m_brickIndices[ i ], brickX, brickY, brickZ );
-
-			for( int j = 0; j < brickVolume; j++ )
-			{
-				unsigned z = j / brickSlice;
-				unsigned y = ( j - z * brickSlice ) / m_truncMargin;
-				unsigned x = j % m_truncMargin;
-
-				flink::float4 centerWorld = VoxelCenter
-				(
-					m_truncMargin * brickX + x,
-					m_truncMargin * brickY + y,
-					m_truncMargin * brickZ + z
-				);
-				flink::vector _centerWorld = flink::load( & centerWorld );
-
-				flink::vector _centerNDC = flink::homogenize( _centerWorld * _viewProj );
-
-				flink::vector _centerScreen = _centerNDC * _ndcToUV + _ndcToUV;
-				flink::float4 centerScreen = flink::store( _centerScreen );
-
-				int u = (int) centerScreen.x;
-				int v = (int) centerScreen.y;
-
-				float depth = 0.0f;
-				// CUDA: Clamp out of bounds access to 0 to avoid divergence
-				if( u >= 0 && u < frame.Width() && v >= 0 && v < frame.Height() )
-					depth = frame( u, frame.Height() - v - 1 );
-
-				bool update = ( depth != 0.0f );
-
-				float dist = flink::dot( centerWorld - eye, forward );
-				float signedDist = depth - dist;
-				
-				update = update && ( dist >= 0.8f && signedDist >= -TruncationMargin() );
-
-				Voxel vx;
-				vx.Update( signedDist, TruncationMargin(), (int) update );
-				m_voxels[ i * brickVolume + j ] = vx.data;
-			}
-		}
-	}
-
-	m_nUpdates++;
+	return ( world - Minimum() ) / ( Maximum() - Minimum() ) * (float) NumBricksInVolume();
 }
 
 
@@ -301,8 +177,8 @@ void kppl::HostVolume::Triangulate( char const * outOBJ ) const
 	// micro kernels.. might be faster in the end
 	// also: test splatting version.. might make more sense than bin search all the time
 
-	auto start = m_brickIndices.cbegin();
-	auto end   = m_brickIndices.cend();
+	auto start = m_indices.cbegin();
+	auto end   = m_indices.cend();
 	unsigned const resMinus1 = Resolution() - 1;
 
 	std::vector< unsigned > slices( 2 * Resolution() * Resolution() );
@@ -311,19 +187,19 @@ void kppl::HostVolume::Triangulate( char const * outOBJ ) const
 	
 	unsigned slice0a, slice0b, slice1a = 1, slice1b = 1;
 
-	while( slice1b < m_brickIndices.size() )
+	while( slice1b < (unsigned) m_indices.size() )
 	{
 		slice0a = slice1a;
 		slice0b = slice1b;
 		std::swap( slice0, slice1 );
 
 		slice1a = slice1b;
-		slice1b = (unsigned) ( std::lower_bound( start, end, ( ( m_brickIndices[ slice1a ] >> 20 ) + 1 ) << 20 ) - start );
+		slice1b = (unsigned) ( std::lower_bound( start, end, ( ( m_indices[ slice1a ] >> 20 ) + 1 ) << 20 ) - start );
 
 		for( unsigned i = slice1a; i < slice1b; i++ )
 		{
 			unsigned x, y, z;
-			unpackInts( m_brickIndices[ i ], x, y, z );
+			unpackInts( m_indices[ i ], x, y, z );
 
 			slice1[ x + y * Resolution() ] = m_voxels[ i ];
 		} 
@@ -331,7 +207,7 @@ void kppl::HostVolume::Triangulate( char const * outOBJ ) const
 		for( unsigned i = slice0a; i < slice0b; i++ )
 		{
 			unsigned x0, y0, z0;
-			unpackInts( m_brickIndices[ i ], x0, y0, z0 );
+			unpackInts( m_indices[ i ], x0, y0, z0 );
 
 			unsigned x1 = std::min( x0 + 1, resMinus1 );
 			unsigned y1 = std::min( y0 + 1, resMinus1 );
@@ -436,12 +312,11 @@ void kppl::HostVolume::Triangulate( char const * outOBJ ) const
 	for( unsigned i = slice1a; i < slice1b; i++ )
 	{
 		unsigned x, y, z;
-		unpackInts( m_brickIndices[ i ], x, y, z );
+		unpackInts( m_indices[ i ], x, y, z );
 
 		slice1[ x + y * Resolution() ] = 0;
 	} 
 	
-	// TODO: Replace with radix sort
 	std::sort( VB.begin(), VB.end(), vertexCmp );
 
 	Vertex dummy;

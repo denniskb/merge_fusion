@@ -1,8 +1,7 @@
 #pragma once
 
-#include <vector>
-
 #include "flink.h"
+#include "vector.h"
 
 
 
@@ -31,26 +30,19 @@ public:
 	float VoxelLength() const;
 	float TruncationMargin() const; // in meters
 
+	int BrickResolution() const;
+	int BrickSlice() const;
+	int BrickVolume() const;
+	int NumBricksInVolume() const;
+
 	flink::float4 Minimum() const;
 	flink::float4 Maximum() const;
 
-	std::vector< unsigned > const & BrickIndices() const;
-	std::vector< unsigned > const & Voxels() const;
+	vector< unsigned > & Indices();
+	vector< unsigned > & Voxels();
 
 	flink::float4 VoxelCenter( int x, int y, int z ) const;
 	flink::float4 BrickIndex( flink::float4 const & world ) const;
-
-	/*
-	Integrates a depth frame into the volume using the KinectFusion algorithm.
-	*/
-	void Integrate
-	(
-		HostDepthFrame const & frame,
-		flink::float4 const & eye,
-		flink::float4 const & forward,
-		flink::float4x4 const & viewProjection,
-		flink::float4x4 const & viewToWorld
-	);
 
 	/*
 	Marching cubes ported from http://paulbourke.net/geometry/polygonise/
@@ -66,15 +58,31 @@ public:
 private:
 	HostVolume & operator=( HostVolume const & rhs );
 
-	std::vector< unsigned > m_brickIndices;
-	std::vector< unsigned > m_voxels;
-
-	mutable std::vector< unsigned > m_scratchPad;
-
 	int const m_res;
 	float const m_sideLen;
 	int const m_truncMargin;
-	int m_nUpdates;
+
+	vector< unsigned > m_indices;
+	vector< unsigned > m_voxels;
+
+	void MarkBricks
+	(
+		HostDepthFrame const & depthMap,
+		flink::float4x4 const & viewToWorld,
+
+		vector< unsigned > & outBrickIndices
+	) const;
+
+	void ExpandBricks( vector< unsigned > & inOutIndices ) const;
+
+	void UpdateVoxels
+	(
+		vector< unsigned > const & voxelsToUpdate,
+		kppl::HostDepthFrame const & frame, 
+		flink::float4 const & eye,
+		flink::float4 const & forward,
+		flink::float4x4 const & viewProjection
+	);
 };
 
 }

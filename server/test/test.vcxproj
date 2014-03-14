@@ -79,6 +79,7 @@
     </ClCompile>
     <ClCompile Include="HostDepthFrame.cpp" />
     <ClCompile Include="DepthStream.cpp" />
+    <ClCompile Include="HostIntegrator.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="radix_sort.cpp" />
     <ClCompile Include="util.cpp" />

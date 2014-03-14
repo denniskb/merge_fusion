@@ -1,15 +1,11 @@
 #pragma once
 
-#include <vector>
+#include "vector.h"
 
 
 
 namespace kppl {
 
-void radix_sort
-(
-	std::vector< unsigned > & data,
-	std::vector< unsigned > & scratchPad
-);
+void radix_sort( vector< unsigned > & data );
 
 }

@@ -1,24 +1,18 @@
 #pragma once
 
+#include "vector.h"
+
+
+
 namespace kppl {
 
 long long fsize( char const * fileName );
 
-inline unsigned packInts( unsigned x, unsigned y, unsigned z )
-{
-	return z << 20 | y << 10 | x;
-}
+unsigned packInts( unsigned x, unsigned y, unsigned z );
+void unpackInts( unsigned packedInt, unsigned & outX, unsigned & outY, unsigned & outZ );
 
-inline void unpackInts( unsigned packedInt, unsigned & outX, unsigned & outY, unsigned & outZ )
-{
-	outZ = packedInt >> 20;
-	outY = ( packedInt >> 10 ) & 0x3ff;
-	outX = packedInt & 0x3ff;
-}
+bool powerOf2( int x );
 
-inline bool powerOf2( int x )
-{
-	return x > 0 && ! ( x & ( x - 1 ) );
-}
+void remove_dups( vector< unsigned > & data );
 
 }

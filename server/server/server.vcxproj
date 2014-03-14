@@ -18,12 +18,14 @@
     <ClInclude Include="DepthStream.h" />
     <ClInclude Include="DeviceDepthFrame.h" />
     <ClInclude Include="flink.h" />
+    <ClInclude Include="HostIntegrator.h" />
     <ClInclude Include="KernelDepthFrame.cuh" />
     <ClInclude Include="KernelVolume.cuh" />
     <ClInclude Include="radix_sort.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="util.h" />
     <ClInclude Include="HostVolume.h" />
+    <ClInclude Include="vector.h" />
     <ClInclude Include="Voxel.m" />
   </ItemGroup>
   <ItemGroup>
@@ -31,6 +33,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="DepthStream.cpp" />
+    <ClCompile Include="HostIntegrator.cpp" />
     <ClCompile Include="radix_sort.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="util.cpp" />

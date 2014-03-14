@@ -16,36 +16,18 @@
 
 
 
-BOOST_AUTO_TEST_SUITE( Volume )
+BOOST_AUTO_TEST_SUITE( HostIntegrator )
 
-BOOST_AUTO_TEST_CASE( ctor )
-{
-	kppl::HostVolume v( 128, 2.0f, 2 );
-
-	BOOST_REQUIRE( v.Resolution() == 128 );
-	BOOST_REQUIRE( v.SideLength() == 2.0f );
-	BOOST_REQUIRE( v.VoxelLength() == 2.0f / 128.0f );
-	BOOST_REQUIRE( v.TruncationMargin() == 2.0f / 128.0f * 2 );
-
-	BOOST_REQUIRE( v.BrickResolution() == 2 );
-	BOOST_REQUIRE( v.BrickSlice() == 4 );
-	BOOST_REQUIRE( v.BrickVolume() == 8 );
-	BOOST_REQUIRE( v.NumBricksInVolume() == 64 );
-
-	BOOST_REQUIRE( v.Minimum().x == -1.0f );
-	BOOST_REQUIRE( v.Maximum().y == 1.0f );
-}
-
-BOOST_AUTO_TEST_CASE( Triangulate )
+BOOST_AUTO_TEST_CASE( Integrate )
 {
 	/*
-	Quick visual test to verify triangulation works correctly:
+	Quick visual test to verify integration works correctly:
 	One depth frame is integrated (generated with poly2depth) and then
-	the volume is triangulated using mc and stored as an .obj
+	all voxels near surface are stored as vertices to an .obj
 	*/
 	kppl::HostIntegrator i;
 
-	kppl::HostVolume v( 512, 2.0f, 1 );
+	kppl::HostVolume v( 256, 2.0f, 1 );
 	kppl::DepthStream ds( ( boost::filesystem::current_path() / "content/imrod_v2.depth" ).string().c_str() );
 
 	kppl::HostDepthFrame depth;
@@ -56,7 +38,23 @@ BOOST_AUTO_TEST_CASE( Triangulate )
 	ComputeMatrices( view, eye, forward, viewProj, viewToWorld );
 
 	i.Integrate( v, depth, eye, forward, viewProj, viewToWorld );
-	v.Triangulate( "C:/TEMP/volume_triangulate.obj" );
+
+	FILE * debug;
+	fopen_s( & debug, "C:/TEMP/volume_integrate.obj", "w" );
+
+	for( int i = 0; i < v.Indices().size(); i++ )
+	{
+		kppl::Voxel vx = v.Voxels()[ i ];
+		if( vx.Weight() == 0 )
+			continue;
+
+		unsigned x, y, z;
+		kppl::unpackInts( v.Indices()[ i ], x, y, z );
+		flink::float4 pos = v.VoxelCenter( x, y, z );
+		fprintf_s( debug, "v %f %f %f\n", pos.x, pos.y, pos.z );
+	}
+	
+	fclose( debug );
 
 	BOOST_REQUIRE( true );
 }
