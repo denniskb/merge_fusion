@@ -131,7 +131,7 @@ flink::float4 kppl::HostVolume::VoxelCenter( int x, int y, int z ) const
 
 flink::float4 kppl::HostVolume::BrickIndex( flink::float4 const & world ) const
 {
-	return ( world - Minimum() ) / ( Maximum() - Minimum() ) * (float) NumBricksInVolume();
+	return ( world - Minimum() ) / ( Maximum() - Minimum() ) * flink::set( (float) NumBricksInVolume() );
 }
 
 

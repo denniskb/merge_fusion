@@ -1,98 +1,97 @@
-/*
-Convenience wrapper around DirectXMath to save typing and
-implement some missing functions.
-*/
-
 #pragma once
 
 #include <cassert>
 
-#include <DirectXMath.h>
+#include <smmintrin.h>
 
-using namespace DirectX;
+#include <DirectXMath.h>
 
 
 
 namespace flink {
 
-// abbreviated type names
+typedef DirectX::XMFLOAT4A float4;
+typedef DirectX::XMFLOAT4X4A float4x4;
 
-typedef XMVECTOR vector;
-typedef XMMATRIX matrix;
+typedef DirectX::XMVECTOR vector;
+typedef DirectX::XMMATRIX matrix;
 
-typedef XMFLOAT4A float4;
-typedef XMFLOAT4X4A float4x4;
+#pragma region float4
 
-// set, load and store functions
+inline float4 set( float s )
+{
+	return float4( s, s, s, s );
+}
+
+#pragma endregion
+
+#pragma region vector
 
 inline vector set( float x, float y, float z, float w )
 {
-	return XMVectorSet( x, y, z, w );
+	return DirectX::XMVectorSet( x, y, z, w );
 }
 
-inline vector load( float4 const * v )
+inline vector load( float4 const & v )
 {
-	return XMLoadFloat4A( v );
+	return DirectX::XMLoadFloat4A( & v );
 }
 
 inline float4 store( vector v )
 {
 	float4 result;
-	XMStoreFloat4A( & result, v );
+	DirectX::XMStoreFloat4A( & result, v );
 	return result;
 }
 
-inline matrix load( float4x4 const * m )
+#pragma endregion
+
+#pragma region matrix
+
+inline matrix load( float4x4 const & m )
 {
-	return XMLoadFloat4x4A( m );
+	return DirectX::XMLoadFloat4x4A( & m );	
 }
 
 inline float4x4 store( matrix m )
 {
 	float4x4 result;
-	XMStoreFloat4x4A( & result, m );
+	DirectX::XMStoreFloat4x4A( & result, m );
 	return result;
 }
 
-// extra functions
-
-inline vector homogenize( vector v )
-{
-	return v / XMVectorPermute< 3, 3, 3, 3 >( v, v );
-}
-
-inline vector normalize( vector v )
-{
-	return XMVector4Normalize( v );
-}
+#pragma endregion
 
 inline float dot( float4 const & a, float4 const & b )
 {
 	return
-		a.x * b.x + 
-		a.y * b.y + 
-		a.z * b.z;
+		a.x * b.x +
+		a.y * b.y +
+		a.z * b.z +
+		a.w * b.w;
+}
+
+inline vector homogenize( vector v )
+{
+	using DirectX::operator/;
+	return v / DirectX::XMVectorPermute< 3, 3, 3, 3 >( v, v );
 }
 
 inline float lerp( float a, float b, float weightA, float weightB )
 {
-	assert( weightA > 0.0f );
-	assert( weightB > 0.0f );
+	assert( weightA + weightB != 0.0f );
 
-	return ( a * weightA + b * weightB ) / ( weightA + weightB );
+	return a * weightA + b * weightB / ( weightA + weightB );
 }
 
 }
 
-// arithmetic operators
-
-inline flink::vector operator*( flink::vector v, flink::matrix m )
-{
-	return XMVector4Transform( v, m );
-}
+#pragma region float4 ops
 
 inline flink::float4 operator+( flink::float4 const & a, flink::float4 const & b )
 {
+	assert( a.w + b.w <= 1.0f );
+
 	return flink::float4
 	(
 		a.x + b.x,
@@ -104,6 +103,8 @@ inline flink::float4 operator+( flink::float4 const & a, flink::float4 const & b
 
 inline flink::float4 operator-( flink::float4 const & a, flink::float4 const & b )
 {
+	assert( a.w - b.w >= 0.0f );
+
 	return flink::float4
 	(
 		a.x - b.x,
@@ -120,17 +121,17 @@ inline flink::float4 operator*( flink::float4 const & a, flink::float4 const & b
 		a.x * b.x,
 		a.y * b.y,
 		a.z * b.z,
-		0.0f
+		a.w * b.w
 	);
-}
-
-inline flink::float4 operator*( flink::float4 const & a, float s )
-{
-	return a * flink::float4( s, s, s, 0.0f );
 }
 
 inline flink::float4 operator/( flink::float4 const & a, flink::float4 const & b )
 {
+	assert( b.x != 0.0f );
+	assert( b.y != 0.0f );
+	assert( b.z != 0.0f );
+	assert( a.w == 0.0f && b.w == 0.0f );
+
 	return flink::float4
 	(
 		a.x / b.x,
@@ -140,6 +141,8 @@ inline flink::float4 operator/( flink::float4 const & a, flink::float4 const & b
 	);
 }
 
+
+
 inline bool operator<( flink::float4 const & a, flink::float4 const & b )
 {
 	return
@@ -148,9 +151,20 @@ inline bool operator<( flink::float4 const & a, flink::float4 const & b )
 		a.z < b.z;
 }
 
-inline bool operator<( flink::float4 const & a, float s )
+inline bool operator<=( flink::float4 const & a, flink::float4 const & b )
 {
-	return a < flink::float4( s, s, s, s );
+	return
+		a.x <= b.x &&
+		a.y <= b.y &&
+		a.z <= b.z;
+}
+
+inline bool operator>( flink::float4 const & a, flink::float4 const & b )
+{
+	return
+		a.x > b.x &&
+		a.y > b.y &&
+		a.z > b.z;
 }
 
 inline bool operator>=( flink::float4 const & a, flink::float4 const & b )
@@ -161,7 +175,33 @@ inline bool operator>=( flink::float4 const & a, flink::float4 const & b )
 		a.z >= b.z;
 }
 
-inline bool operator>=( flink::float4 const & a, float s )
+#pragma endregion
+
+#pragma region vector ops
+
+inline flink::vector operator+( flink::vector a, flink::vector b )
 {
-	return a >= flink::float4( s, s, s, s );
+	return DirectX::XMVectorAdd( a, b );
 }
+
+inline flink::vector operator-( flink::vector a, flink::vector b )
+{
+	return DirectX::XMVectorSubtract( a, b );
+}
+
+inline flink::vector operator*( flink::vector a, flink::vector b )
+{
+	return DirectX::XMVectorMultiply( a, b );
+}
+
+inline flink::vector operator/( flink::vector a, flink::vector b )
+{
+	return DirectX::XMVectorDivide( a, b );
+}
+
+inline flink::vector operator*( flink::vector v, flink::matrix m )
+{
+	return DirectX::XMVector4Transform( v, m );
+}
+
+#pragma endregion

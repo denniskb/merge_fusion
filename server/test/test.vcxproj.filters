@@ -33,12 +33,6 @@
     <ClCompile Include="HostVolume.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DeviceDepthFrame.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="DeviceVolume.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="radix_sort.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

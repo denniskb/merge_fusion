@@ -26,7 +26,7 @@ public:
 	);
 
 private:
-	vector< unsigned > m_voxelIndicesToIntegrate;
+	vector< unsigned > m_affectedIndices;
 
 	static void MarkBricks
 	(

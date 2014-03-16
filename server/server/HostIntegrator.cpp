@@ -3,6 +3,7 @@
 #include "HostDepthFrame.h"
 #include "HostVolume.h"
 #include "radix_sort.h"
+#include "Timer.h"
 #include "util.h"
 #include "vector.h"
 #include "Voxel.m"
@@ -22,15 +23,28 @@ void kppl::HostIntegrator::Integrate
 	flink::float4x4 const & viewToWorld
 )
 {
-	MarkBricks( volume, frame, viewToWorld, m_voxelIndicesToIntegrate );
-	radix_sort( m_voxelIndicesToIntegrate );
-	remove_dups( m_voxelIndicesToIntegrate );
+	Timer timer;
+	MarkBricks( volume, frame, viewToWorld, m_affectedIndices );
+	printf( "mark: %fms\n", timer.Time() * 1000.0 );
+	timer.Reset();
+	radix_sort( m_affectedIndices );
+	printf( "sort: %fms\n", timer.Time() * 1000.0 );
+	timer.Reset();
+	remove_dups( m_affectedIndices );
+	printf( "compact: %fms\n", timer.Time() * 1000.0 );
+	timer.Reset();
 
-	ExpandBricks( volume, m_voxelIndicesToIntegrate );
+	ExpandBricks( volume, m_affectedIndices );
+	printf( "expand: %fms\n", timer.Time() * 1000.0 );
+	timer.Reset();
 	
-	UpdateVoxels( volume, m_voxelIndicesToIntegrate, frame, eye, forward, viewProjection );
+	UpdateVoxels( volume, m_affectedIndices, frame, eye, forward, viewProjection );
+	printf( "integr: %fms\n", timer.Time() * 1000.0 );
+	timer.Reset();
 
-	volume.Indices() = m_voxelIndicesToIntegrate;
+	volume.Indices() = m_affectedIndices;
+	printf( "copy: %fms\n", timer.Time() * 1000.0 );
+	timer.Reset();
 }
 
 
@@ -47,7 +61,7 @@ void kppl::HostIntegrator::MarkBricks
 {
 	outBrickIndices.clear();
 
-	flink::matrix _viewToWorld = flink::load( & viewToWorld );
+	flink::matrix _viewToWorld = flink::load( viewToWorld );
 
 	for( int i = 0, res = depthMap.Resolution(); i < res; i++ )
 	{
@@ -69,13 +83,13 @@ void kppl::HostIntegrator::MarkBricks
 			1.0f
 		);
 
-		flink::vector _pxView = flink::load( & pxView );
+		flink::vector _pxView = flink::load( pxView );
 		flink::vector _pxWorld = _pxView * _viewToWorld;
 
 		flink::float4 pxWorld = flink::store( _pxWorld );
 		flink::float4 pxVol = volume.BrickIndex( pxWorld );
 
-		if( pxVol < 0.5f || pxVol >= volume.NumBricksInVolume() - 0.5f )
+		if( pxVol < flink::set( 0.5f ) || pxVol >= flink::set( volume.NumBricksInVolume() - 0.5f ) )
 			continue;
 
 		pxVol.x -= 0.5f;
@@ -105,6 +119,8 @@ void kppl::HostIntegrator::ExpandBricks
 {
 	if( volume.BrickResolution() > 1 )
 	{
+		Timer timer;
+
 		int const brickSlice = volume.BrickSlice();
 		int const brickVolume = volume.BrickVolume();
 
@@ -131,8 +147,13 @@ void kppl::HostIntegrator::ExpandBricks
 			}
 		}
 
+		printf( "expand-expand: %fms\n", timer.Time() * 1000.0 );
+		timer.Reset();
+
 		// TODO: Sort is overkill. Optimize with specialized permute
 		radix_sort( inOutIndices );
+
+		printf( "expand-sort: %fms\n", timer.Time() * 1000.0 );
 	}
 }
 
@@ -151,7 +172,7 @@ void kppl::HostIntegrator::UpdateVoxels
 {
 	volume.Voxels().resize( voxelsToUpdate.size() );
 
-	flink::matrix _viewProj = flink::load( & viewProjection );
+	flink::matrix _viewProj = flink::load( viewProjection );
 	flink::vector _ndcToUV = flink::set( frame.Width() / 2.0f, frame.Height() / 2.0f, 0, 0 );
 		
 	for( int i = 0; i < voxelsToUpdate.size(); i++ )
@@ -160,10 +181,10 @@ void kppl::HostIntegrator::UpdateVoxels
 		unpackInts( voxelsToUpdate[ i ], x, y, z );
 
 		flink::float4 centerWorld = volume.VoxelCenter( x, y, z );
-		flink::vector _centerWorld = flink::load( & centerWorld );
-
+		flink::vector _centerWorld = flink::load( centerWorld );
+		
 		flink::vector _centerNDC = flink::homogenize( _centerWorld * _viewProj );
-
+		
 		flink::vector _centerScreen = _centerNDC * _ndcToUV + _ndcToUV;
 		flink::float4 centerScreen = flink::store( _centerScreen );
 

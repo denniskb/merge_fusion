@@ -36,8 +36,7 @@ public:
 	{
 		static_assert( std::is_pod< T >::value, "vector can only hold PODs." );
 
-		resize( copy.size() );
-		std::memcpy( m_data, copy.m_data, copy.size() * sizeof( T ) );
+		copy_from( copy );
 	}
 
 	vector( vector && rhs )
@@ -49,11 +48,9 @@ public:
 		swap( * this, rhs );
 	}
 
-	vector& operator=( vector rhs )
+	vector& operator=( vector const & rhs )
 	{
-		using std::swap;
-
-		swap( * this, rhs );
+		copy_from( rhs );
 
 		return * this;
 	}
@@ -138,6 +135,12 @@ private:
 	T * m_data;
 	int m_size;
 	int m_capacity;
+
+	void copy_from( vector< T > const & rhs )
+	{
+		resize( rhs.size() );
+		std::memcpy( m_data, rhs.m_data, rhs.size() * sizeof( T ) );
+	}
 };
 
 }

@@ -12,15 +12,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cuda_directives.h" />
-    <ClInclude Include="DeviceVolume.h" />
     <ClInclude Include="force_nvcc.h" />
     <ClInclude Include="HostDepthFrame.h" />
     <ClInclude Include="DepthStream.h" />
-    <ClInclude Include="DeviceDepthFrame.h" />
     <ClInclude Include="flink.h" />
     <ClInclude Include="HostIntegrator.h" />
-    <ClInclude Include="KernelDepthFrame.cuh" />
-    <ClInclude Include="KernelVolume.cuh" />
+    <ClInclude Include="HostMesher.h" />
     <ClInclude Include="radix_sort.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="util.h" />
@@ -34,6 +31,7 @@
     </ClCompile>
     <ClCompile Include="DepthStream.cpp" />
     <ClCompile Include="HostIntegrator.cpp" />
+    <ClCompile Include="HostMesher.cpp" />
     <ClCompile Include="radix_sort.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="util.cpp" />
@@ -41,16 +39,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="helper_math_ext.cuh" />
-  </ItemGroup>
-  <ItemGroup>
-    <CudaCompile Include="DeviceDepthFrame.cu">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-    </CudaCompile>
-    <CudaCompile Include="DeviceVolume.cu">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-    </CudaCompile>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{6372D9A0-C97E-4758-8039-31C3B26F0963}</ProjectGuid>

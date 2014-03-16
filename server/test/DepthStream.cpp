@@ -3,12 +3,9 @@
 #include <stdio.h>
 #include <vector>
 
-#include <DirectXMath.h>
-
-#include <server/HostDepthFrame.h>
 #include <server/DepthStream.h>
-
-using namespace DirectX;
+#include <server/flink.h>
+#include <server/HostDepthFrame.h>
 
 
 
@@ -62,7 +59,7 @@ BOOST_AUTO_TEST_CASE( NextFrame_v1 )
 
 	fclose( file );
 
-	XMFLOAT4X4A view;
+	flink::float4x4 view;
 	kppl::HostDepthFrame depth;
 
 	kppl::DepthStream ds( fileName );
@@ -100,7 +97,7 @@ BOOST_AUTO_TEST_CASE( NextFrame_v2_short )
 
 	fclose( file );
 
-	XMFLOAT4X4A view;
+	flink::float4x4 view;
 	kppl::HostDepthFrame depth;
 
 	kppl::DepthStream ds( fileName );
@@ -138,7 +135,7 @@ BOOST_AUTO_TEST_CASE( NextFrame_v2_float )
 
 	fclose( file );
 
-	XMFLOAT4X4A view;
+	flink::float4x4 view;
 	kppl::HostDepthFrame depth;
 
 	kppl::DepthStream ds( fileName );

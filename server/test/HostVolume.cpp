@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE( Triangulate )
 	*/
 	kppl::HostIntegrator i;
 
-	kppl::HostVolume v( 512, 2.0f, 1 );
+	kppl::HostVolume v( 256, 2.0f, 1 );
 	kppl::DepthStream ds( ( boost::filesystem::current_path() / "content/imrod_v2.depth" ).string().c_str() );
 
 	kppl::HostDepthFrame depth;

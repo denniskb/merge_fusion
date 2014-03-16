@@ -1,6 +1,10 @@
 #pragma once
 
+#include <DirectXMath.h>
+
 #include <server/flink.h>
+
+using namespace DirectX;
 
 
 
@@ -13,7 +17,7 @@ inline void ComputeMatrices
 	flink::float4x4 & outViewToWorld
 )
 {
-	flink::matrix _view = flink::load( & view );
+	flink::matrix _view = flink::load( view );
 	flink::matrix _viewInv = XMMatrixInverse( nullptr, _view );
 	flink::vector _eye = flink::set( 0.0f, 0.0f, 0.0f, 1.0f ) * _viewInv;
 	flink::vector _forward = flink::set( 0.0f, 0.0f, -1.0f, 0.0f ) * _viewInv;

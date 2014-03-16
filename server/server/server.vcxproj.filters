@@ -27,25 +27,13 @@
     <ClInclude Include="Timer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DeviceDepthFrame.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="HostDepthFrame.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="HostVolume.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DeviceVolume.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="force_nvcc.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="KernelDepthFrame.cuh">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="KernelVolume.cuh">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="cuda_directives.h">
@@ -61,6 +49,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="HostIntegrator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HostMesher.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -86,18 +77,13 @@
     <ClCompile Include="HostIntegrator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="HostMesher.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="helper_math_ext.cuh">
       <Filter>Header Files</Filter>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <CudaCompile Include="DeviceDepthFrame.cu">
-      <Filter>Source Files</Filter>
-    </CudaCompile>
-    <CudaCompile Include="DeviceVolume.cu">
-      <Filter>Source Files</Filter>
-    </CudaCompile>
   </ItemGroup>
 </Project>
