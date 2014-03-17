@@ -4,14 +4,8 @@
 *.suo
 *.vcxproj.user
 
-/server/bin
-/server/obj
+/reference/bin
+/reference/obj
 
 /test/bin
 /test/obj
-
-/perf/bin
-/perf/obj
-
-/live/bin
-/live/obj
