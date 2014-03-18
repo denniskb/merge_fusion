@@ -28,7 +28,7 @@ public:
 private:
 	vector< unsigned > m_affectedIndices;
 
-	static void MarkBricks
+	static void SplatBricks
 	(
 		HostVolume const & volume,
 		HostDepthFrame const & depthMap,
@@ -37,7 +37,7 @@ private:
 		vector< unsigned > & outBrickIndices
 	);
 
-	static void ExpandBricks
+	static void BricksToVoxels
 	(
 		HostVolume const & volume,
 		vector< unsigned > & inOutIndices
@@ -46,7 +46,6 @@ private:
 	static void UpdateVoxels
 	(
 		HostVolume & volume,
-		vector< unsigned > const & voxelsToUpdate,
 
 		svc::HostDepthFrame const & frame, 
 

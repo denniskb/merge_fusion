@@ -24,7 +24,7 @@ void svc::HostIntegrator::Integrate
 )
 {
 	Timer timer;
-	MarkBricks( volume, frame, viewToWorld, m_affectedIndices );
+	SplatBricks( volume, frame, viewToWorld, m_affectedIndices );
 	printf( "mark: %fms\n", timer.Time() * 1000.0 );
 	timer.Reset();
 	radix_sort( m_affectedIndices );
@@ -34,23 +34,25 @@ void svc::HostIntegrator::Integrate
 	printf( "compact: %fms\n", timer.Time() * 1000.0 );
 	timer.Reset();
 
-	ExpandBricks( volume, m_affectedIndices );
+	BricksToVoxels( volume, m_affectedIndices );
 	printf( "expand: %fms\n", timer.Time() * 1000.0 );
 	timer.Reset();
 	
-	UpdateVoxels( volume, m_affectedIndices, frame, eye, forward, viewProjection );
-	printf( "integr: %fms\n", timer.Time() * 1000.0 );
+	volume.Indices() = m_affectedIndices;
+	// TODO: Encapsulate this functionality !!!
+	volume.Voxels().resize( volume.Indices().size() );
+	printf( "copy: %fms\n", timer.Time() * 1000.0 );
 	timer.Reset();
 
-	volume.Indices() = m_affectedIndices;
-	printf( "copy: %fms\n", timer.Time() * 1000.0 );
+	UpdateVoxels( volume, frame, eye, forward, viewProjection );
+	printf( "integr: %fms\n", timer.Time() * 1000.0 );
 	timer.Reset();
 }
 
 
 
 // static 
-void svc::HostIntegrator::MarkBricks
+void svc::HostIntegrator::SplatBricks
 (
 	HostVolume const & volume,
 	HostDepthFrame const & depthMap,
@@ -111,7 +113,7 @@ void svc::HostIntegrator::MarkBricks
 }
 
 // static 
-void svc::HostIntegrator::ExpandBricks
+void svc::HostIntegrator::BricksToVoxels
 (
 	HostVolume const & volume,
 	vector< unsigned > & inOutIndices
@@ -161,7 +163,6 @@ void svc::HostIntegrator::ExpandBricks
 void svc::HostIntegrator::UpdateVoxels
 (
 	HostVolume & volume,
-	vector< unsigned > const & voxelsToUpdate,
 
 	svc::HostDepthFrame const & frame, 
 
@@ -170,15 +171,13 @@ void svc::HostIntegrator::UpdateVoxels
 	flink::float4x4 const & viewProjection
 )
 {
-	volume.Voxels().resize( voxelsToUpdate.size() );
-
 	flink::matrix _viewProj = flink::load( viewProjection );
 	flink::vector _ndcToUV = flink::set( frame.Width() / 2.0f, frame.Height() / 2.0f, 0, 0 );
 		
-	for( int i = 0; i < voxelsToUpdate.size(); i++ )
+	for( int i = 0; i < volume.Indices().size(); i++ )
 	{
 		unsigned x, y, z;
-		unpackInts( voxelsToUpdate[ i ], x, y, z );
+		unpackInts( volume.Indices()[ i ], x, y, z );
 
 		flink::float4 centerWorld = volume.VoxelCenter( x, y, z );
 		flink::vector _centerWorld = flink::load( centerWorld );
