@@ -184,7 +184,7 @@ void svc::HostIntegrator::UpdateVoxels
 		
 		flink::vector _centerNDC = flink::homogenize( _centerWorld * _viewProj );
 		
-		flink::vector _centerScreen = _centerNDC * _ndcToUV + _ndcToUV;
+		flink::vector _centerScreen = _mm_macc_ps( _centerNDC, _ndcToUV, _ndcToUV );
 		flink::float4 centerScreen = flink::store( _centerScreen );
 
 		int u = (int) centerScreen.x;
