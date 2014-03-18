@@ -8,7 +8,7 @@
 #include "HostDepthFrame.h"
 #include "radix_sort.h"
 #include "util.h"
-#include "Voxel.m"
+#include "Voxel.h"
 
 
 

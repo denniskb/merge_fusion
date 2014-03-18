@@ -1,6 +1,6 @@
 #include <boost/test/auto_unit_test.hpp>
 
-#include <reference/Voxel.m>
+#include <reference/Voxel.h>
 
 
 

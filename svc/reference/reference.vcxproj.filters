@@ -33,15 +33,6 @@
     <ClInclude Include="HostVolume.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="force_nvcc.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="cuda_directives.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Voxel.m">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="radix_sort.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -52,6 +43,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="HostMesher.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Voxel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -80,10 +74,8 @@
     <ClCompile Include="HostMesher.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="helper_math_ext.cuh">
-      <Filter>Header Files</Filter>
-    </None>
+    <ClCompile Include="Voxel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <cassert>
 
 #include <smmintrin.h>
@@ -82,6 +83,12 @@ inline float lerp( float a, float b, float weightA, float weightB )
 	assert( weightA + weightB != 0.0f );
 
 	return a * weightA + b * weightB / ( weightA + weightB );
+}
+
+template< typename T >
+inline T clamp( T x, T a, T b )
+{
+	return std::max( a, std::min( x, b ) );
 }
 
 }

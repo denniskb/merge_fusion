@@ -10,7 +10,7 @@
 #include <reference/DepthStream.h>
 #include <reference/flink.h>
 #include <reference/util.h>
-#include <reference/Voxel.m>
+#include <reference/Voxel.h>
 
 #include "util.h"
 

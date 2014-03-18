@@ -11,8 +11,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="cuda_directives.h" />
-    <ClInclude Include="force_nvcc.h" />
     <ClInclude Include="HostDepthFrame.h" />
     <ClInclude Include="DepthStream.h" />
     <ClInclude Include="flink.h" />
@@ -23,7 +21,7 @@
     <ClInclude Include="util.h" />
     <ClInclude Include="HostVolume.h" />
     <ClInclude Include="vector.h" />
-    <ClInclude Include="Voxel.m" />
+    <ClInclude Include="Voxel.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="HostDepthFrame.cpp">
@@ -36,9 +34,7 @@
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="util.cpp" />
     <ClCompile Include="HostVolume.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="helper_math_ext.cuh" />
+    <ClCompile Include="Voxel.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{6372D9A0-C97E-4758-8039-31C3B26F0963}</ProjectGuid>
@@ -60,9 +56,7 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-  <ImportGroup Label="ExtensionSettings">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 5.5.props" />
-  </ImportGroup>
+  <ImportGroup Label="ExtensionSettings" />
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="..\svc_debug_x64.props" />
   </ImportGroup>
@@ -78,7 +72,7 @@
       <AdditionalDependencies />
     </Link>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(CUDA_PATH)\include;$(NVCUDASAMPLES_ROOT)\common\inc;$(KINECTSDK10_DIR)inc</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(KINECTSDK10_DIR)inc</AdditionalIncludeDirectories>
     </ClCompile>
     <CudaCompile>
       <Include>$(CUDA_PATH)\include;$(NVCUDASAMPLES_ROOT)\common\inc</Include>
@@ -88,7 +82,7 @@
     <ClCompile />
     <Link />
     <ClCompile>
-      <AdditionalIncludeDirectories>$(CUDA_PATH)\include;$(NVCUDASAMPLES_ROOT)\common\inc;$(KINECTSDK10_DIR)inc</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(KINECTSDK10_DIR)inc</AdditionalIncludeDirectories>
     </ClCompile>
     <CudaCompile>
       <Include>$(CUDA_PATH)\include;$(NVCUDASAMPLES_ROOT)\common\inc</Include>
@@ -96,7 +90,5 @@
     </CudaCompile>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 5.5.targets" />
-  </ImportGroup>
+  <ImportGroup Label="ExtensionTargets" />
 </Project>

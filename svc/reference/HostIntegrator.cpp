@@ -6,7 +6,7 @@
 #include "Timer.h"
 #include "util.h"
 #include "vector.h"
-#include "Voxel.m"
+#include "Voxel.h"
 
 
 

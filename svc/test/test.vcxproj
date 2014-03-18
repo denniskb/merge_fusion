@@ -44,22 +44,22 @@
     <ClCompile />
     <Link />
     <ClCompile>
-      <AdditionalIncludeDirectories>$(BOOST_ROOT);..;$(CUDA_PATH)\include;$(NVCUDASAMPLES_ROOT)\common\inc</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(BOOST_ROOT);..</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(BOOST_LIB_PATH_X64);$(CUDA_PATH)\lib\x64;$(KINECTSDK10_DIR)lib\amd64</AdditionalLibraryDirectories>
-      <AdditionalDependencies>cudart.lib;Kinect10.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(BOOST_LIB_PATH_X64);$(KINECTSDK10_DIR)lib\amd64</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Kinect10.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile />
     <Link />
     <Link>
-      <AdditionalLibraryDirectories>$(BOOST_LIB_PATH_X64);$(CUDA_PATH)\lib\x64;$(KINECTSDK10_DIR)lib\amd64</AdditionalLibraryDirectories>
-      <AdditionalDependencies>cudart.lib;Kinect10.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(BOOST_LIB_PATH_X64);$(KINECTSDK10_DIR)lib\amd64</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Kinect10.lib</AdditionalDependencies>
     </Link>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(BOOST_ROOT);..;$(CUDA_PATH)\include;$(NVCUDASAMPLES_ROOT)\common\inc</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(BOOST_ROOT);..</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
