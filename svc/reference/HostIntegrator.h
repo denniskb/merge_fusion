@@ -31,7 +31,7 @@ private:
 	static void SplatBricks
 	(
 		HostVolume const & volume,
-		HostDepthFrame const & depthMap,
+		HostDepthFrame const & frame,
 		flink::float4x4 const & viewToWorld,
 
 		vector< unsigned > & outBrickIndices

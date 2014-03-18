@@ -55,7 +55,7 @@ void svc::HostIntegrator::Integrate
 void svc::HostIntegrator::SplatBricks
 (
 	HostVolume const & volume,
-	HostDepthFrame const & depthMap,
+	HostDepthFrame const & frame,
 	flink::float4x4 const & viewToWorld,
 
 	vector< unsigned > & outBrickIndices
@@ -65,22 +65,29 @@ void svc::HostIntegrator::SplatBricks
 
 	flink::matrix _viewToWorld = flink::load( viewToWorld );
 
-	for( int i = 0, res = depthMap.Resolution(); i < res; i++ )
-	{
-		int y = i / depthMap.Width();
-		int x = i % depthMap.Width();
+	float const halfFrameWidth = (float) ( frame.Width() / 2 );
+	float const halfFrameHeight = (float) ( frame.Height() / 2 );
 
-		float depth = depthMap( x, y );
+	float const ppX = halfFrameWidth - 0.5f;
+	float const ppY = halfFrameHeight - 0.5f;
+
+	for( int i = 0, res = frame.Resolution(); i < res; i++ )
+	{
+		int y = i / frame.Width();
+		int x = i % frame.Width();
+
+		float depth = frame( x, y );
 		if( 0.0f == depth )
 			continue;
 
-		float xNdc = ( x - 319.5f ) / 319.5f;
-		float yNdc = ( 239.5f - y ) / 239.5f;
+		float xNdc = ( x - ppX ) / halfFrameWidth;
+		float yNdc = ( ppY - y ) / halfFrameHeight;
 
 		flink::float4 pxView
 		(
-			xNdc * 0.54698249f * depth,
-			yNdc * 0.41023687f * depth,
+			// TODO: Encapsulate camera parameters !!!
+			xNdc * ( 320.0f / 585.0f ) * depth,
+			yNdc * ( 240.0f / 585.0f ) * depth,
 			-depth,
 			1.0f
 		);
