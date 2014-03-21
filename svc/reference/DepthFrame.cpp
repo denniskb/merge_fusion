@@ -1,4 +1,4 @@
-#include "HostDepthFrame.h"
+#include "DepthFrame.h"
 
 #include <cassert>
 #include <utility>
@@ -6,14 +6,14 @@
 
 
 
-svc::HostDepthFrame::HostDepthFrame( int width, int height ) :
+svc::DepthFrame::DepthFrame( int width, int height ) :
 	m_width( 0 ),
 	m_height( 0 )
 {
 	Resize( width, height );
 }
 
-void svc::HostDepthFrame::Resize( int newWidth, int newHeight )
+void svc::DepthFrame::Resize( int newWidth, int newHeight )
 {
 	assert( newWidth >= 0 );
 	assert( newHeight >= 0 );
@@ -28,24 +28,24 @@ void svc::HostDepthFrame::Resize( int newWidth, int newHeight )
 
 
 
-int svc::HostDepthFrame::Width() const
+int svc::DepthFrame::Width() const
 {
 	return m_width;
 }
 
-int svc::HostDepthFrame::Height() const
+int svc::DepthFrame::Height() const
 {
 	return m_height;
 }
 
-int svc::HostDepthFrame::Resolution() const
+int svc::DepthFrame::Resolution() const
 {
 	return Width() * Height();
 }
 
 
 
-float svc::HostDepthFrame::operator()( int x, int y ) const
+float svc::DepthFrame::operator()( int x, int y ) const
 {
 	assert( x >= 0 );
 	assert( y >= 0 );
@@ -55,7 +55,7 @@ float svc::HostDepthFrame::operator()( int x, int y ) const
 	return m_data[ Index2Dto1D( x, y, Width() ) ];
 }
 
-float & svc::HostDepthFrame::operator()( int x, int y )
+float & svc::DepthFrame::operator()( int x, int y )
 {
 	assert( x >= 0 );
 	assert( y >= 0 );
@@ -68,7 +68,7 @@ float & svc::HostDepthFrame::operator()( int x, int y )
 
 
 // static
-int svc::HostDepthFrame::Index2Dto1D( int x, int y, int width )
+int svc::DepthFrame::Index2Dto1D( int x, int y, int width )
 {
 	return x + y * width;
 }

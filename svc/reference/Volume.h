@@ -7,10 +7,10 @@
 
 namespace svc {
 
-class HostDepthFrame;
+class DepthFrame;
 class Voxel;
 
-class HostVolume
+class Volume
 {
 public:
 	/*
@@ -23,7 +23,7 @@ public:
 	@precond sideLength > 0
 	@precond truncationMargin \in [1, resolution] and power of 2
 	*/
-	HostVolume( int resolution, float sideLength, int truncationMargin );
+	Volume( int resolution, float sideLength, int truncationMargin );
 
 	int Resolution() const;
 	float SideLength() const;
@@ -56,7 +56,7 @@ public:
 	static int const * TriTable();
 
 private:
-	HostVolume & operator=( HostVolume const & rhs );
+	Volume & operator=( Volume const & rhs );
 
 	int const m_res;
 	float const m_sideLen;
@@ -67,7 +67,7 @@ private:
 
 	void MarkBricks
 	(
-		HostDepthFrame const & depthMap,
+		DepthFrame const & depthMap,
 		flink::float4x4 const & viewToWorld,
 
 		vector< unsigned > & outBrickIndices
@@ -78,7 +78,7 @@ private:
 	void UpdateVoxels
 	(
 		vector< unsigned > const & voxelsToUpdate,
-		svc::HostDepthFrame const & frame, 
+		svc::DepthFrame const & frame, 
 		flink::float4 const & eye,
 		flink::float4 const & forward,
 		flink::float4x4 const & viewProjection

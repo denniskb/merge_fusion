@@ -6,14 +6,14 @@
 
 namespace svc {
 
-class HostDepthFrame
+class DepthFrame
 {
 public:
 	/*
 	@precond width >= 0
 	@precond height >= 0
 	*/
-	explicit HostDepthFrame( int width = 0, int height = 0 );
+	explicit DepthFrame( int width = 0, int height = 0 );
 	void Resize( int newWidth, int newHeight );
 
 	int Width() const;

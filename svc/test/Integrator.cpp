@@ -4,9 +4,10 @@
 
 #include <boost/filesystem/operations.hpp>
 
-#include <reference/HostDepthFrame.h>
-#include <reference/HostIntegrator.h>
-#include <reference/HostVolume.h>
+#include <reference/Cache.h>
+#include <reference/DepthFrame.h>
+#include <reference/Integrator.h>
+#include <reference/Volume.h>
 #include <reference/DepthStream.h>
 #include <reference/flink.h>
 #include <reference/util.h>
@@ -16,7 +17,7 @@
 
 
 
-BOOST_AUTO_TEST_SUITE( HostIntegrator )
+BOOST_AUTO_TEST_SUITE( Integrator )
 
 BOOST_AUTO_TEST_CASE( Integrate )
 {
@@ -25,19 +26,21 @@ BOOST_AUTO_TEST_CASE( Integrate )
 	One depth frame is integrated (generated with poly2depth) and then
 	all voxels near surface are stored as vertices to an .obj
 	*/
-	svc::HostIntegrator i;
+	svc::Integrator i;
 
-	svc::HostVolume v( 256, 2.0f, 2 );
+	svc::Volume v( 256, 2.0f, 2 );
+	svc::Cache cache;
+
 	svc::DepthStream ds( ( boost::filesystem::current_path() / "content/imrod_v2.depth" ).string().c_str() );
 
-	svc::HostDepthFrame depth;
+	svc::DepthFrame depth;
 	flink::float4x4 view, viewProj, viewToWorld;
 	flink::float4 eye, forward;
 
 	ds.NextFrame( depth, view );
 	ComputeMatrices( view, eye, forward, viewProj, viewToWorld );
 
-	i.Integrate( v, depth, eye, forward, viewProj, viewToWorld );
+	i.Integrate( v, cache, depth, eye, forward, viewProj, viewToWorld );
 
 	FILE * debug;
 	fopen_s( & debug, "C:/TEMP/volume_integrate.obj", "w" );

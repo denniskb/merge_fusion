@@ -1,7 +1,8 @@
-#include "HostIntegrator.h"
+#include "Integrator.h"
 
-#include "HostDepthFrame.h"
-#include "HostVolume.h"
+#include "Cache.h"
+#include "DepthFrame.h"
+#include "Volume.h"
 #include "radix_sort.h"
 #include "Timer.h"
 #include "util.h"
@@ -11,10 +12,11 @@
 
 
 // static 
-void svc::HostIntegrator::Integrate
+void svc::Integrator::Integrate
 ( 
-	HostVolume & volume,
-	HostDepthFrame const & frame,
+	Volume & volume,
+	Cache & cache,
+	DepthFrame const & frame,
 
 	flink::float4 const & eye,
 	flink::float4 const & forward,
@@ -24,38 +26,31 @@ void svc::HostIntegrator::Integrate
 )
 {
 	Timer timer;
-	SplatBricks( volume, frame, viewToWorld, m_affectedIndices );
-	printf( "mark: %fms\n", timer.Time() * 1000.0 );
-	timer.Reset();
-	radix_sort( m_affectedIndices );
-	printf( "sort: %fms\n", timer.Time() * 1000.0 );
-	timer.Reset();
-	remove_dups( m_affectedIndices );
-	printf( "compact: %fms\n", timer.Time() * 1000.0 );
-	timer.Reset();
 
-	BricksToVoxels( volume, m_affectedIndices );
-	printf( "expand: %fms\n", timer.Time() * 1000.0 );
-	timer.Reset();
+	SplatBricks( volume, frame, viewToWorld, m_splattedVoxels );
+	radix_sort( m_splattedVoxels );
+	remove_dups( m_splattedVoxels );
+
+	ExpandBricks( volume, cache, m_splattedVoxels );
 	
-	volume.Indices() = m_affectedIndices;
-	// TODO: Encapsulate this functionality !!!
+	BricksToVoxels( volume, m_splattedVoxels );
+	radix_sort( m_splattedVoxels );
+
+	volume.Indices() = m_splattedVoxels;
 	volume.Voxels().resize( volume.Indices().size() );
-	printf( "copy: %fms\n", timer.Time() * 1000.0 );
-	timer.Reset();
 
 	UpdateVoxels( volume, frame, eye, forward, viewProjection );
+
 	printf( "integr: %fms\n", timer.Time() * 1000.0 );
-	timer.Reset();
 }
 
 
 
 // static 
-void svc::HostIntegrator::SplatBricks
+void svc::Integrator::SplatBricks
 (
-	HostVolume const & volume,
-	HostDepthFrame const & frame,
+	Volume const & volume,
+	DepthFrame const & frame,
 	flink::float4x4 const & viewToWorld,
 
 	vector< unsigned > & outBrickIndices
@@ -71,6 +66,9 @@ void svc::HostIntegrator::SplatBricks
 	float const ppX = halfFrameWidth - 0.5f;
 	float const ppY = halfFrameHeight - 0.5f;
 
+	// TODO: Encapsulate in CameraParams struct!
+	float const fl = 585.0f;
+
 	for( int i = 0, res = frame.Resolution(); i < res; i++ )
 	{
 		int y = i / frame.Width();
@@ -85,9 +83,8 @@ void svc::HostIntegrator::SplatBricks
 
 		flink::float4 pxView
 		(
-			// TODO: Encapsulate camera parameters !!!
-			xNdc * ( 320.0f / 585.0f ) * depth,
-			yNdc * ( 240.0f / 585.0f ) * depth,
+			xNdc * ( halfFrameWidth / fl ) * depth,
+			yNdc * ( halfFrameHeight / fl ) * depth,
 			-depth,
 			1.0f
 		);
@@ -98,38 +95,110 @@ void svc::HostIntegrator::SplatBricks
 		flink::float4 pxWorld = flink::store( _pxWorld );
 		flink::float4 pxVol = volume.BrickIndex( pxWorld );
 
-		if( pxVol < flink::set( 0.5f ) || pxVol >= flink::set( volume.NumBricksInVolume() - 0.5f ) )
+		if( pxVol < flink::make_float4( 0.5f ) ||
+			pxVol >= flink::make_float4( volume.NumBricksInVolume() - 0.5f ) )
 			continue;
 
-		pxVol.x -= 0.5f;
-		pxVol.y -= 0.5f;
-		pxVol.z -= 0.5f;
-
-		unsigned idx = packInts( (unsigned) pxVol.x, (unsigned) pxVol.y, (unsigned) pxVol.z );
-
-		outBrickIndices.push_back( idx );
-		outBrickIndices.push_back( idx + 1 );
-		outBrickIndices.push_back( idx + 1024 );
-		outBrickIndices.push_back( idx + 1025 );
-				
-		outBrickIndices.push_back( idx + 1048576 );
-		outBrickIndices.push_back( idx + 1048577 );
-		outBrickIndices.push_back( idx + 1049600 );
-		outBrickIndices.push_back( idx + 1049601 );
+		outBrickIndices.push_back( packInts
+		(
+			(unsigned) ( pxVol.x - 0.5f ),
+			(unsigned) ( pxVol.y - 0.5f ),
+			(unsigned) ( pxVol.z - 0.5f )
+		));
 	}
 }
 
 // static 
-void svc::HostIntegrator::BricksToVoxels
+void svc::Integrator::ExpandBricks
 (
-	HostVolume const & volume,
+	Volume const & volume,
+	Cache & cache,
+
+	vector< unsigned > & inOutBrickIndices
+)
+{
+	ExpandBricksHelper< 1 >( volume, cache, 0, packInts( 0, 0, 1 ), inOutBrickIndices );
+	ExpandBricksHelper< 0 >( volume, cache, volume.NumBricksInVolume(), packInts( 0, 1, 0 ), inOutBrickIndices );
+	ExpandBricksHelperX( volume.NumBricksInVolume(), inOutBrickIndices );
+}
+
+// static
+template< int sliceIdx >
+void svc::Integrator::ExpandBricksHelper
+(
+	Volume const & volume,
+	Cache & cache,
+	int deltaLookUp,
+	unsigned deltaStore,
+
+	vector< unsigned > & inOutBrickIndices
+)
+{
+	// This method can only be used to expand in z or y direction
+	// otherwise invalid voxel indices are generated
+	assert( deltaLookUp == 0 || deltaLookUp == volume.NumBricksInVolume() );
+
+	int size = inOutBrickIndices.size();
+	cache.Reset( volume.NumBricksInVolume() );
+
+	while( cache.NextSlice( inOutBrickIndices.cbegin(), inOutBrickIndices.cbegin(), size ) )
+	{
+		for( int i = cache.CachedRange().first; i < cache.CachedRange().second; i++ )
+		{
+			int idx = 
+				unpackX( inOutBrickIndices[ i ] ) + 
+				unpackY( inOutBrickIndices[ i ] ) * cache.SliceRes() + 
+				deltaLookUp;
+			
+			if( idx < cache.SliceSize() &&
+				std::get< sliceIdx >( cache.CachedSlices() )[ idx ] == 0 )
+				inOutBrickIndices.push_back( inOutBrickIndices[ i ] + deltaStore );
+		}
+	}
+	radix_sort( inOutBrickIndices );
+}
+
+template void svc::Integrator::ExpandBricksHelper< 0 >(Volume const &, Cache &, int, unsigned, vector< unsigned > &);
+template void svc::Integrator::ExpandBricksHelper< 1 >(Volume const &, Cache &, int, unsigned, vector< unsigned > &);
+
+// static 
+void svc::Integrator::ExpandBricksHelperX
+(
+	int numBricksInVolume,
+	vector< unsigned > & inOutBrickIndices
+)
+{
+	int size = inOutBrickIndices.size();
+	inOutBrickIndices.resize( size * 2 );
+	std::memset( inOutBrickIndices.begin() + size, 0, size * sizeof( unsigned ) );
+	
+	unsigned tmp = 0;
+	for( int i = size - 1; i >= 0; i-- )
+	{
+		unsigned xyz = inOutBrickIndices[ i ];
+		inOutBrickIndices[ i ] = 0;
+		
+		inOutBrickIndices[ 2 * i ] = xyz;
+		
+		if( (int) unpackX( xyz ) + 1 < numBricksInVolume &&
+			tmp != xyz + 1 )
+			inOutBrickIndices[ 2 * i + 1 ] = xyz + 1;
+	
+		tmp = xyz;
+	}
+		
+	remove_value( inOutBrickIndices, 0 );
+}
+
+// static 
+void svc::Integrator::BricksToVoxels
+(
+	Volume const & volume,
 	vector< unsigned > & inOutIndices
 )
 {
 	if( volume.BrickResolution() > 1 )
 	{
-		Timer timer;
-
 		int const brickSlice = volume.BrickSlice();
 		int const brickVolume = volume.BrickVolume();
 
@@ -155,23 +224,15 @@ void svc::HostIntegrator::BricksToVoxels
 				);
 			}
 		}
-
-		printf( "expand-expand: %fms\n", timer.Time() * 1000.0 );
-		timer.Reset();
-
-		// TODO: Sort is overkill. Optimize with specialized permute
-		radix_sort( inOutIndices );
-
-		printf( "expand-sort: %fms\n", timer.Time() * 1000.0 );
 	}
 }
 
 // static 
-void svc::HostIntegrator::UpdateVoxels
+void svc::Integrator::UpdateVoxels
 (
-	HostVolume & volume,
+	Volume & volume,
 
-	svc::HostDepthFrame const & frame, 
+	svc::DepthFrame const & frame, 
 
 	flink::float4 const & eye,
 	flink::float4 const & forward,

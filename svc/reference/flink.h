@@ -19,7 +19,7 @@ typedef DirectX::XMMATRIX matrix;
 
 #pragma region float4
 
-inline float4 set( float s )
+inline float4 make_float4( float s )
 {
 	return float4( s, s, s, s );
 }

@@ -1,12 +1,12 @@
-#include "HostMesher.h"
+#include "Mesher.h"
 
-#include "HostVolume.h"
+#include "Volume.h"
 
 
 
-//void svc::HostMesher::Triangulate
+//void svc::Mesher::Triangulate
 //(
-//	HostVolume const & volume,
+//	Volume const & volume,
 //
 //	vector< unsigned > & outIndices,
 //	vector< flink::float4 > & outVertices
@@ -18,7 +18,7 @@
 
 
 // static 
-void svc::HostMesher::Mesh2Obj
+void svc::Mesher::Mesh2Obj
 (
 	vector< unsigned > const & indices,
 	vector< flink::float4 > const & vertices,

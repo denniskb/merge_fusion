@@ -7,14 +7,14 @@
 
 namespace svc {
 
-class HostVolume;
+class Volume;
 
-class HostMesher
+class Mesher
 {
 public:
 	void Triangulate
 	(
-		HostVolume const & volume,
+		Volume const & volume,
 
 		vector< unsigned > & outIndices,
 		vector< flink::float4 > & outVertices

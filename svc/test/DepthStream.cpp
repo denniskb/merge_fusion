@@ -5,7 +5,7 @@
 
 #include <reference/DepthStream.h>
 #include <reference/flink.h>
-#include <reference/HostDepthFrame.h>
+#include <reference/DepthFrame.h>
 
 
 
@@ -60,7 +60,7 @@ BOOST_AUTO_TEST_CASE( NextFrame_v1 )
 	fclose( file );
 
 	flink::float4x4 view;
-	svc::HostDepthFrame depth;
+	svc::DepthFrame depth;
 
 	svc::DepthStream ds( fileName );
 	BOOST_CHECK( ds.NextFrame( depth, view ) );
@@ -98,7 +98,7 @@ BOOST_AUTO_TEST_CASE( NextFrame_v2_short )
 	fclose( file );
 
 	flink::float4x4 view;
-	svc::HostDepthFrame depth;
+	svc::DepthFrame depth;
 
 	svc::DepthStream ds( fileName );
 	BOOST_CHECK( ds.NextFrame( depth, view ) );
@@ -136,7 +136,7 @@ BOOST_AUTO_TEST_CASE( NextFrame_v2_float )
 	fclose( file );
 
 	flink::float4x4 view;
-	svc::HostDepthFrame depth;
+	svc::DepthFrame depth;
 
 	svc::DepthStream ds( fileName );
 	BOOST_CHECK( ds.NextFrame( depth, view ) );

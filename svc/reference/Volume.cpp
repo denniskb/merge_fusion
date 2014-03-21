@@ -1,18 +1,18 @@
-#include "HostVolume.h"
+#include "Volume.h"
 
 #include <algorithm>
 #include <cassert>
 #include <cstdio>
 
 #include "flink.h"
-#include "HostDepthFrame.h"
+#include "DepthFrame.h"
 #include "radix_sort.h"
 #include "util.h"
 #include "Voxel.h"
 
 
 
-svc::HostVolume::HostVolume( int resolution, float sideLength, int truncationMargin ) :
+svc::Volume::Volume( int resolution, float sideLength, int truncationMargin ) :
 	m_res( resolution ),
 	m_sideLen( sideLength ),
 	m_truncMargin( truncationMargin )
@@ -27,51 +27,51 @@ svc::HostVolume::HostVolume( int resolution, float sideLength, int truncationMar
 
 
 
-int svc::HostVolume::Resolution() const
+int svc::Volume::Resolution() const
 {
 	return m_res;
 }
 
-float svc::HostVolume::SideLength() const
+float svc::Volume::SideLength() const
 {
 	return m_sideLen;
 }
 
-float svc::HostVolume::VoxelLength() const
+float svc::Volume::VoxelLength() const
 {
 	return SideLength() / Resolution();
 }
 
-float svc::HostVolume::TruncationMargin() const
+float svc::Volume::TruncationMargin() const
 {
 	return m_truncMargin * VoxelLength();
 }
 
 
 
-int svc::HostVolume::BrickResolution() const
+int svc::Volume::BrickResolution() const
 {
 	return m_truncMargin;
 }
 
-int svc::HostVolume::BrickSlice() const
+int svc::Volume::BrickSlice() const
 {
 	return BrickResolution() * BrickResolution();
 }
 
-int svc::HostVolume::BrickVolume() const
+int svc::Volume::BrickVolume() const
 {
 	return BrickResolution() * BrickSlice();
 }
 
-int svc::HostVolume::NumBricksInVolume() const
+int svc::Volume::NumBricksInVolume() const
 {
 	return Resolution() / m_truncMargin;
 }
 
 
 
-flink::float4 svc::HostVolume::Minimum() const
+flink::float4 svc::Volume::Minimum() const
 {
 	float minimum = -SideLength() * 0.5f;
 
@@ -84,7 +84,7 @@ flink::float4 svc::HostVolume::Minimum() const
 	);
 }
 
-flink::float4 svc::HostVolume::Maximum() const
+flink::float4 svc::Volume::Maximum() const
 {
 	float maximum = 0.5f * SideLength();
 
@@ -99,19 +99,19 @@ flink::float4 svc::HostVolume::Maximum() const
 
 
 
-svc::vector< unsigned > & svc::HostVolume::Indices()
+svc::vector< unsigned > & svc::Volume::Indices()
 {
 	return m_indices;
 }
 
-svc::vector< unsigned > & svc::HostVolume::Voxels()
+svc::vector< unsigned > & svc::Volume::Voxels()
 {
 	return m_voxels;
 }
 
 
 
-flink::float4 svc::HostVolume::VoxelCenter( int x, int y, int z ) const
+flink::float4 svc::Volume::VoxelCenter( int x, int y, int z ) const
 {
 	assert( x >= 0 && x < Resolution() );
 	assert( y >= 0 && y < Resolution() );
@@ -129,14 +129,16 @@ flink::float4 svc::HostVolume::VoxelCenter( int x, int y, int z ) const
 		( Maximum() - Minimum() );
 }
 
-flink::float4 svc::HostVolume::BrickIndex( flink::float4 const & world ) const
+flink::float4 svc::Volume::BrickIndex( flink::float4 const & world ) const
 {
-	return ( world - Minimum() ) / ( Maximum() - Minimum() ) * flink::set( (float) NumBricksInVolume() );
+	return
+		( world - Minimum() ) / ( Maximum() - Minimum() ) *
+		flink::make_float4( (float) NumBricksInVolume() );
 }
 
 
 
-void svc::HostVolume::Triangulate( char const * outOBJ ) const
+void svc::Volume::Triangulate( char const * outOBJ ) const
 {
 #pragma region Type Defs
 
@@ -343,7 +345,7 @@ void svc::HostVolume::Triangulate( char const * outOBJ ) const
 }
 
 // static
-int const * svc::HostVolume::TriTable()
+int const * svc::Volume::TriTable()
 {
 	#pragma region LUT
 

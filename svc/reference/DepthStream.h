@@ -13,7 +13,7 @@ The file format documentation can be found in poly2depth/readme.txt.
 
 namespace svc {
 
-class HostDepthFrame;
+class DepthFrame;
 
 class DepthStream
 {
@@ -31,7 +31,7 @@ public:
 	*/
 	bool NextFrame
 	(
-		HostDepthFrame & outFrame,
+		DepthFrame & outFrame,
 		flink::float4x4 & outView
 	);
 

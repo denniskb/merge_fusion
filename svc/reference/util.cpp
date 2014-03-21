@@ -28,9 +28,24 @@ unsigned svc::packInts( unsigned x, unsigned y, unsigned z )
 
 void svc::unpackInts( unsigned packedInt, unsigned & outX, unsigned & outY, unsigned & outZ )
 {
-	outZ = packedInt >> 20;
-	outY = ( packedInt >> 10 ) & 0x3ff;
-	outX = packedInt & 0x3ff;
+	outZ = unpackZ( packedInt );
+	outY = unpackY( packedInt );
+	outX = unpackX( packedInt );
+}
+
+unsigned svc::unpackX( unsigned packedInt )
+{
+	return packedInt & 0x3ff;
+}
+
+unsigned svc::unpackY( unsigned packedInt )
+{
+	return ( packedInt >> 10 ) & 0x3ff;
+}
+
+unsigned svc::unpackZ( unsigned packedInt )
+{
+	return packedInt >> 20;
 }
 
 
@@ -45,16 +60,19 @@ bool svc::powerOf2( int x )
 void svc::remove_dups( vector< unsigned > & data )
 {
 	int i = 0;
-
 	for( int j = 1; j < data.size(); j++ )
-	{
-		unsigned jj = data[ j ];
-		if( data[ i ] != jj )
-		{
-			data[ i + 1 ] = jj;
-			i++;
-		}
-	}
+		if( data[ i ] != data[ j ] )
+			data[ ++i ] = data[ j ];
 
 	data.resize( i + 1 );
+}
+
+void svc::remove_value( vector< unsigned > & data, unsigned value )
+{
+	int i = 0;
+	for( int j = 0; j < data.size(); j++ )
+		if( data[ j ] != value )
+			data[ i++ ] = data[ j ];
+
+	data.resize( i );
 }

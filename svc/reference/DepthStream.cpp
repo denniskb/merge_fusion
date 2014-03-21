@@ -5,7 +5,7 @@
 #include <utility>
 #include <vector>
 
-#include "HostDepthFrame.h"
+#include "DepthFrame.h"
 #include "util.h"
 
 
@@ -52,7 +52,7 @@ svc::DepthStream::~DepthStream()
 
 bool svc::DepthStream::NextFrame
 (
-	svc::HostDepthFrame & outFrame,
+	svc::DepthFrame & outFrame,
 	flink::float4x4 & outView
 )
 {
