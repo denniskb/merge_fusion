@@ -73,6 +73,7 @@
     <ClCompile Include="DepthStream.cpp" />
     <ClCompile Include="Integrator.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Mesher.cpp" />
     <ClCompile Include="radix_sort.cpp" />
     <ClCompile Include="util.cpp" />
     <ClCompile Include="Volume.cpp" />

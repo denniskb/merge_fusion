@@ -12,6 +12,9 @@ class Volume;
 class Mesher
 {
 public:
+	/*
+	Marching cubes ported from http://paulbourke.net/geometry/polygonise/
+	*/
 	void Triangulate
 	(
 		Volume const & volume,
@@ -29,8 +32,7 @@ public:
 	);
 
 private:
-	vector< unsigned > m_cachedSlices;
-	vector< unsigned > m_vertexIDs;
+	static int const * TriTable();
 };
 
 }

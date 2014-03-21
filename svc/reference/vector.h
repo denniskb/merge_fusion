@@ -18,8 +18,6 @@ public:
 		m_size( 0 ),
 		m_capacity( 0 )
 	{
-		static_assert( std::is_pod< T >::value, "vector can only hold PODs." );
-
 		resize( size );
 	}
 
@@ -34,15 +32,11 @@ public:
 		m_size( 0 ),
 		m_capacity( 0 )
 	{
-		static_assert( std::is_pod< T >::value, "vector can only hold PODs." );
-
 		copy_from( copy );
 	}
 
 	vector( vector && rhs )
 	{
-		static_assert( std::is_pod< T >::value, "vector can only hold PODs." );
-
 		using std::swap;
 
 		swap( * this, rhs );
@@ -93,7 +87,7 @@ public:
 	{
 		return m_data[ index ];
 	}
-	T operator[]( int index ) const
+	T const & operator[]( int index ) const
 	{
 		return m_data[ index ];
 	}

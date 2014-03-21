@@ -39,7 +39,9 @@ public:
 	flink::float4 Maximum() const;
 
 	vector< unsigned > & Indices();
+	vector< unsigned > const & Indices() const;
 	vector< unsigned > & Voxels();
+	vector< unsigned > const & Voxels() const;
 
 	flink::float4 VoxelCenter( int x, int y, int z ) const;
 	flink::float4 BrickIndex( flink::float4 const & world ) const;
@@ -50,11 +52,6 @@ public:
 	*/
 	void Triangulate( char const * outOBJ ) const;
 
-	/*
-	LUT used for Triangulate
-	*/
-	static int const * TriTable();
-
 private:
 	Volume & operator=( Volume const & rhs );
 
@@ -64,25 +61,6 @@ private:
 
 	vector< unsigned > m_indices;
 	vector< unsigned > m_voxels;
-
-	void MarkBricks
-	(
-		DepthFrame const & depthMap,
-		flink::float4x4 const & viewToWorld,
-
-		vector< unsigned > & outBrickIndices
-	) const;
-
-	void ExpandBricks( vector< unsigned > & inOutIndices ) const;
-
-	void UpdateVoxels
-	(
-		vector< unsigned > const & voxelsToUpdate,
-		svc::DepthFrame const & frame, 
-		flink::float4 const & eye,
-		flink::float4 const & forward,
-		flink::float4x4 const & viewProjection
-	);
 };
 
 }
