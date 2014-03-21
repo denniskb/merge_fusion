@@ -1,5 +1,7 @@
 #include "Mesher.h"
 
+#include "Cache.h"
+#include "radix_sort.h"
 #include "util.h"
 #include "Volume.h"
 #include "Voxel.h"
@@ -9,66 +11,22 @@
 void svc::Mesher::Triangulate
 (
 	Volume const & volume,
+	Cache & cache,
 
 	vector< unsigned > & outIndices,
 	vector< flink::float4 > & outVertices
 )
 {
-#pragma region Type Defs
+	outIndices.clear();
+	outVertices.clear();
+	m_vertexIDs.clear();
 
-	struct Vertex
-	{
-		unsigned globalIdx;
-		float x;
-		float y;
-		float z;
-
-		Vertex( int globalIdx, float x, float y, float z ) :
-			globalIdx( globalIdx ), x( x ), y( y ), z( z )
-		{
-		}
-	};
-
-	struct VertexCmp
-	{
-		bool operator()( Vertex const & v1, Vertex const & v2 )
-		{
-			return v1.globalIdx < v2.globalIdx;
-		}
-	} vertexCmp;
-
-#pragma endregion
-
-	vector< Vertex > VB;
-
-	auto start = volume.Indices().cbegin();
-	auto end   = volume.Indices().cend();
 	unsigned const resMinus1 = volume.Resolution() - 1;
+	cache.Reset( volume.Resolution() );
 
-	vector< unsigned > slices( 2 * volume.Resolution() * volume.Resolution() );
-	unsigned * slice0 = & slices[ 0 ];
-	unsigned * slice1 = & slices[ slices.size() / 2 ];
-	
-	unsigned slice0a, slice0b, slice1a = 1, slice1b = 1;
-
-	while( slice1b < (unsigned) volume.Indices().size() )
+	while( cache.NextSlice( volume.Indices().cbegin(), volume.Voxels().cbegin(), volume.Indices().size() ) )
 	{
-		slice0a = slice1a;
-		slice0b = slice1b;
-		std::swap( slice0, slice1 );
-
-		slice1a = slice1b;
-		slice1b = (unsigned) ( std::lower_bound( start, end, ( ( volume.Indices()[ slice1a ] >> 20 ) + 1 ) << 20 ) - start );
-
-		for( unsigned i = slice1a; i < slice1b; i++ )
-		{
-			unsigned x, y, z;
-			unpackInts( volume.Indices()[ i ], x, y, z );
-
-			slice1[ x + y * volume.Resolution() ] = volume.Voxels()[ i ];
-		} 
-
-		for( unsigned i = slice0a; i < slice0b; i++ )
+		for( int i = cache.CachedRange().first; i < cache.CachedRange().second; i++ )
 		{
 			unsigned x0, y0, z0;
 			unpackInts( volume.Indices()[ i ], x0, y0, z0 );
@@ -79,20 +37,19 @@ void svc::Mesher::Triangulate
 
 			Voxel v[ 8 ];
 
-			v[ 2 ] = slice0[ x0 + volume.Resolution() * y0 ];
-			slice0[ x0 + volume.Resolution() * y0 ] = 0;
+			v[ 2 ] = cache.CachedSlices().first[ x0 + volume.Resolution() * y0 ];
 
 			if( 0 == v[ 2 ].Weight() )
 				continue;
 
-			v[ 3 ] = slice0[ x1 + volume.Resolution() * y0 ];
-			v[ 6 ] = slice0[ x0 + volume.Resolution() * y1 ];
-			v[ 7 ] = slice0[ x1 + volume.Resolution() * y1 ];
+			v[ 3 ] = cache.CachedSlices().first[ x1 + volume.Resolution() * y0 ];
+			v[ 6 ] = cache.CachedSlices().first[ x0 + volume.Resolution() * y1 ];
+			v[ 7 ] = cache.CachedSlices().first[ x1 + volume.Resolution() * y1 ];
 					
-			v[ 1 ] = slice1[ x0 + volume.Resolution() * y0 ];
-			v[ 0 ] = slice1[ x1 + volume.Resolution() * y0 ];
-			v[ 5 ] = slice1[ x0 + volume.Resolution() * y1 ];
-			v[ 4 ] = slice1[ x1 + volume.Resolution() * y1 ];
+			v[ 1 ] = cache.CachedSlices().second[ x0 + volume.Resolution() * y0 ];
+			v[ 0 ] = cache.CachedSlices().second[ x1 + volume.Resolution() * y0 ];
+			v[ 5 ] = cache.CachedSlices().second[ x0 + volume.Resolution() * y1 ];
+			v[ 4 ] = cache.CachedSlices().second[ x1 + volume.Resolution() * y1 ];
 			
 			// Generate vertices
 			float d[ 8 ];
@@ -105,31 +62,40 @@ void svc::Mesher::Triangulate
 			unsigned i000 = packInts( x0, y0, z0 );
 
 			if( v[ 3 ].Weight() > 0 && d[ 2 ] * d[ 3 ] < 0.0f )
-				VB.push_back( Vertex
+			{
+				m_vertexIDs.push_back( 3 * i000 );
+				outVertices.push_back( flink::float4
 				(
-					3 * i000,
 					vert000.x + flink::lerp( 0.0f, volume.VoxelLength(), v[ 2 ].Weight() * abs( d[ 3 ] ), v[ 3 ].Weight() * abs( d[ 2 ] ) ),
 					vert000.y,
-					vert000.z
+					vert000.z,
+					1.0f
 				));
+			}
 				
 			if( v[ 6 ].Weight() > 0 && d[ 2 ] * d[ 6 ] < 0.0f )
-				VB.push_back( Vertex
+			{
+				m_vertexIDs.push_back( 3 * i000 + 1 );
+				outVertices.push_back( flink::float4
 				(
-					3 * i000 + 1,
 					vert000.x,
 					vert000.y + flink::lerp( 0.0f, volume.VoxelLength(), v[ 2 ].Weight() * abs( d[ 6 ] ), v[ 6 ].Weight() * abs( d[ 2 ] ) ),
-					vert000.z
+					vert000.z,
+					1.0f
 				));
+			}
 				
 			if( v[ 1 ].Weight() > 0 && d[ 2 ] * d[ 1 ] < 0.0f )
-				VB.push_back( Vertex
+			{
+				m_vertexIDs.push_back( 3 * i000 + 2 );
+				outVertices.push_back( flink::float4
 				(
-					3 * i000 + 2,
 					vert000.x,
 					vert000.y,
-					vert000.z + flink::lerp( 0.0f, volume.VoxelLength(), v[ 2 ].Weight() * abs( d[ 1 ] ), v[ 1 ].Weight() * abs( d[ 2 ] ) )
+					vert000.z + flink::lerp( 0.0f, volume.VoxelLength(), v[ 2 ].Weight() * abs( d[ 1 ] ), v[ 1 ].Weight() * abs( d[ 2 ] ) ),
+					1.0f
 				));
+			}
 
 			// Generate indices
 			bool skip = false;
@@ -172,19 +138,14 @@ void svc::Mesher::Triangulate
 		}
 	}
 	
-	std::sort( VB.begin(), VB.end(), vertexCmp );
-
-	Vertex dummy( 0, 0, 0, 0 );
+	radix_sort( m_vertexIDs, outVertices );
+	
 	for( int i = 0; i < outIndices.size(); i++ )
-	{
-		dummy.globalIdx = outIndices[ i ];
-		auto it = std::lower_bound( VB.cbegin(), VB.cend(), dummy, vertexCmp );
-		outIndices[ i ] = (unsigned) ( it - VB.cbegin() );
-	}
-
-	outVertices.resize( VB.size() );
-	for( int i = 0; i < VB.size(); i++ )
-		outVertices[ i ] = flink::float4( VB[ i ].x, VB[ i ].y, VB[ i ].z, 1.0f );
+		outIndices[ i ] = (unsigned) ( std::lower_bound(
+			m_vertexIDs.cbegin(),
+			m_vertexIDs.cend(),
+			outIndices[ i ]
+		) - m_vertexIDs.cbegin() );
 
 	// TODO: Remove unused vertices from VB
 	// or test how high their percentage is and possibly leave them in.

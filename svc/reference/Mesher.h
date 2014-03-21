@@ -7,6 +7,7 @@
 
 namespace svc {
 
+class Cache;
 class Volume;
 
 class Mesher
@@ -18,6 +19,7 @@ public:
 	void Triangulate
 	(
 		Volume const & volume,
+		Cache & cache,
 
 		vector< unsigned > & outIndices,
 		vector< flink::float4 > & outVertices
@@ -33,6 +35,8 @@ public:
 
 private:
 	static int const * TriTable();
+
+	vector< unsigned > m_vertexIDs;
 };
 
 }

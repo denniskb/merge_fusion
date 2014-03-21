@@ -29,7 +29,7 @@ void svc::radix_sort( vector< unsigned > & data )
 		for( int i = 1; i < 256; i++ )
 			cnt[ i ] += cnt[ i - 1 ];
 
-		for( int i = (int) ( size - 1 ); i >= 0; i-- )
+		for( int i = size - 1; i >= 0; i-- )
 			B[ --cnt[ ( A[ i ] >> shift ) & mask ] ] = A[ i ];
 
 		swap( A, B );

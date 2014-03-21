@@ -4,7 +4,6 @@
 #include "DepthFrame.h"
 #include "Volume.h"
 #include "radix_sort.h"
-#include "Timer.h"
 #include "util.h"
 #include "vector.h"
 #include "Voxel.h"
@@ -25,8 +24,6 @@ void svc::Integrator::Integrate
 	flink::float4x4 const & viewToWorld
 )
 {
-	Timer timer;
-
 	SplatBricks( volume, frame, viewToWorld, m_splattedVoxels );
 	radix_sort( m_splattedVoxels );
 	remove_dups( m_splattedVoxels );
@@ -40,8 +37,6 @@ void svc::Integrator::Integrate
 	volume.Voxels().resize( volume.Indices().size() );
 
 	UpdateVoxels( volume, frame, eye, forward, viewProjection );
-
-	printf( "integr: %fms\n", timer.Time() * 1000.0 );
 }
 
 
