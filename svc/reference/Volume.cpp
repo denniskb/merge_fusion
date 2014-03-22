@@ -12,17 +12,19 @@
 
 
 
-svc::Volume::Volume( int resolution, float sideLength, int truncationMargin ) :
+svc::Volume::Volume( int resolution, float sideLength, int footPrint, float truncMargin ) :
 	m_res( resolution ),
 	m_sideLen( sideLength ),
-	m_truncMargin( truncationMargin )
+	m_footPrint( footPrint ),
+	m_truncMargin( truncMargin )
 {
 	assert( resolution > 0 && resolution <= 1024 );
 	assert( sideLength > 0.0f );
-	assert( truncationMargin > 0 && truncationMargin <= resolution );
+	assert( footPrint > 0 && footPrint <= resolution );
+	assert( truncMargin > 0.0f );
 
 	assert( powerOf2( resolution ) );
-	assert( powerOf2( truncationMargin ) );
+	assert( powerOf2( footPrint ) );
 }
 
 
@@ -44,14 +46,14 @@ float svc::Volume::VoxelLength() const
 
 float svc::Volume::TruncationMargin() const
 {
-	return m_truncMargin * VoxelLength();
+	return m_truncMargin;
 }
 
 
 
 int svc::Volume::BrickResolution() const
 {
-	return m_truncMargin;
+	return m_footPrint;
 }
 
 int svc::Volume::BrickSlice() const
@@ -66,7 +68,7 @@ int svc::Volume::BrickVolume() const
 
 int svc::Volume::NumBricksInVolume() const
 {
-	return Resolution() / m_truncMargin;
+	return Resolution() / BrickResolution();
 }
 
 

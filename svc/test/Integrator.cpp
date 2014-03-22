@@ -28,7 +28,7 @@ BOOST_AUTO_TEST_CASE( Integrate )
 	*/
 	svc::Integrator i;
 
-	svc::Volume v( 256, 2.0f, 2 );
+	svc::Volume v( 256, 2.0f, 2, 0.03f );
 	svc::Cache cache;
 
 	svc::DepthStream ds( ( boost::filesystem::current_path() / "content/imrod_v2.depth" ).string().c_str() );

@@ -21,9 +21,9 @@ public:
 	
 	@precond resolution \in [1, 1024] and power of 2
 	@precond sideLength > 0
-	@precond truncationMargin \in [1, resolution] and power of 2
+	@precond footPrint foot print in voxels of depth sample, must be power of 2
 	*/
-	Volume( int resolution, float sideLength, int truncationMargin );
+	Volume( int resolution, float sideLength, int footPrint, float truncationMargin );
 
 	int Resolution() const;
 	float SideLength() const;
@@ -46,18 +46,13 @@ public:
 	flink::float4 VoxelCenter( int x, int y, int z ) const;
 	flink::float4 BrickIndex( flink::float4 const & world ) const;
 
-	/*
-	Marching cubes ported from http://paulbourke.net/geometry/polygonise/
-	@param outOBJ path to a .obj file.
-	*/
-	void Triangulate( char const * outOBJ ) const;
-
 private:
 	Volume & operator=( Volume const & rhs );
 
 	int const m_res;
 	float const m_sideLen;
-	int const m_truncMargin;
+	int const m_footPrint;
+	float const m_truncMargin;
 
 	vector< unsigned > m_indices;
 	vector< unsigned > m_voxels;
