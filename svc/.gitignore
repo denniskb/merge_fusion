@@ -4,6 +4,12 @@
 *.suo
 *.vcxproj.user
 
+/flink/bin
+/flink/obj
+
+flinktest/bin
+flinktest/obj
+
 /reference/bin
 /reference/obj
 

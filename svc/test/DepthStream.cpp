@@ -3,8 +3,9 @@
 #include <stdio.h>
 #include <vector>
 
+#include <flink/math.h>
+
 #include <reference/DepthStream.h>
-#include <reference/flink.h>
 #include <reference/DepthFrame.h>
 
 

@@ -11,8 +11,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{AB9844F0-EC12-42BD-90BD-DDFE115A7404}</ProjectGuid>
-    <RootNamespace>test</RootNamespace>
+    <ProjectGuid>{6165D705-FC97-4394-962A-AA232A86FA81}</ProjectGuid>
+    <RootNamespace>flinktest</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -32,57 +32,46 @@
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\svc_debug_x64.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\svc_release_x64.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
+  <PropertyGroup />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile />
     <Link />
+    <Link>
+      <AdditionalLibraryDirectories>$(BOOST_LIB_PATH_X64)</AdditionalLibraryDirectories>
+    </Link>
     <ClCompile>
       <AdditionalIncludeDirectories>$(BOOST_ROOT);..</AdditionalIncludeDirectories>
     </ClCompile>
-    <Link>
-      <AdditionalLibraryDirectories>$(BOOST_LIB_PATH_X64);$(KINECTSDK10_DIR)lib\amd64</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Kinect10.lib</AdditionalDependencies>
-    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile />
     <Link />
     <Link>
-      <AdditionalLibraryDirectories>$(BOOST_LIB_PATH_X64);$(KINECTSDK10_DIR)lib\amd64</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Kinect10.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(BOOST_LIB_PATH_X64)</AdditionalLibraryDirectories>
     </Link>
     <ClCompile>
       <AdditionalIncludeDirectories>$(BOOST_ROOT);..</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <!--<ClCompile Include="DeviceDepthFrame.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="DeviceVolume.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>-->
-    <ClCompile Include="DepthFrame.cpp" />
-    <ClCompile Include="DepthStream.cpp" />
-    <ClCompile Include="Integrator.cpp" />
+    <ClCompile Include="algorithm.cpp" />
+    <ClCompile Include="flat_map.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Mesher.cpp" />
-    <ClCompile Include="Volume.cpp" />
-    <ClCompile Include="Voxel.cpp" />
+    <ClCompile Include="math.cpp" />
+    <ClCompile Include="util.cpp" />
+    <ClCompile Include="vector.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="util.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\reference\reference.vcxproj">
-      <Project>{6372d9a0-c97e-4758-8039-31c3b26f0963}</Project>
+    <ProjectReference Include="..\flink\flink.vcxproj">
+      <Project>{c82ea146-94dd-4c5a-b3eb-4a243ae9b818}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

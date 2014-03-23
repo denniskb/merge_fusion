@@ -4,13 +4,14 @@
 
 #include <boost/filesystem/operations.hpp>
 
+#include <flink/math.h>
+#include <flink/util.h>
+
 #include <reference/Cache.h>
 #include <reference/DepthFrame.h>
 #include <reference/Integrator.h>
 #include <reference/Volume.h>
 #include <reference/DepthStream.h>
-#include <reference/flink.h>
-#include <reference/util.h>
 #include <reference/Voxel.h>
 
 #include "util.h"
@@ -52,7 +53,7 @@ BOOST_AUTO_TEST_CASE( Integrate )
 			continue;
 
 		unsigned x, y, z;
-		svc::unpackInts( v.Indices()[ i ], x, y, z );
+		flink::unpackInts( v.Indices()[ i ], x, y, z );
 		flink::float4 pos = v.VoxelCenter( x, y, z );
 		fprintf_s( debug, "v %f %f %f\n", pos.x, pos.y, pos.z );
 	}

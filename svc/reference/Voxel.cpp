@@ -2,7 +2,7 @@
 
 #include <cassert>
 
-#include "flink.h"
+#include <flink/math.h>
 
 
 

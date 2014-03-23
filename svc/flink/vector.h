@@ -1,33 +1,39 @@
+/*
+Never-shrinking vector.
+*/
+
 #pragma once
 
 #include <algorithm>
+#include <cassert>
 #include <cstdlib>
 #include <cstring>
-#include <type_traits>
 
 
 
-namespace svc {
+namespace flink {
 
 template< typename T >
 class vector
 {
 public:
-	vector( int size = 0 ) :
+	inline vector( int size = 0 ) :
 		m_data( nullptr ),
 		m_size( 0 ),
 		m_capacity( 0 )
 	{
+		assert( size >= 0 );
+
 		resize( size );
 	}
 
-	~vector()
+	inline ~vector()
 	{
 		if( m_data != nullptr )
 			std::free( m_data );
 	}
 
-	vector( vector const & copy ) :
+	inline vector( vector const & copy ) :
 		m_data( nullptr ),
 		m_size( 0 ),
 		m_capacity( 0 )
@@ -35,21 +41,33 @@ public:
 		copy_from( copy );
 	}
 
-	vector( vector && rhs )
+	inline vector( vector && rhs ) :
+		m_data( nullptr ),
+		m_size( 0 ),
+		m_capacity( 0 )
 	{
 		using std::swap;
 
 		swap( * this, rhs );
 	}
 
-	vector& operator=( vector const & rhs )
+	inline vector & operator=( vector const & rhs )
 	{
 		copy_from( rhs );
 
 		return * this;
 	}
 
-	friend void swap( vector & lhs, vector & rhs )
+	inline vector & operator=( vector && rhs )
+	{
+		using std::swap;
+
+		swap( * this, rhs );
+
+		return * this;
+	}
+
+	inline friend void swap( vector & lhs, vector & rhs )
 	{
 		using std::swap;
 
@@ -60,42 +78,48 @@ public:
 
 
 
-	int size() const
+	inline int size() const
 	{
 		return m_size;
 	}
 
-	T * begin()
+	inline T * begin()
 	{
 		return m_data;
 	}
-	T const * cbegin() const
+	inline T const * cbegin() const
 	{
 		return m_data;
 	}
 
-	T * end()
+	inline T * end()
 	{
 		return m_data + size();
 	}
-	T const * cend() const
+	inline T const * cend() const
 	{
 		return m_data + size();
 	}
 
-	T & operator[]( int index )
+	inline T & operator[]( int index )
 	{
+		assert( index >= 0 && index < size() );
+
 		return m_data[ index ];
 	}
-	T const & operator[]( int index ) const
+	inline T const & operator[]( int index ) const
 	{
+		assert( index >= 0 && index < size() );
+
 		return m_data[ index ];
 	}
 
 
 
-	void reserve( int capacity )
+	inline void reserve( int capacity )
 	{
+		assert( capacity >= 0 );
+
 		if( capacity > m_capacity )
 		{
 			m_data = (T*) std::realloc( m_data, capacity * sizeof( T ) );
@@ -103,25 +127,27 @@ public:
 		}
 	}
 
-	void resize( int size )
+	inline void resize( int size )
 	{
+		assert( size >= 0 );
+
 		reserve( size );
 		m_size = size;
 	}
 
-	void clear()
+	inline void clear()
 	{
 		m_size = 0;
 	}
 
-	void push_back( T element )
+	inline void push_back( T element )
 	{
 		int newSize = size() + 1;
 		
 		if( newSize > m_capacity )
 			reserve( 2 * newSize );
 
-		m_data[ size() ] = element;
+		m_data[ size() ] = std::move( element );
 		m_size = newSize;
 	}
 
@@ -130,7 +156,7 @@ private:
 	int m_size;
 	int m_capacity;
 
-	void copy_from( vector< T > const & rhs )
+	inline void copy_from( vector< T > const & rhs )
 	{
 		resize( rhs.size() );
 		std::memcpy( m_data, rhs.m_data, rhs.size() * sizeof( T ) );

@@ -4,10 +4,11 @@
 #include <cassert>
 #include <cstdio>
 
-#include "flink.h"
+#include <flink/algorithm.h>
+#include <flink/math.h>
+#include <flink/util.h>
+
 #include "DepthFrame.h"
-#include "radix_sort.h"
-#include "util.h"
 #include "Voxel.h"
 
 
@@ -23,8 +24,8 @@ svc::Volume::Volume( int resolution, float sideLength, int footPrint, float trun
 	assert( footPrint > 0 && footPrint <= resolution );
 	assert( truncMargin > 0.0f );
 
-	assert( powerOf2( resolution ) );
-	assert( powerOf2( footPrint ) );
+	assert( flink::powerOf2( resolution ) );
+	assert( flink::powerOf2( footPrint ) );
 }
 
 
@@ -101,22 +102,22 @@ flink::float4 svc::Volume::Maximum() const
 
 
 
-svc::vector< unsigned > & svc::Volume::Indices()
+flink::vector< unsigned > & svc::Volume::Indices()
 {
 	return m_indices;
 }
 
-svc::vector< unsigned > const & svc::Volume::Indices() const
+flink::vector< unsigned > const & svc::Volume::Indices() const
 {
 	return m_indices;
 }
 
-svc::vector< unsigned > & svc::Volume::Voxels()
+flink::vector< unsigned > & svc::Volume::Voxels()
 {
 	return m_voxels;
 }
 
-svc::vector< unsigned > const & svc::Volume::Voxels() const
+flink::vector< unsigned > const & svc::Volume::Voxels() const
 {
 	return m_voxels;
 }

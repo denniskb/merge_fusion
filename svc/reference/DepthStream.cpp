@@ -2,18 +2,18 @@
 
 #include <cassert>
 #include <stdio.h>
-#include <utility>
 #include <vector>
 
+#include <flink/util.h>
+
 #include "DepthFrame.h"
-#include "util.h"
 
 
 
 svc::DepthStream::DepthStream( char const * fileName ) :
 	m_iFrame( 0 )
 {
-	assert( svc::fsize( fileName ) >= 19 );
+	assert( flink::fsize( fileName ) >= 19 );
 
 	fopen_s( & m_file, fileName, "rb" );
 	_fseeki64( m_file, 15, SEEK_SET ); // skip magic

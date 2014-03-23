@@ -1,8 +1,9 @@
 #include "Mesher.h"
 
+#include <flink/algorithm.h>
+#include <flink/util.h>
+
 #include "Cache.h"
-#include "radix_sort.h"
-#include "util.h"
 #include "Volume.h"
 #include "Voxel.h"
 
@@ -13,8 +14,8 @@ void svc::Mesher::Triangulate
 	Volume const & volume,
 	Cache & cache,
 
-	vector< unsigned > & outIndices,
-	vector< flink::float4 > & outVertices
+	flink::vector< unsigned > & outIndices,
+	flink::vector< flink::float4 > & outVertices
 )
 {
 	outIndices.clear();
@@ -29,7 +30,7 @@ void svc::Mesher::Triangulate
 		for( int i = cache.CachedRange().first; i < cache.CachedRange().second; i++ )
 		{
 			unsigned x0, y0, z0;
-			unpackInts( volume.Indices()[ i ], x0, y0, z0 );
+			flink::unpackInts( volume.Indices()[ i ], x0, y0, z0 );
 
 			unsigned x1 = std::min( x0 + 1, resMinus1 );
 			unsigned y1 = std::min( y0 + 1, resMinus1 );
@@ -59,7 +60,7 @@ void svc::Mesher::Triangulate
 			d[ 6 ] = v[ 6 ].Distance( volume.TruncationMargin() );
 
 			flink::float4 vert000 = volume.VoxelCenter( x0, y0, z0 );
-			unsigned i000 = packInts( x0, y0, z0 );
+			unsigned i000 = flink::packInts( x0, y0, z0 );
 
 			if( v[ 3 ].Weight() > 0 && d[ 2 ] * d[ 3 ] < 0.0f )
 			{
@@ -120,18 +121,18 @@ void svc::Mesher::Triangulate
 
 			// Maps local edge indices to global vertex indices
 			unsigned localToGlobal[ 12 ];
-			localToGlobal[  0 ] = packInts( x0, y0, z1 ) * 3;
-			localToGlobal[  1 ] = packInts( x0, y0, z0 ) * 3 + 2;
-			localToGlobal[  2 ] = packInts( x0, y0, z0 ) * 3;
-			localToGlobal[  3 ] = packInts( x1, y0, z0 ) * 3 + 2;
-			localToGlobal[  4 ] = packInts( x0, y1, z1 ) * 3;
-			localToGlobal[  5 ] = packInts( x0, y1, z0 ) * 3 + 2;
-			localToGlobal[  6 ] = packInts( x0, y1, z0 ) * 3;
-			localToGlobal[  7 ] = packInts( x1, y1, z0 ) * 3 + 2;
-			localToGlobal[  8 ] = packInts( x1, y0, z1 ) * 3 + 1;
-			localToGlobal[  9 ] = packInts( x0, y0, z1 ) * 3 + 1;
-			localToGlobal[ 10 ] = packInts( x0, y0, z0 ) * 3 + 1;
-			localToGlobal[ 11 ] = packInts( x1, y0, z0 ) * 3 + 1;
+			localToGlobal[  0 ] = flink::packInts( x0, y0, z1 ) * 3;
+			localToGlobal[  1 ] = flink::packInts( x0, y0, z0 ) * 3 + 2;
+			localToGlobal[  2 ] = flink::packInts( x0, y0, z0 ) * 3;
+			localToGlobal[  3 ] = flink::packInts( x1, y0, z0 ) * 3 + 2;
+			localToGlobal[  4 ] = flink::packInts( x0, y1, z1 ) * 3;
+			localToGlobal[  5 ] = flink::packInts( x0, y1, z0 ) * 3 + 2;
+			localToGlobal[  6 ] = flink::packInts( x0, y1, z0 ) * 3;
+			localToGlobal[  7 ] = flink::packInts( x1, y1, z0 ) * 3 + 2;
+			localToGlobal[  8 ] = flink::packInts( x1, y0, z1 ) * 3 + 1;
+			localToGlobal[  9 ] = flink::packInts( x0, y0, z1 ) * 3 + 1;
+			localToGlobal[ 10 ] = flink::packInts( x0, y0, z0 ) * 3 + 1;
+			localToGlobal[ 11 ] = flink::packInts( x1, y0, z0 ) * 3 + 1;
 
 			for( int i = 0; i < TriTable()[ 16 * lutIdx ]; i++ )
 				outIndices.push_back( localToGlobal[ TriTable()[ 16 * lutIdx + i + 1 ] ] );
@@ -156,8 +157,8 @@ void svc::Mesher::Triangulate
 // static 
 void svc::Mesher::Mesh2Obj
 (
-	vector< unsigned > const & indices,
-	vector< flink::float4 > const & vertices,
+	flink::vector< unsigned > const & indices,
+	flink::vector< flink::float4 > const & vertices,
 
 	char const * outObjFileName
 )

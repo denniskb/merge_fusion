@@ -2,7 +2,7 @@
 
 #include <cassert>
 
-#include "util.h"
+#include <flink/util.h>
 
 
 
@@ -40,7 +40,7 @@ bool svc::Cache::NextSlice
 	for( int i = m_slice0range.first; i < m_slice0range.second; i++ )
 	{
 		unsigned x, y, z;
-		unpackInts( keys[ i ], x, y, z );
+		flink::unpackInts( keys[ i ], x, y, z );
 		m_slice0[ x + m_sliceRes * y ] = 0;
 	}
 
@@ -58,13 +58,13 @@ bool svc::Cache::NextSlice
 	(
 		keys, 
 		keys + numEntries, 
-		packInts( 0, 0, unpackZ( keys[ m_slice1range.first ] ) + 1 )
+		flink::packInts( 0, 0, flink::unpackZ( keys[ m_slice1range.first ] ) + 1 )
 	) - keys );
 
 	for( int i = m_slice1range.first; i < m_slice1range.second; i++ )
 	{
 		unsigned x, y, z;
-		unpackInts( keys[ i ], x, y, z );
+		flink::unpackInts( keys[ i ], x, y, z );
 		m_slice1[ x + m_sliceRes * y ] = values[ i ];
 	}
 

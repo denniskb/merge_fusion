@@ -4,7 +4,7 @@
 
 
 
-namespace svc {
+namespace flink {
 
 void radix_sort( vector< unsigned > & data );
 
@@ -49,5 +49,8 @@ void radix_sort( vector< unsigned > & keys, vector< T > & values )
 	keys.resize( size );
 	values.resize( size );
 }
+
+void remove_dups( vector< unsigned > & data );
+void remove_value( vector< unsigned > & data, unsigned value );
 
 }

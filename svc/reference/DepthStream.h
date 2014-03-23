@@ -1,5 +1,5 @@
 /*
-Reads svc raw depth streams version 1 as produced by poly2depth.
+Reads flink raw depth streams version 1 as produced by poly2depth.
 The file format documentation can be found in poly2depth/readme.txt.
 */
 
@@ -7,7 +7,7 @@ The file format documentation can be found in poly2depth/readme.txt.
 
 #include <vector>
 
-#include "flink.h"
+#include <flink/math.h>
 
 
 

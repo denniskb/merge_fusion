@@ -2,9 +2,7 @@
 
 #include <DirectXMath.h>
 
-#include <reference/flink.h>
-
-using namespace DirectX;
+#include <flink/math.h>
 
 
 
@@ -17,12 +15,12 @@ inline void ComputeMatrices
 	flink::float4x4 & outViewToWorld
 )
 {
-	flink::matrix _view = flink::load( view );
-	flink::matrix _viewInv = XMMatrixInverse( nullptr, _view );
-	flink::vector _eye = flink::set( 0.0f, 0.0f, 0.0f, 1.0f ) * _viewInv;
-	flink::vector _forward = flink::set( 0.0f, 0.0f, -1.0f, 0.0f ) * _viewInv;
+	flink::mat _view = flink::load( view );
+	flink::mat _viewInv = XMMatrixInverse( nullptr, _view );
+	flink::vec _eye = flink::set( 0.0f, 0.0f, 0.0f, 1.0f ) * _viewInv;
+	flink::vec _forward = flink::set( 0.0f, 0.0f, -1.0f, 0.0f ) * _viewInv;
 
-	flink::matrix _viewProj = _view * XMMatrixPerspectiveFovRH( 0.778633444f, 4.0f / 3.0f, 0.8f, 4.0f );
+	flink::mat _viewProj = _view * DirectX::XMMatrixPerspectiveFovRH( 0.778633444f, 4.0f / 3.0f, 0.8f, 4.0f );
 
 	outEye = flink::store( _eye );
 	outForward = flink::store( _forward );

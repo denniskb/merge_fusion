@@ -1,9 +1,11 @@
+/*
+Extends DirectXMath with helpers, shortcuts and convenience functions.
+*/
+
 #pragma once
 
 #include <algorithm>
 #include <cassert>
-
-#include <smmintrin.h>
 
 #include <DirectXMath.h>
 
@@ -14,8 +16,8 @@ namespace flink {
 typedef DirectX::XMFLOAT4A float4;
 typedef DirectX::XMFLOAT4X4A float4x4;
 
-typedef DirectX::XMVECTOR vector;
-typedef DirectX::XMMATRIX matrix;
+typedef DirectX::XMVECTOR vec;
+typedef DirectX::XMMATRIX mat;
 
 #pragma region float4
 
@@ -28,17 +30,17 @@ inline float4 make_float4( float s )
 
 #pragma region vector
 
-inline vector set( float x, float y, float z, float w )
+inline vec set( float x, float y, float z, float w )
 {
 	return DirectX::XMVectorSet( x, y, z, w );
 }
 
-inline vector load( float4 const & v )
+inline vec load( float4 const & v )
 {
 	return DirectX::XMLoadFloat4A( & v );
 }
 
-inline float4 store( vector v )
+inline float4 store( vec v )
 {
 	float4 result;
 	DirectX::XMStoreFloat4A( & result, v );
@@ -49,12 +51,12 @@ inline float4 store( vector v )
 
 #pragma region matrix
 
-inline matrix load( float4x4 const & m )
+inline mat load( float4x4 const & m )
 {
 	return DirectX::XMLoadFloat4x4A( & m );	
 }
 
-inline float4x4 store( matrix m )
+inline float4x4 store( mat m )
 {
 	float4x4 result;
 	DirectX::XMStoreFloat4x4A( & result, m );
@@ -72,7 +74,7 @@ inline float dot( float4 const & a, float4 const & b )
 		a.w * b.w;
 }
 
-inline vector homogenize( vector v )
+inline vec homogenize( vec v )
 {
 	using DirectX::operator/;
 	return v / DirectX::XMVectorPermute< 3, 3, 3, 3 >( v, v );
@@ -186,27 +188,27 @@ inline bool operator>=( flink::float4 const & a, flink::float4 const & b )
 
 #pragma region vector ops
 
-inline flink::vector operator+( flink::vector a, flink::vector b )
+inline flink::vec operator+( flink::vec a, flink::vec b )
 {
 	return DirectX::XMVectorAdd( a, b );
 }
 
-inline flink::vector operator-( flink::vector a, flink::vector b )
+inline flink::vec operator-( flink::vec a, flink::vec b )
 {
 	return DirectX::XMVectorSubtract( a, b );
 }
 
-inline flink::vector operator*( flink::vector a, flink::vector b )
+inline flink::vec operator*( flink::vec a, flink::vec b )
 {
 	return DirectX::XMVectorMultiply( a, b );
 }
 
-inline flink::vector operator/( flink::vector a, flink::vector b )
+inline flink::vec operator/( flink::vec a, flink::vec b )
 {
 	return DirectX::XMVectorDivide( a, b );
 }
 
-inline flink::vector operator*( flink::vector v, flink::matrix m )
+inline flink::vec operator*( flink::vec v, flink::mat m )
 {
 	return DirectX::XMVector4Transform( v, m );
 }

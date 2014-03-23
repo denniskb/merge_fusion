@@ -1,11 +1,12 @@
 #include "Integrator.h"
 
+#include <flink/algorithm.h>
+#include <flink/util.h>
+#include <flink/vector.h>
+
 #include "Cache.h"
 #include "DepthFrame.h"
 #include "Volume.h"
-#include "radix_sort.h"
-#include "util.h"
-#include "vector.h"
 #include "Voxel.h"
 
 
@@ -48,12 +49,12 @@ void svc::Integrator::SplatBricks
 	DepthFrame const & frame,
 	flink::float4x4 const & viewToWorld,
 
-	vector< unsigned > & outBrickIndices
+	flink::vector< unsigned > & outBrickIndices
 )
 {
 	outBrickIndices.clear();
 
-	flink::matrix _viewToWorld = flink::load( viewToWorld );
+	flink::mat _viewToWorld = flink::load( viewToWorld );
 
 	float const halfFrameWidth = (float) ( frame.Width() / 2 );
 	float const halfFrameHeight = (float) ( frame.Height() / 2 );
@@ -84,8 +85,8 @@ void svc::Integrator::SplatBricks
 			1.0f
 		);
 
-		flink::vector _pxView = flink::load( pxView );
-		flink::vector _pxWorld = _pxView * _viewToWorld;
+		flink::vec _pxView = flink::load( pxView );
+		flink::vec _pxWorld = _pxView * _viewToWorld;
 
 		flink::float4 pxWorld = flink::store( _pxWorld );
 		flink::float4 pxVol = volume.BrickIndex( pxWorld );
@@ -94,7 +95,7 @@ void svc::Integrator::SplatBricks
 			pxVol >= flink::make_float4( volume.NumBricksInVolume() - 0.5f ) )
 			continue;
 
-		outBrickIndices.push_back( packInts
+		outBrickIndices.push_back( flink::packInts
 		(
 			(unsigned) ( pxVol.x - 0.5f ),
 			(unsigned) ( pxVol.y - 0.5f ),
@@ -109,11 +110,11 @@ void svc::Integrator::ExpandBricks
 	Volume const & volume,
 	Cache & cache,
 
-	vector< unsigned > & inOutBrickIndices
+	flink::vector< unsigned > & inOutBrickIndices
 )
 {
-	ExpandBricksHelper< 1 >( volume, cache, 0, packInts( 0, 0, 1 ), inOutBrickIndices );
-	ExpandBricksHelper< 0 >( volume, cache, volume.NumBricksInVolume(), packInts( 0, 1, 0 ), inOutBrickIndices );
+	ExpandBricksHelper< 1 >( volume, cache, 0, flink::packInts( 0, 0, 1 ), inOutBrickIndices );
+	ExpandBricksHelper< 0 >( volume, cache, volume.NumBricksInVolume(), flink::packInts( 0, 1, 0 ), inOutBrickIndices );
 	ExpandBricksHelperX( volume.NumBricksInVolume(), inOutBrickIndices );
 }
 
@@ -126,7 +127,7 @@ void svc::Integrator::ExpandBricksHelper
 	int deltaLookUp,
 	unsigned deltaStore,
 
-	vector< unsigned > & inOutBrickIndices
+	flink::vector< unsigned > & inOutBrickIndices
 )
 {
 	// This method can only be used to expand in z or y direction
@@ -141,8 +142,8 @@ void svc::Integrator::ExpandBricksHelper
 		for( int i = cache.CachedRange().first; i < cache.CachedRange().second; i++ )
 		{
 			int idx = 
-				unpackX( inOutBrickIndices[ i ] ) + 
-				unpackY( inOutBrickIndices[ i ] ) * cache.SliceRes() + 
+				flink::unpackX( inOutBrickIndices[ i ] ) + 
+				flink::unpackY( inOutBrickIndices[ i ] ) * cache.SliceRes() + 
 				deltaLookUp;
 			
 			if( idx < cache.SliceSize() &&
@@ -150,17 +151,17 @@ void svc::Integrator::ExpandBricksHelper
 				inOutBrickIndices.push_back( inOutBrickIndices[ i ] + deltaStore );
 		}
 	}
-	radix_sort( inOutBrickIndices );
+	flink::radix_sort( inOutBrickIndices );
 }
 
-template void svc::Integrator::ExpandBricksHelper< 0 >(Volume const &, Cache &, int, unsigned, vector< unsigned > &);
-template void svc::Integrator::ExpandBricksHelper< 1 >(Volume const &, Cache &, int, unsigned, vector< unsigned > &);
+template void svc::Integrator::ExpandBricksHelper< 0 >(Volume const &, Cache &, int, unsigned, flink::vector< unsigned > &);
+template void svc::Integrator::ExpandBricksHelper< 1 >(Volume const &, Cache &, int, unsigned, flink::vector< unsigned > &);
 
 // static 
 void svc::Integrator::ExpandBricksHelperX
 (
 	int numBricksInVolume,
-	vector< unsigned > & inOutBrickIndices
+	flink::vector< unsigned > & inOutBrickIndices
 )
 {
 	int size = inOutBrickIndices.size();
@@ -175,7 +176,7 @@ void svc::Integrator::ExpandBricksHelperX
 		
 		inOutBrickIndices[ 2 * i ] = xyz;
 		
-		if( (int) unpackX( xyz ) + 1 < numBricksInVolume &&
+		if( (int) flink::unpackX( xyz ) + 1 < numBricksInVolume &&
 			tmp != xyz + 1 )
 			inOutBrickIndices[ 2 * i + 1 ] = xyz + 1;
 	
@@ -189,7 +190,7 @@ void svc::Integrator::ExpandBricksHelperX
 void svc::Integrator::BricksToVoxels
 (
 	Volume const & volume,
-	vector< unsigned > & inOutIndices
+	flink::vector< unsigned > & inOutIndices
 )
 {
 	if( volume.BrickResolution() > 1 )
@@ -203,7 +204,7 @@ void svc::Integrator::BricksToVoxels
 		for( int i = size - 1; i >= 0; i-- )
 		{
 			unsigned brickX, brickY, brickZ;
-			unpackInts( inOutIndices[ i ], brickX, brickY, brickZ );
+			flink::unpackInts( inOutIndices[ i ], brickX, brickY, brickZ );
 
 			for( int j = 0; j < brickVolume; j++ )
 			{
@@ -211,7 +212,7 @@ void svc::Integrator::BricksToVoxels
 				unsigned y = ( j - z * brickSlice ) / volume.BrickResolution();
 				unsigned x = j % volume.BrickResolution();
 
-				inOutIndices[ i * brickVolume + j ] = packInts
+				inOutIndices[ i * brickVolume + j ] = flink::packInts
 				(
 					brickX * volume.BrickResolution() + x,
 					brickY * volume.BrickResolution() + y,
@@ -227,27 +228,27 @@ void svc::Integrator::UpdateVoxels
 (
 	Volume & volume,
 
-	svc::DepthFrame const & frame, 
+	DepthFrame const & frame, 
 
 	flink::float4 const & eye,
 	flink::float4 const & forward,
 	flink::float4x4 const & viewProjection
 )
 {
-	flink::matrix _viewProj = flink::load( viewProjection );
-	flink::vector _ndcToUV = flink::set( frame.Width() / 2.0f, frame.Height() / 2.0f, 0, 0 );
+	flink::mat _viewProj = flink::load( viewProjection );
+	flink::vec _ndcToUV = flink::set( frame.Width() / 2.0f, frame.Height() / 2.0f, 0, 0 );
 		
 	for( int i = 0; i < volume.Indices().size(); i++ )
 	{
 		unsigned x, y, z;
-		unpackInts( volume.Indices()[ i ], x, y, z );
+		flink::unpackInts( volume.Indices()[ i ], x, y, z );
 
 		flink::float4 centerWorld = volume.VoxelCenter( x, y, z );
-		flink::vector _centerWorld = flink::load( centerWorld );
+		flink::vec _centerWorld = flink::load( centerWorld );
 		
-		flink::vector _centerNDC = flink::homogenize( _centerWorld * _viewProj );
+		flink::vec _centerNDC = flink::homogenize( _centerWorld * _viewProj );
 		
-		flink::vector _centerScreen = _mm_macc_ps( _centerNDC, _ndcToUV, _ndcToUV );
+		flink::vec _centerScreen = _mm_macc_ps( _centerNDC, _ndcToUV, _ndcToUV );
 		flink::float4 centerScreen = flink::store( _centerScreen );
 
 		int u = (int) centerScreen.x;

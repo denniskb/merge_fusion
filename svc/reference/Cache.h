@@ -1,6 +1,6 @@
 #pragma once
 
-#include "vector.h"
+#include <flink/vector.h>
 
 
 
@@ -27,7 +27,7 @@ public:
 
 private:
 	int m_sliceRes;
-	vector< unsigned > m_cachedSlices;
+	flink::vector< unsigned > m_cachedSlices;
 
 	unsigned * m_slice0;
 	unsigned * m_slice1;

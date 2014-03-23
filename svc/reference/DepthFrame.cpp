@@ -1,7 +1,6 @@
 #include "DepthFrame.h"
 
 #include <cassert>
-#include <utility>
 #include <vector>
 
 

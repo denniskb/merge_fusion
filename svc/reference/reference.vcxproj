@@ -14,14 +14,10 @@
     <ClInclude Include="Cache.h" />
     <ClInclude Include="DepthFrame.h" />
     <ClInclude Include="DepthStream.h" />
-    <ClInclude Include="flink.h" />
     <ClInclude Include="Integrator.h" />
     <ClInclude Include="Mesher.h" />
-    <ClInclude Include="radix_sort.h" />
     <ClInclude Include="Timer.h" />
-    <ClInclude Include="util.h" />
     <ClInclude Include="Volume.h" />
-    <ClInclude Include="vector.h" />
     <ClInclude Include="Voxel.h" />
   </ItemGroup>
   <ItemGroup>
@@ -32,11 +28,14 @@
     <ClCompile Include="DepthStream.cpp" />
     <ClCompile Include="Integrator.cpp" />
     <ClCompile Include="Mesher.cpp" />
-    <ClCompile Include="radix_sort.cpp" />
     <ClCompile Include="Timer.cpp" />
-    <ClCompile Include="util.cpp" />
     <ClCompile Include="Volume.cpp" />
     <ClCompile Include="Voxel.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\flink\flink.vcxproj">
+      <Project>{c82ea146-94dd-4c5a-b3eb-4a243ae9b818}</Project>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{6372D9A0-C97E-4758-8039-31C3B26F0963}</ProjectGuid>
@@ -74,7 +73,7 @@
       <AdditionalDependencies />
     </Link>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(KINECTSDK10_DIR)inc</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..;$(KINECTSDK10_DIR)inc</AdditionalIncludeDirectories>
     </ClCompile>
     <CudaCompile>
       <Include>$(CUDA_PATH)\include;$(NVCUDASAMPLES_ROOT)\common\inc</Include>
@@ -84,7 +83,7 @@
     <ClCompile />
     <Link />
     <ClCompile>
-      <AdditionalIncludeDirectories>$(KINECTSDK10_DIR)inc</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..;$(KINECTSDK10_DIR)inc</AdditionalIncludeDirectories>
     </ClCompile>
     <CudaCompile>
       <Include>$(CUDA_PATH)\include;$(NVCUDASAMPLES_ROOT)\common\inc</Include>

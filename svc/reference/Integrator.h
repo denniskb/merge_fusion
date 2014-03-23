@@ -1,7 +1,7 @@
 #pragma once
 
-#include "flink.h"
-#include "vector.h"
+#include <flink/math.h>
+#include <flink/vector.h>
 
 
 
@@ -28,7 +28,7 @@ public:
 	);
 
 private:
-	vector< unsigned > m_splattedVoxels;
+	flink::vector< unsigned > m_splattedVoxels;
 
 	static void SplatBricks
 	(
@@ -36,7 +36,7 @@ private:
 		DepthFrame const & frame,
 		flink::float4x4 const & viewToWorld,
 
-		vector< unsigned > & outBrickIndices
+		flink::vector< unsigned > & outBrickIndices
 	);
 
 	static void ExpandBricks
@@ -44,7 +44,7 @@ private:
 		Volume const & volume,
 		Cache & cache,
 
-		vector< unsigned > & inOutBrickIndices
+		flink::vector< unsigned > & inOutBrickIndices
 	);
 
 	template< int sliceIdx >
@@ -55,26 +55,26 @@ private:
 		int deltaLookUp,
 		unsigned deltaStore,
 
-		vector< unsigned > & inOutBrickIndices
+		flink::vector< unsigned > & inOutBrickIndices
 	);
 
 	static void ExpandBricksHelperX
 	(
 		int numBricksInVolume,
-		vector< unsigned > & inOutBrickIndices
+		flink::vector< unsigned > & inOutBrickIndices
 	);
 
 	static void BricksToVoxels
 	(
 		Volume const & volume,
-		vector< unsigned > & inOutIndices
+		flink::vector< unsigned > & inOutIndices
 	);
 
 	static void UpdateVoxels
 	(
 		Volume & volume,
 
-		svc::DepthFrame const & frame, 
+		DepthFrame const & frame, 
 
 		flink::float4 const & eye,
 		flink::float4 const & forward,

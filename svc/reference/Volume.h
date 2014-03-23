@@ -1,7 +1,7 @@
 #pragma once
 
-#include "flink.h"
-#include "vector.h"
+#include <flink/math.h>
+#include <flink/vector.h>
 
 
 
@@ -38,10 +38,10 @@ public:
 	flink::float4 Minimum() const;
 	flink::float4 Maximum() const;
 
-	vector< unsigned > & Indices();
-	vector< unsigned > const & Indices() const;
-	vector< unsigned > & Voxels();
-	vector< unsigned > const & Voxels() const;
+	flink::vector< unsigned > & Indices();
+	flink::vector< unsigned > const & Indices() const;
+	flink::vector< unsigned > & Voxels();
+	flink::vector< unsigned > const & Voxels() const;
 
 	flink::float4 VoxelCenter( int x, int y, int z ) const;
 	flink::float4 BrickIndex( flink::float4 const & world ) const;
@@ -54,8 +54,8 @@ private:
 	int const m_footPrint;
 	float const m_truncMargin;
 
-	vector< unsigned > m_indices;
-	vector< unsigned > m_voxels;
+	flink::vector< unsigned > m_indices;
+	flink::vector< unsigned > m_voxels;
 };
 
 }

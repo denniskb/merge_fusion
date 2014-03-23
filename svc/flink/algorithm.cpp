@@ -1,4 +1,4 @@
-#include "radix_sort.h"
+#include "algorithm.h"
 
 #include <cstring>
 
@@ -6,7 +6,7 @@
 
 
 
-void svc::radix_sort( vector< unsigned > & data )
+void flink::radix_sort( vector< unsigned > & data )
 {
 	using std::swap;
 
@@ -36,4 +36,26 @@ void svc::radix_sort( vector< unsigned > & data )
 	}
 
 	data.resize( size );
+}
+
+
+
+void flink::remove_dups( vector< unsigned > & data )
+{
+	int idst = 0;
+	for( int i = 1; i < data.size(); i++ )
+		if( data[ i ] != data[ idst ] )
+			data[ ++idst ] = data[ i ];
+
+	data.resize( idst + 1 );
+}
+
+void flink::remove_value( vector< unsigned > & data, unsigned value )
+{
+	int idst = 0;
+	for( int i = 0; i < data.size(); i++ )
+		if( data[ i ] != value )
+			data[ idst++ ] = data[ i ];
+
+	data.resize( idst );
 }

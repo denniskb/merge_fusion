@@ -2,13 +2,13 @@
 
 #include <boost/filesystem/operations.hpp>
 
+#include <flink/math.h>
+
 #include <reference/Cache.h>
 #include <reference/DepthFrame.h>
 #include <reference/DepthStream.h>
-#include <reference/flink.h>
 #include <reference/Integrator.h>
 #include <reference/Mesher.h>
-#include <reference/Timer.h>
 #include <reference/Volume.h>
 
 #include "util.h"
@@ -27,7 +27,7 @@ BOOST_AUTO_TEST_CASE( Triangulate )
 	svc::Integrator i;
 	svc::Mesher m;
 
-	svc::Volume v( 256, 2.0f, 2, 0.03f );
+	svc::Volume v( 256, 2.0f, 2, 0.02f );
 	svc::Cache cache;
 
 	svc::DepthStream ds( ( boost::filesystem::current_path() / "content/imrod_v2.depth" ).string().c_str() );
@@ -41,12 +41,9 @@ BOOST_AUTO_TEST_CASE( Triangulate )
 
 	i.Integrate( v, cache, depth, eye, forward, viewProj, viewToWorld );
 
-	svc::vector< unsigned > IB;
-	svc::vector< flink::float4 > VB;
+	flink::vector< unsigned > IB;
+	flink::vector< flink::float4 > VB;
 	m.Triangulate( v, cache, IB, VB );
-	svc::Timer timer;
-	m.Triangulate( v, cache, IB, VB );
-	printf( "mesh: %fms\n", timer.Time() * 1000.0 );
 	svc::Mesher::Mesh2Obj( IB, VB, "C:/TEMP/volume_triangulate.obj" );
 
 	BOOST_REQUIRE( true );

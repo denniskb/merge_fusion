@@ -4,7 +4,7 @@
 
 
 
-namespace svc {
+namespace flink {
 
 long long fsize( char const * fileName );
 
@@ -16,8 +16,5 @@ unsigned unpackY( unsigned packedInt );
 unsigned unpackZ( unsigned packedInt );
 
 bool powerOf2( int x );
-
-void remove_dups( vector< unsigned > & data );
-void remove_value( vector< unsigned > & data, unsigned value );
 
 }
