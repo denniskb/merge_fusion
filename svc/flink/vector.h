@@ -1,5 +1,8 @@
 /*
 Never-shrinking vector.
+Only suited for POD-like types!
+  - Must not have a user-defined constructor
+  - resize/reserve merely allocate memory - they do not initialize it.
 */
 
 #pragma once
@@ -17,7 +20,7 @@ template< typename T >
 class vector
 {
 public:
-	inline vector( int size = 0 ) :
+	inline explicit vector( int size = 0 ) :
 		m_data( nullptr ),
 		m_size( 0 ),
 		m_capacity( 0 )

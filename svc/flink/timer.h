@@ -5,23 +5,23 @@
 
 
 
-namespace svc {
+namespace flink {
 
-class Timer
+class timer
 {
 public:
-	Timer();
+	timer();
 
 	/*
 	Restarts the timer.
 	*/
-	void Reset();
+	void reset();
 
 	/*
 	Returns the time in seconds that passed since
 	the object was created.
 	*/
-	double Time();
+	double time();
 
 private:
 	LARGE_INTEGER m_start;

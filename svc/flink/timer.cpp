@@ -1,22 +1,18 @@
-#include "Timer.h"
+#include "timer.h"
 
 
 
-svc::Timer::Timer()
+flink::timer::timer()
 {
-	Reset();
+	reset();
 }
 
-
-
-void svc::Timer::Reset()
+void flink::timer::reset()
 {
 	QueryPerformanceCounter( & m_start );
 }
 
-
-
-double svc::Timer::Time()
+double flink::timer::time()
 {
 	LARGE_INTEGER end, freq;
 	QueryPerformanceCounter( & end );

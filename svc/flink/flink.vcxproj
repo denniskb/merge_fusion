@@ -14,11 +14,12 @@
     <ClInclude Include="algorithm.h" />
     <ClInclude Include="flat_map.h" />
     <ClInclude Include="math.h" />
+    <ClInclude Include="timer.h" />
     <ClInclude Include="util.h" />
     <ClInclude Include="vector.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="algorithm.cpp" />
+    <ClCompile Include="timer.cpp" />
     <ClCompile Include="util.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

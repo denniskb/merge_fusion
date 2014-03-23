@@ -183,7 +183,7 @@ void svc::Integrator::ExpandBricksHelperX
 		tmp = xyz;
 	}
 		
-	remove_value( inOutBrickIndices, 0 );
+	remove_value( inOutBrickIndices, 0u );
 }
 
 // static 
