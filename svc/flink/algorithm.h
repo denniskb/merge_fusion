@@ -1,5 +1,7 @@
 #pragma once
 
+#include <algorithm>
+
 #include "vector.h"
 
 
@@ -119,23 +121,85 @@ inline int intersection_size
 	T const * first2, T const * last2
 )
 {
-	int result = 0;
+	if( 0 == last1 - first1 ||
+		0 == last2 - first2 )
+		return 0;
 
+	auto tmp = std::lower_bound( first1, last1, * first2 );
+	first2 = std::lower_bound( first2, last2, * first1 );
+	first1 = tmp;
+
+	int result = 0;
 	while( first1 < last1 && first2 < last2 )
 	{
-		int equal   = ( * first1 == * first2 );
-		int less    = ( * first1 <  * first2 );
-		int greater = ( * first1 >  * first2 );
+		int lte = ( * first1 <= * first2 );
+		int gte = ( * first1 >= * first2 );
 
-		result += equal;
-		first1 += equal;
-		first2 += equal;
+		result += lte * gte;
+		first1 += lte;
+		first2 += gte;
+	}
+	return result;
+}
 
-		first1 += less;
-		first2 += greater;
+/*
+Merges two key-value ranges backwards, which allows
+the input and output ranges to overlap
+
+The keys must be sorted ascendingly and be unique.
+The merged sequence is unique, too.
+*/
+template< typename K, typename T >
+inline static void merge_unique_backward
+(
+	K const * const keys_first1, K const * keys_last1,
+	T const * values_last1,
+
+	K const * const keys_first2, K const * keys_last2,
+	T value, // second range consists of [ value, ..., value )
+
+	K * keys_result_last,
+	T * values_result_last
+)
+{
+	assert( keys_first1 <= keys_last1 );
+	assert( keys_first2 <= keys_last2 );
+
+	assert( keys_first2 >= keys_last1 || keys_last2 < keys_first1 );
+
+	keys_last1--;
+	values_last1--;
+
+	keys_last2--;
+
+	keys_result_last--;
+	values_result_last--;
+
+	while( keys_last1 >= keys_first1 && keys_last2 >= keys_first2 )
+	{
+		int gte = ( * keys_last1 >= * keys_last2 );
+		int lte = ( * keys_last1 <= * keys_last2 );
+
+		// TODO: Make sure this translates into a cmov
+		* keys_result_last-- = gte ? * keys_last1 : * keys_last2;
+		* values_result_last-- = gte ? * values_last1 : value;
+
+		values_last1 -= gte;
+		keys_last1 -= gte;
+		keys_last2 -= lte;
 	}
 
-	return result;
+	while( keys_last1 >= keys_first1 )
+	{
+		* keys_result_last-- = * keys_last1--;
+		* values_result_last-- = * values_last1--;
+	}
+
+	while( keys_last2 >= keys_first2 )
+	{
+		* keys_result_last-- = * keys_last2--;
+		* values_result_last-- = value;
+	}
 }
 
 }

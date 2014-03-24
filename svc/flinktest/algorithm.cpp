@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE( remove_value )
 
 BOOST_AUTO_TEST_CASE( intersection_size )
 {
-	flink::vector< unsigned > a, b;
+	flink::vector< int > a, b;
 	BOOST_REQUIRE( flink::intersection_size( a.cbegin(), a.cend(), b.cbegin(), b.cend() ) == 0 );
 
 	a.push_back( 1 );

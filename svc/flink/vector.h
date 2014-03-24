@@ -30,6 +30,17 @@ public:
 		resize( size );
 	}
 
+	inline vector( T const * first, T const * last ) :
+		m_data( nullptr ),
+		m_size( 0 ),
+		m_capacity( 0 )
+	{
+		assert( first != nullptr );
+		assert( first <= last );
+
+		copy_from( first, last );
+	}
+
 	inline ~vector()
 	{
 		if( m_data != nullptr )
@@ -41,7 +52,7 @@ public:
 		m_size( 0 ),
 		m_capacity( 0 )
 	{
-		copy_from( copy );
+		copy_from( copy.cbegin(), copy.cend() );
 	}
 
 	inline vector( vector && rhs ) :
@@ -56,7 +67,7 @@ public:
 
 	inline vector & operator=( vector const & rhs )
 	{
-		copy_from( rhs );
+		copy_from( rhs.cbegin(), rhs.cend() );
 
 		return * this;
 	}
@@ -150,7 +161,7 @@ public:
 		if( newSize > m_capacity )
 			reserve( 2 * newSize );
 
-		m_data[ size() ] = std::move( element );
+		m_data[ size() ] = element;
 		m_size = newSize;
 	}
 
@@ -159,10 +170,10 @@ private:
 	int m_size;
 	int m_capacity;
 
-	inline void copy_from( vector< T > const & rhs )
+	inline void copy_from( T const * first, T const * last )
 	{
-		resize( rhs.size() );
-		std::memcpy( m_data, rhs.m_data, rhs.size() * sizeof( T ) );
+		resize( (int) ( last - first ) );
+		std::memcpy( m_data, first, size() * sizeof( T ) );
 	}
 };
 
