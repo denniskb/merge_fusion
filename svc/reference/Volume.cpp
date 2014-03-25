@@ -102,28 +102,6 @@ flink::float4 svc::Volume::Maximum() const
 
 
 
-flink::vector< unsigned > & svc::Volume::Indices()
-{
-	return m_indices;
-}
-
-flink::vector< unsigned > const & svc::Volume::Indices() const
-{
-	return m_indices;
-}
-
-flink::vector< unsigned > & svc::Volume::Voxels()
-{
-	return m_voxels;
-}
-
-flink::vector< unsigned > const & svc::Volume::Voxels() const
-{
-	return m_voxels;
-}
-
-
-
 flink::float4 svc::Volume::VoxelCenter( int x, int y, int z ) const
 {
 	assert( x >= 0 && x < Resolution() );
@@ -147,4 +125,16 @@ flink::float4 svc::Volume::BrickIndex( flink::float4 const & world ) const
 	return
 		( world - Minimum() ) / ( Maximum() - Minimum() ) *
 		flink::make_float4( (float) NumBricksInVolume() );
+}
+
+
+
+flink::flat_map< unsigned, unsigned > & svc::Volume::Data()
+{
+	return m_data;
+}
+
+flink::flat_map< unsigned, unsigned > const & svc::Volume::Data() const
+{
+	return m_data;
 }

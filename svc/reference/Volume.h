@@ -1,7 +1,7 @@
 #pragma once
 
+#include <flink/flat_map.h>
 #include <flink/math.h>
-#include <flink/vector.h>
 
 
 
@@ -38,13 +38,11 @@ public:
 	flink::float4 Minimum() const;
 	flink::float4 Maximum() const;
 
-	flink::vector< unsigned > & Indices();
-	flink::vector< unsigned > const & Indices() const;
-	flink::vector< unsigned > & Voxels();
-	flink::vector< unsigned > const & Voxels() const;
-
 	flink::float4 VoxelCenter( int x, int y, int z ) const;
 	flink::float4 BrickIndex( flink::float4 const & world ) const;
+
+	flink::flat_map< unsigned, unsigned > & Data();
+	flink::flat_map< unsigned, unsigned > const & Data() const;
 
 private:
 	Volume & operator=( Volume const & rhs );
@@ -54,8 +52,7 @@ private:
 	int const m_footPrint;
 	float const m_truncMargin;
 
-	flink::vector< unsigned > m_indices;
-	flink::vector< unsigned > m_voxels;
+	flink::flat_map< unsigned, unsigned > m_data;
 };
 
 }

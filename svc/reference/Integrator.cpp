@@ -9,6 +9,8 @@
 #include "Volume.h"
 #include "Voxel.h"
 
+#include <flink/timer.h>
+
 
 
 // static 
@@ -25,19 +27,40 @@ void svc::Integrator::Integrate
 	flink::float4x4 const & viewToWorld
 )
 {
+	double tsplat, tsort, tdups, texpand, tbricks, tsort2, tmerge, tupdate;
+	flink::timer t;
 	SplatBricks( volume, frame, viewToWorld, m_splattedVoxels );
+	tsplat = t.time(); t.reset();
 	radix_sort( m_splattedVoxels );
+	tsort = t.time(); t.reset();
 	remove_dups( m_splattedVoxels );
+	tdups = t.time(); t.reset();
 
 	ExpandBricks( volume, cache, m_splattedVoxels );
+	texpand = t.time(); t.reset();
 	
 	BricksToVoxels( volume, m_splattedVoxels );
+	tbricks = t.time(); t.reset();
 	radix_sort( m_splattedVoxels );
+	tsort2 = t.time(); t.reset();
 
-	volume.Indices() = m_splattedVoxels;
-	volume.Voxels().resize( volume.Indices().size() );
+	volume.Data().merge_unique( m_splattedVoxels.cbegin(), m_splattedVoxels.cend(), 0 );
+	tmerge = t.time(); t.reset();
 
 	UpdateVoxels( volume, frame, eye, forward, viewProjection );
+	tupdate = t.time();
+
+	printf( "tsplat: %fms\n", tsplat * 1000.0 );
+	printf( "tsort: %fms\n", tsort * 1000.0 );
+	printf( "tdups: %fms\n", tdups * 1000.0 );
+	printf( "texpand: %fms\n", texpand * 1000.0 );
+
+	printf( "tbricks: %fms\n", tbricks * 1000.0 );
+	printf( "tsort2: %fms\n", tsort2 * 1000.0 );
+	printf( "tmerge: %fms\n", tmerge * 1000.0 );
+	printf( "tupdate: %fms\n", tupdate * 1000.0 );
+
+	printf( "ttotal: %fms\n\n", (tsplat+tsort+tdups+texpand+tbricks+tsort2+tmerge+tupdate)*1000.0 );
 }
 
 
@@ -238,10 +261,10 @@ void svc::Integrator::UpdateVoxels
 	flink::mat _viewProj = flink::load( viewProjection );
 	flink::vec _ndcToUV = flink::set( frame.Width() / 2.0f, frame.Height() / 2.0f, 0, 0 );
 		
-	for( int i = 0; i < volume.Indices().size(); i++ )
+	for( int i = 0; i < volume.Data().size(); i++ )
 	{
 		unsigned x, y, z;
-		flink::unpackInts( volume.Indices()[ i ], x, y, z );
+		flink::unpackInts( volume.Data().keys_first()[ i ], x, y, z );
 
 		flink::float4 centerWorld = volume.VoxelCenter( x, y, z );
 		flink::vec _centerWorld = flink::load( centerWorld );
@@ -266,8 +289,8 @@ void svc::Integrator::UpdateVoxels
 				
 		update = update && ( dist >= 0.8f && signedDist >= -volume.TruncationMargin() );
 
-		Voxel vx;
+		Voxel vx = volume.Data().values_first()[ i ];
 		vx.Update( signedDist, volume.TruncationMargin(), (int) update );
-		volume.Voxels()[ i ] = vx;
+		volume.Data().values_first()[ i ] = vx;
 	}
 }

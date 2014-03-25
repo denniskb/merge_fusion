@@ -7,6 +7,8 @@
 #include "Volume.h"
 #include "Voxel.h"
 
+#include <flink/timer.h>
+
 
 
 void svc::Mesher::Triangulate
@@ -25,12 +27,15 @@ void svc::Mesher::Triangulate
 	unsigned const resMinus1 = volume.Resolution() - 1;
 	cache.Reset( volume.Resolution() );
 
-	while( cache.NextSlice( volume.Indices().cbegin(), volume.Voxels().cbegin(), volume.Indices().size() ) )
+	double tgen, tsort, tidx;
+	flink::timer t;
+
+	while( cache.NextSlice( volume.Data().keys_first(), volume.Data().values_first(), volume.Data().size() ) )
 	{
 		for( int i = cache.CachedRange().first; i < cache.CachedRange().second; i++ )
 		{
 			unsigned x0, y0, z0;
-			flink::unpackInts( volume.Indices()[ i ], x0, y0, z0 );
+			flink::unpackInts( volume.Data().keys_first()[ i ], x0, y0, z0 );
 
 			unsigned x1 = std::min( x0 + 1, resMinus1 );
 			unsigned y1 = std::min( y0 + 1, resMinus1 );
@@ -139,7 +144,11 @@ void svc::Mesher::Triangulate
 		}
 	}
 	
+	tgen = t.time(); t.reset();
+
 	radix_sort( m_vertexIDs, outVertices );
+
+	tsort = t.time(); t.reset();
 	
 	for( int i = 0; i < outIndices.size(); i++ )
 		outIndices[ i ] = (unsigned) ( std::lower_bound(
@@ -147,6 +156,13 @@ void svc::Mesher::Triangulate
 			m_vertexIDs.cend(),
 			outIndices[ i ]
 		) - m_vertexIDs.cbegin() );
+
+	tidx = t.time(); t.reset();
+
+	printf( "tgen: %fms\n", tgen * 1000.0 );
+	printf( "tsort: %fms\n", tsort * 1000.0 );
+	printf( "tidx: %fms\n", tidx * 1000.0 );
+	printf( "ttotal: %fms\n\n", (tgen+tsort+tidx) * 1000.0 );
 
 	// TODO: Remove unused vertices from VB
 	// or test how high their percentage is and possibly leave them in.

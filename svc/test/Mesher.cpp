@@ -27,7 +27,7 @@ BOOST_AUTO_TEST_CASE( Triangulate )
 	svc::Integrator i;
 	svc::Mesher m;
 
-	svc::Volume v( 256, 2.0f, 2, 0.02f );
+	svc::Volume v( 512, 2.0f, 2, 0.02f );
 	svc::Cache cache;
 
 	svc::DepthStream ds( ( boost::filesystem::current_path() / "content/imrod_v2.depth" ).string().c_str() );
@@ -43,6 +43,7 @@ BOOST_AUTO_TEST_CASE( Triangulate )
 
 	flink::vector< unsigned > IB;
 	flink::vector< flink::float4 > VB;
+	m.Triangulate( v, cache, IB, VB );
 	m.Triangulate( v, cache, IB, VB );
 	svc::Mesher::Mesh2Obj( IB, VB, "C:/TEMP/volume_triangulate.obj" );
 

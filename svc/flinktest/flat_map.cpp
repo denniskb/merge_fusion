@@ -19,10 +19,10 @@ BOOST_AUTO_TEST_CASE( ctor )
 	test = flink::flat_map< int, int >( std::move( keys ), std::move( values ) );
 	
 	BOOST_REQUIRE( test.size() == 2 );
-	BOOST_REQUIRE( test.keys()[ 0 ] == 2 );
-	BOOST_REQUIRE( test.keys()[ 1 ] == 3 );
-	BOOST_REQUIRE( test.values()[ 0 ] == 13 );
-	BOOST_REQUIRE( test.values()[ 1 ] == -7 );
+	BOOST_REQUIRE( test.keys_first()[ 0 ] == 2 );
+	BOOST_REQUIRE( test.keys_first()[ 1 ] == 3 );
+	BOOST_REQUIRE( test.values_first()[ 0 ] == 13 );
+	BOOST_REQUIRE( test.values_first()[ 1 ] == -7 );
 
 	test.clear();
 	BOOST_REQUIRE( test.size() == 0 );
@@ -41,31 +41,31 @@ BOOST_AUTO_TEST_CASE( merge_unique )
 	
 	test.merge_unique( keys2.cbegin(), keys2.cend(), 0 );
 	BOOST_REQUIRE( test.size() == 1 );
-	BOOST_REQUIRE( test.keys()[ 0 ] == 1 );
-	BOOST_REQUIRE( test.values()[ 0 ] == -7 );
+	BOOST_REQUIRE( test.keys_first()[ 0 ] == 1 );
+	BOOST_REQUIRE( test.values_first()[ 0 ] == -7 );
 
 	test.clear();
 	keys2.push_back( 1 );
 
 	test.merge_unique( keys2.cbegin(), keys2.cend(), 5 );
 	BOOST_REQUIRE( test.size() == 1 );
-	BOOST_REQUIRE( test.keys()[ 0 ] == 1 );
-	BOOST_REQUIRE( test.values()[ 0 ] == 5 );
+	BOOST_REQUIRE( test.keys_first()[ 0 ] == 1 );
+	BOOST_REQUIRE( test.values_first()[ 0 ] == 5 );
 
 	test = flink::flat_map< int, int >( keys1, values1 );
 	test.merge_unique( keys2.cbegin(), keys2.cend(), 5 );
 
 	BOOST_REQUIRE( test.size() == 1 );
-	BOOST_REQUIRE( test.keys()[ 0 ] == 1 );
-	BOOST_REQUIRE( test.values()[ 0 ] == -7 );
+	BOOST_REQUIRE( test.keys_first()[ 0 ] == 1 );
+	BOOST_REQUIRE( test.values_first()[ 0 ] == -7 );
 
 	keys2.push_back( 3 );
 	test.merge_unique( keys2.cbegin(), keys2.cend(), 5 );
 	BOOST_REQUIRE( test.size() == 2 );
-	BOOST_REQUIRE( test.keys()[ 0 ] == 1 );
-	BOOST_REQUIRE( test.keys()[ 1 ] == 3 );
-	BOOST_REQUIRE( test.values()[ 0 ] == -7 );
-	BOOST_REQUIRE( test.values()[ 1 ] ==  5 );
+	BOOST_REQUIRE( test.keys_first()[ 0 ] == 1 );
+	BOOST_REQUIRE( test.keys_first()[ 1 ] == 3 );
+	BOOST_REQUIRE( test.values_first()[ 0 ] == -7 );
+	BOOST_REQUIRE( test.values_first()[ 1 ] ==  5 );
 }
 
 BOOST_AUTO_TEST_SUITE_END()

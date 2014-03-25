@@ -36,15 +36,13 @@ public:
 
 
 
-	inline vector< K > const & keys() const
-	{
-		return m_keys;
-	}
+	inline K const * keys_first() const { return m_keys.cbegin(); }
+	inline K const * keys_last()  const { return m_keys.cend(); }
 
-	inline vector< T > const & values() const
-	{
-		return m_values;
-	}
+	inline T * values_first() { return m_values.begin(); }
+	inline T * values_last()  { return m_values.end(); }
+	inline T const * values_first() const { return m_values.cbegin(); }
+	inline T const * values_last()  const { return m_values.cend(); }
 
 
 
@@ -66,22 +64,22 @@ public:
 		int intersection = intersection_size( m_keys.cbegin(), m_keys.cend(), keys_first2, keys_last2 );
 		resize( size() + (int)( keys_last2 - keys_first2 ) - intersection );
 
-		K const * const merge_first = std::lower_bound( keys().cbegin(), keys().cbegin() + oldSize, * keys_first2 );
-		K const * const merge_last  = std::upper_bound( keys().cbegin(), keys().cbegin() + oldSize, * ( keys_last2 - 1 ) );
+		K const * const merge_first = std::lower_bound( keys_first(), keys_first() + oldSize, * keys_first2 );
+		K const * const merge_last  = std::upper_bound( keys_first(), keys_first() + oldSize, * ( keys_last2 - 1 ) );
 
-		std::copy_backward( merge_last, keys().cbegin() + oldSize, m_keys.end() );
+		std::copy_backward( merge_last, keys_first() + oldSize, m_keys.end() );
 		std::copy_backward
 		(
-			values().cbegin() + ( merge_last - keys().cbegin() ),
-			values().cbegin() + oldSize,
-			m_values.end()
+			values_first() + ( merge_last - keys_first() ),
+			values_first() + oldSize,
+			values_last()
 		);
 
-		T const * values_last1 = m_values.begin() + ( merge_last - m_keys.begin() );
+		T const * values_last1 = values_first() + ( merge_last - keys_first() );
 
-		int suffixLength = (int)( m_keys.begin() + oldSize - merge_last );
-		K * keys_result_last   = m_keys.end()   - suffixLength;
-		T * values_result_last = m_values.end() - suffixLength;
+		int suffixLength = (int)( keys_first() + oldSize - merge_last );
+		K * keys_result_last   = m_keys.end()  - suffixLength;
+		T * values_result_last = values_last() - suffixLength;
 
 		merge_unique_backward
 		(

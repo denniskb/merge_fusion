@@ -29,7 +29,7 @@ BOOST_AUTO_TEST_CASE( Integrate )
 	*/
 	svc::Integrator i;
 
-	svc::Volume v( 256, 2.0f, 2, 0.03f );
+	svc::Volume v( 512, 2.0f, 2, 0.02f );
 	svc::Cache cache;
 
 	svc::DepthStream ds( ( boost::filesystem::current_path() / "content/imrod_v2.depth" ).string().c_str() );
@@ -42,18 +42,19 @@ BOOST_AUTO_TEST_CASE( Integrate )
 	ComputeMatrices( view, eye, forward, viewProj, viewToWorld );
 
 	i.Integrate( v, cache, depth, eye, forward, viewProj, viewToWorld );
+	i.Integrate( v, cache, depth, eye, forward, viewProj, viewToWorld );
 
 	FILE * debug;
 	fopen_s( & debug, "C:/TEMP/volume_integrate.obj", "w" );
 
-	for( int i = 0; i < v.Indices().size(); i++ )
+	for( int i = 0; i < v.Data().size(); i++ )
 	{
-		svc::Voxel vx = v.Voxels()[ i ];
+		svc::Voxel vx = v.Data().values_first()[ i ];
 		if( vx.Weight() == 0 )
 			continue;
 
 		unsigned x, y, z;
-		flink::unpackInts( v.Indices()[ i ], x, y, z );
+		flink::unpackInts( v.Data().keys_first()[ i ], x, y, z );
 		flink::float4 pos = v.VoxelCenter( x, y, z );
 		fprintf_s( debug, "v %f %f %f\n", pos.x, pos.y, pos.z );
 	}
