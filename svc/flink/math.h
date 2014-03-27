@@ -15,6 +15,7 @@ namespace flink {
 
 typedef DirectX::XMFLOAT4A float4;
 typedef DirectX::XMFLOAT4X4A float4x4;
+typedef DirectX::XMUINT4 uint4;
 
 typedef DirectX::XMVECTOR vec;
 typedef DirectX::XMMATRIX mat;

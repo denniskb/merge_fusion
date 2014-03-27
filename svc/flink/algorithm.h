@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <cassert>
 
 #include "vector.h"
 
@@ -9,18 +10,24 @@
 namespace flink {
 
 template< typename T >
-inline void radix_sort( vector< T > & data )
+inline void radix_sort
+(
+	T * first, int size,
+	vector< char > & scratchPad
+)
 {
+	assert( first != nullptr );
+	assert( size >= 0 );
+
 	using std::swap;
 
 	unsigned cnt[ 256 ];
 	unsigned const mask = 0xff;
 
-	int size = data.size();
-	data.resize( 2 * size );
+	scratchPad.resize( size * sizeof( T ) );
 
-	T * A = data.begin();
-	T * B = data.begin() + size;
+	T * A = first;
+	T * B = reinterpret_cast< T * >( scratchPad.begin() );
 
 	for( int shift = 0; shift < 32; shift += 8 )
 	{
@@ -37,26 +44,31 @@ inline void radix_sort( vector< T > & data )
 
 		swap( A, B );
 	}
-
-	data.resize( size );
 }
 
-template< typename T, typename K >
-inline void radix_sort( vector< T > & keys, vector< K > & values )
+template< typename K, typename T >
+inline void radix_sort
+(
+	K * keys, T * values,
+	int size,
+	vector< char > & scratchPad
+)
 {
+	assert( keys != nullptr );
+	assert( values != nullptr );
+	assert( size >= 0 );
+
 	using std::swap;
 
 	unsigned cnt[ 256 ];
 	unsigned const mask = 0xff;
 
-	int size = keys.size();
-	keys.resize( 2 * size );
-	values.resize( 2 * size );
+	scratchPad.resize( size * ( sizeof( K ) + sizeof( T ) ) );
 
-	T * A = keys.begin();
-	T * B = keys.begin() + size;
-	K * C = values.begin();
-	K * D = values.begin() + size;
+	K * A = keys;
+	K * B = reinterpret_cast< K * >( scratchPad.begin() );
+	T * C = values;
+	T * D = reinterpret_cast< T * >( scratchPad.begin() + size * sizeof( K ) );
 
 	for( int shift = 0; shift < 32; shift += 8 )
 	{
@@ -78,9 +90,6 @@ inline void radix_sort( vector< T > & keys, vector< K > & values )
 		swap( A, B );
 		swap( C, D );
 	}
-
-	keys.resize( size );
-	values.resize( size );
 }
 
 

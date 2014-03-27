@@ -31,17 +31,17 @@ void svc::Integrator::Integrate
 	flink::timer t;
 	SplatBricks( volume, frame, viewToWorld, m_splattedVoxels );
 	tsplat = t.time(); t.reset();
-	radix_sort( m_splattedVoxels );
+	flink::radix_sort( m_splattedVoxels.begin(), m_splattedVoxels.size(), m_scratchPad );
 	tsort = t.time(); t.reset();
 	remove_dups( m_splattedVoxels );
 	tdups = t.time(); t.reset();
 
-	ExpandBricks( volume, cache, m_splattedVoxels );
+	ExpandBricks( volume, cache, m_splattedVoxels, m_scratchPad );
 	texpand = t.time(); t.reset();
 	
 	BricksToVoxels( volume, m_splattedVoxels );
 	tbricks = t.time(); t.reset();
-	radix_sort( m_splattedVoxels );
+	flink::radix_sort( m_splattedVoxels.begin(), m_splattedVoxels.size(), m_scratchPad );
 	tsort2 = t.time(); t.reset();
 
 	volume.Data().merge_unique( m_splattedVoxels.cbegin(), m_splattedVoxels.cend(), 0 );
@@ -133,11 +133,12 @@ void svc::Integrator::ExpandBricks
 	Volume const & volume,
 	Cache & cache,
 
-	flink::vector< unsigned > & inOutBrickIndices
+	flink::vector< unsigned > & inOutBrickIndices,
+	flink::vector< char > & scratchPad
 )
 {
-	ExpandBricksHelper< 1 >( volume, cache, 0, flink::packInts( 0, 0, 1 ), inOutBrickIndices );
-	ExpandBricksHelper< 0 >( volume, cache, volume.NumBricksInVolume(), flink::packInts( 0, 1, 0 ), inOutBrickIndices );
+	ExpandBricksHelper< 1 >( volume, cache, 0, flink::packInts( 0, 0, 1 ), inOutBrickIndices, scratchPad );
+	ExpandBricksHelper< 0 >( volume, cache, volume.NumBricksInVolume(), flink::packInts( 0, 1, 0 ), inOutBrickIndices, scratchPad );
 	ExpandBricksHelperX( volume.NumBricksInVolume(), inOutBrickIndices );
 }
 
@@ -150,7 +151,8 @@ void svc::Integrator::ExpandBricksHelper
 	int deltaLookUp,
 	unsigned deltaStore,
 
-	flink::vector< unsigned > & inOutBrickIndices
+	flink::vector< unsigned > & inOutBrickIndices,
+	flink::vector< char > & scratchPad
 )
 {
 	// This method can only be used to expand in z or y direction
@@ -174,11 +176,11 @@ void svc::Integrator::ExpandBricksHelper
 				inOutBrickIndices.push_back( inOutBrickIndices[ i ] + deltaStore );
 		}
 	}
-	flink::radix_sort( inOutBrickIndices );
+	flink::radix_sort( inOutBrickIndices.begin(), inOutBrickIndices.size(), scratchPad );
 }
 
-template void svc::Integrator::ExpandBricksHelper< 0 >(Volume const &, Cache &, int, unsigned, flink::vector< unsigned > &);
-template void svc::Integrator::ExpandBricksHelper< 1 >(Volume const &, Cache &, int, unsigned, flink::vector< unsigned > &);
+template void svc::Integrator::ExpandBricksHelper< 0 >(Volume const &, Cache &, int, unsigned, flink::vector< unsigned > &, flink::vector< char > &);
+template void svc::Integrator::ExpandBricksHelper< 1 >(Volume const &, Cache &, int, unsigned, flink::vector< unsigned > &, flink::vector< char > &);
 
 // static 
 void svc::Integrator::ExpandBricksHelperX

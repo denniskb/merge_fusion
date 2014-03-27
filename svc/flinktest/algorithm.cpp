@@ -11,11 +11,12 @@ BOOST_AUTO_TEST_SUITE( algorithm )
 BOOST_AUTO_TEST_CASE( radix_sort )
 {
 	flink::vector< unsigned > data( 100 );
+	flink::vector< char > tmp;
 
 	for( int i = 0; i < 100; i++ )
 		data[ i ] = rand();
 
-	flink::radix_sort( data );
+	flink::radix_sort( data.begin(), data.size(), tmp );
 
 	for( int i = 0; i < 99; i++ )
 		BOOST_REQUIRE( data[ i ] < data[ i + 1 ] );
@@ -25,11 +26,12 @@ BOOST_AUTO_TEST_CASE( radix_sort2 )
 {
 	flink::vector< unsigned > keys( 100 );
 	flink::vector< unsigned > values( 100 );
+	flink::vector< char > tmp;
 
 	for( int i = 0; i < 100; i++ )
 		keys[ i ] = values[ i ] = rand();
 
-	flink::radix_sort( keys, values );
+	flink::radix_sort( keys.begin(), values.begin(), keys.size(), tmp );
 
 	for( int i = 0; i < 99; i++ )
 	{

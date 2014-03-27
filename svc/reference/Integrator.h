@@ -29,6 +29,7 @@ public:
 
 private:
 	flink::vector< unsigned > m_splattedVoxels;
+	flink::vector< char > m_scratchPad;
 
 	static void SplatBricks
 	(
@@ -44,7 +45,8 @@ private:
 		Volume const & volume,
 		Cache & cache,
 
-		flink::vector< unsigned > & inOutBrickIndices
+		flink::vector< unsigned > & inOutBrickIndices,
+		flink::vector< char > & scratchPad
 	);
 
 	template< int sliceIdx >
@@ -55,7 +57,8 @@ private:
 		int deltaLookUp,
 		unsigned deltaStore,
 
-		flink::vector< unsigned > & inOutBrickIndices
+		flink::vector< unsigned > & inOutBrickIndices,
+		flink::vector< char > & scratchPad
 	);
 
 	static void ExpandBricksHelperX

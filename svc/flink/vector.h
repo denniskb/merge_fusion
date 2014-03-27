@@ -97,6 +97,11 @@ public:
 		return m_size;
 	}
 
+	inline int capacity() const
+	{
+		return m_capacity;
+	}
+
 	inline T * begin()
 	{
 		return m_data;

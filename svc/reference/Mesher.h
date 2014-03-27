@@ -21,22 +21,24 @@ public:
 		Volume const & volume,
 		Cache & cache,
 
-		flink::vector< unsigned > & outIndices,
-		flink::vector< flink::float4 > & outVertices
+		flink::vector< flink::float4 > & outVertices,
+		flink::vector< flink::uint4 > & outTriangles
 	);
 
 	static void Mesh2Obj
 	(
-		flink::vector< unsigned > const & indices,
 		flink::vector< flink::float4 > const & vertices,
+		flink::vector< flink::uint4 > const & triangles,
 
 		char const * outObjFileName
 	);
 
-private:
-	static int const * TriTable();
+	static int const * TriOffsets();
+	static flink::uint4 const * TriTable();
 
+private:
 	flink::vector< unsigned > m_vertexIDs;
+	flink::vector< char > m_scratchPad;
 };
 
 }
