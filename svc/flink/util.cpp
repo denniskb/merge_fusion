@@ -21,16 +21,19 @@ long long flink::fsize( char const * fileName )
 
 
 
-unsigned flink::packInts( unsigned x, unsigned y, unsigned z )
+unsigned flink::packX( unsigned x )
 {
-	return z << 20 | y << 10 | x;
+	return x;
 }
 
-void flink::unpackInts( unsigned packedInt, unsigned & outX, unsigned & outY, unsigned & outZ )
+unsigned flink::packY( unsigned y )
 {
-	outZ = unpackZ( packedInt );
-	outY = unpackY( packedInt );
-	outX = unpackX( packedInt );
+	return y << 10;
+}
+
+unsigned flink::packZ( unsigned z )
+{
+	return z << 20;
 }
 
 unsigned flink::unpackX( unsigned packedInt )
@@ -46,6 +49,18 @@ unsigned flink::unpackY( unsigned packedInt )
 unsigned flink::unpackZ( unsigned packedInt )
 {
 	return packedInt >> 20;
+}
+
+unsigned flink::packInts( unsigned x, unsigned y, unsigned z )
+{
+	return packX( x ) | packY( y ) | packZ( z );
+}
+
+void flink::unpackInts( unsigned packedInt, unsigned & outX, unsigned & outY, unsigned & outZ )
+{
+	outZ = unpackZ( packedInt );
+	outY = unpackY( packedInt );
+	outX = unpackX( packedInt );
 }
 
 

@@ -137,8 +137,8 @@ void svc::Integrator::ExpandBricks
 	flink::vector< char > & scratchPad
 )
 {
-	ExpandBricksHelper< 1 >( volume, cache, 0, flink::packInts( 0, 0, 1 ), inOutBrickIndices, scratchPad );
-	ExpandBricksHelper< 0 >( volume, cache, volume.NumBricksInVolume(), flink::packInts( 0, 1, 0 ), inOutBrickIndices, scratchPad );
+	ExpandBricksHelper< 1 >( volume, cache, 0, flink::packZ( 1 ), inOutBrickIndices, scratchPad );
+	ExpandBricksHelper< 0 >( volume, cache, volume.NumBricksInVolume(), flink::packY( 1 ), inOutBrickIndices, scratchPad );
 	ExpandBricksHelperX( volume.NumBricksInVolume(), inOutBrickIndices );
 }
 

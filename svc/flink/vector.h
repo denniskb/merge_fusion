@@ -2,7 +2,7 @@
 Never-shrinking vector.
 Only suited for POD-like types!
   - Must not have a user-defined constructor
-  - resize/reserve merely allocate memory - they do not initialize it.
+  - resize merely allocates memory - it doesn't initialize it.
 */
 
 #pragma once
@@ -41,12 +41,6 @@ public:
 		copy_from( first, last );
 	}
 
-	inline ~vector()
-	{
-		if( m_data != nullptr )
-			std::free( m_data );
-	}
-
 	inline vector( vector const & copy ) :
 		m_data( nullptr ),
 		m_size( 0 ),
@@ -63,6 +57,12 @@ public:
 		using std::swap;
 
 		swap( * this, rhs );
+	}
+
+	inline ~vector()
+	{
+		if( m_data != nullptr )
+			std::free( m_data );
 	}
 
 	inline vector & operator=( vector const & rhs )
@@ -95,11 +95,6 @@ public:
 	inline int size() const
 	{
 		return m_size;
-	}
-
-	inline int capacity() const
-	{
-		return m_capacity;
 	}
 
 	inline T * begin()
@@ -135,22 +130,15 @@ public:
 
 
 
-	inline void reserve( int capacity )
-	{
-		assert( capacity >= 0 );
-
-		if( capacity > m_capacity )
-		{
-			m_data = (T*) std::realloc( m_data, capacity * sizeof( T ) );
-			m_capacity = capacity;
-		}
-	}
-
 	inline void resize( int size )
 	{
 		assert( size >= 0 );
 
-		reserve( size );
+		if( nullptr == m_data )
+			reserve( size );
+		else if( size > m_capacity )
+			reserve( 2 * size );
+
 		m_size = size;
 	}
 
@@ -179,6 +167,17 @@ private:
 	{
 		resize( (int) ( last - first ) );
 		std::memcpy( m_data, first, size() * sizeof( T ) );
+	}
+
+	inline void reserve( int capacity )
+	{
+		assert( capacity >= 0 );
+
+		if( capacity > m_capacity )
+		{
+			m_data = (T*) std::realloc( m_data, capacity * sizeof( T ) );
+			m_capacity = capacity;
+		}
 	}
 };
 

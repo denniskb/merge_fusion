@@ -12,11 +12,9 @@ BOOST_AUTO_TEST_CASE( ctor )
 	BOOST_REQUIRE( v.begin() == nullptr );
 	BOOST_REQUIRE( v.cbegin() == nullptr );
 	BOOST_REQUIRE( v.size() == 0 );
-	BOOST_REQUIRE( v.capacity() == 0 );
 
 	flink::vector< int > v2( 1 );
 	BOOST_REQUIRE( v2.size() == 1 );
-	BOOST_REQUIRE( v2.capacity() == 1 );
 
 	v2[ 0 ] = 7;
 	BOOST_REQUIRE( v2[ 0 ] == 7 );
@@ -27,13 +25,11 @@ BOOST_AUTO_TEST_CASE( copy_move_assign )
 	// move
 	flink::vector< int > v( flink::vector< int >( 1 ) );
 	BOOST_REQUIRE( v.size() == 1 );
-	BOOST_REQUIRE( v.capacity() == 1 );
 
 	// copy
 	v[ 0 ] = 7;
 	flink::vector< int > v2( v );
 	BOOST_REQUIRE( v2.size() == v.size() );
-	BOOST_REQUIRE( v2.capacity() == v.capacity() );
 	BOOST_REQUIRE( v2[ 0 ] == 7 );
 	BOOST_REQUIRE( v.size() == 1 );
 	BOOST_REQUIRE( v[ 0 ] == 7 );
@@ -42,13 +38,11 @@ BOOST_AUTO_TEST_CASE( copy_move_assign )
 	v[ 0 ] = 2;
 	v2 = v;
 	BOOST_REQUIRE( v2.size() == v.size() );
-	BOOST_REQUIRE( v2.capacity() == v.capacity() );
 	BOOST_REQUIRE( v2[ 0 ] == 2 );
 
 	// move assign
 	v = flink::vector< int >( 2 );
 	BOOST_REQUIRE( v.size() == 2 );
-	BOOST_REQUIRE( v.capacity() == 2 );
 }
 
 BOOST_AUTO_TEST_CASE( resize )
@@ -56,7 +50,6 @@ BOOST_AUTO_TEST_CASE( resize )
 	flink::vector< int > v;
 	v.resize( 1 );
 	BOOST_REQUIRE( v.size() == 1 );
-	BOOST_REQUIRE( v.capacity() == 1 );
 }
 
 BOOST_AUTO_TEST_CASE( swap )
@@ -68,9 +61,7 @@ BOOST_AUTO_TEST_CASE( swap )
 	swap( v, v2 );
 
 	BOOST_REQUIRE( v.size() == 1 );
-	BOOST_REQUIRE( v.capacity() == 1 );
 	BOOST_REQUIRE( v2.size() == 0 );
-	BOOST_REQUIRE( v2.capacity() == 0 );
 }
 
 BOOST_AUTO_TEST_CASE( begin_end )
