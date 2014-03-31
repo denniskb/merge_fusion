@@ -36,11 +36,10 @@ inline void radix_sort
 		for( int i = 0; i < size; i++ )
 			cnt[ ( A[ i ] >> shift ) & mask ]++;
 
-		for( int i = 1; i < 256; i++ )
-			cnt[ i ] += cnt[ i - 1 ];
+		exclusive_scan( cnt, 256 );
 
-		for( int i = size - 1; i >= 0; i-- )
-			B[ --cnt[ ( A[ i ] >> shift ) & mask ] ] = A[ i ];
+		for( int i = 0; i < size; i++ )
+			B[ cnt[ ( A[ i ] >> shift ) & mask ]++ ] = A[ i ];
 
 		swap( A, B );
 	}
@@ -76,13 +75,12 @@ inline void radix_sort
 
 		for( int i = 0; i < size; i++ )
 			cnt[ ( A[ i ] >> shift ) & mask ]++;
+		
+		exclusive_scan( cnt, 256 );
 
-		for( int i = 1; i < 256; i++ )
-			cnt[ i ] += cnt[ i - 1 ];
-
-		for( int i = size - 1; i >= 0; i-- )
+		for( int i = 0; i < size; i++ )
 		{
-			int dstIdx = --cnt[ ( A[ i ] >> shift ) & mask ];
+			int dstIdx = cnt[ ( A[ i ] >> shift ) & mask ]++;
 			B[ dstIdx ] = A[ i ];
 			D[ dstIdx ] = C[ i ];
 		}
@@ -114,6 +112,18 @@ inline void remove_value( vector< T > & data, T const & value )
 			data[ idst++ ] = data[ i ];
 
 	data.resize( idst );
+}
+
+template< typename T >
+inline void exclusive_scan( T * data, int size )
+{
+	T accu = 0;
+	for( int i = 0; i < size; i++ )
+	{
+		T tmp = data[ i ];
+		data[ i ] = accu;
+		accu += tmp;
+	}
 }
 
 

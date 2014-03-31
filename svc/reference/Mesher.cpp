@@ -17,11 +17,11 @@ void svc::Mesher::Triangulate
 	Cache & cache,
 
 	flink::vector< flink::float4 > & outVertices,
-	flink::vector< flink::uint4 > & outTriangles
+	flink::vector< unsigned > & outIndices
 )
 {
 	outVertices.clear();
-	outTriangles.clear();
+	outIndices.clear();
 	m_vertexIDs.clear();
 
 	unsigned const resMinus1 = volume.Resolution() - 1;
@@ -66,6 +66,8 @@ void svc::Mesher::Triangulate
 
 			flink::float4 vert000 = volume.VoxelCenter( x0, y0, z0 );
 			unsigned i000 = flink::packInts( x0, y0, z0 );
+
+			// TODO: Re-evaluate interpolation
 
 			if( v[ 3 ].Weight() > 0 && d[ 2 ] * d[ 3 ] < 0.0f )
 			{
@@ -147,31 +149,35 @@ void svc::Mesher::Triangulate
 			)
 			{
 				flink::uint4 tri = TriTable()[ i ];
-				tri.x = localToGlobal[ tri.x ];
-				tri.y = localToGlobal[ tri.y ];
-				tri.z = localToGlobal[ tri.z ];
-				
-				outTriangles.push_back( tri );
+				outIndices.push_back( localToGlobal[ tri.x ] );
+				outIndices.push_back( localToGlobal[ tri.y ] );
+				outIndices.push_back( localToGlobal[ tri.z ] );
 			}
 		}
 	}
 	
 	tgen = t.time(); t.reset();
 
-	radix_sort( m_vertexIDs.begin(), outVertices.begin(), m_vertexIDs.size(), m_scratchPad );
+	flink::radix_sort( m_vertexIDs.begin(), outVertices.begin(), m_vertexIDs.size(), m_scratchPad );
 
 	tsort = t.time(); t.reset();
 	
-	for( int i = 0; i < outTriangles.size(); i++ )
-	{
-		unsigned * indices = reinterpret_cast< unsigned * >( outTriangles.begin() + i );
-		for( int j = 0; j < 3; j++ )
-			indices[ j ] = (unsigned) ( std::lower_bound(
-				m_vertexIDs.cbegin(),
-				m_vertexIDs.cend(),
-				indices[ j ]
-			) - m_vertexIDs.cbegin() );
-	}
+	m_indexIDs.resize( outIndices.size() );
+	for( int i = 0; i < outIndices.size(); i++ )
+		m_indexIDs[ i ] = i;
+
+	flink::radix_sort( outIndices.begin(), m_indexIDs.begin(), outIndices.size(), m_scratchPad );
+
+	m_scratchPad.resize( outIndices.size() * sizeof( unsigned ) );
+	unsigned * tmp = reinterpret_cast< unsigned * >( m_scratchPad.begin() );
+
+	int j = 0;
+	for( int i = 0; i < m_vertexIDs.size(); i++ )
+		while( j < outIndices.size() && outIndices[ j ] == m_vertexIDs[ i ] )
+			tmp[ j++ ] = i;
+
+	for( int i = 0; i < outIndices.size(); i++ )
+		outIndices[ m_indexIDs[ i ] ] = tmp[ i ];
 
 	tidx = t.time(); t.reset();
 
@@ -190,7 +196,7 @@ void svc::Mesher::Triangulate
 void svc::Mesher::Mesh2Obj
 (
 	flink::vector< flink::float4 > const & vertices,
-	flink::vector< flink::uint4 > const & triangles,
+	flink::vector< unsigned > const & indices,
 
 	char const * outObjFileName
 )
@@ -204,10 +210,14 @@ void svc::Mesher::Mesh2Obj
 		fprintf_s( file, "v %f %f %f\n", v.x, v.y, v.z );
 	}
 
-	for( int i = 0; i < triangles.size(); i++ )
+	for( int i = 0; i < indices.size(); i += 3 )
 	{
-		auto tri = triangles[ i ];
-		fprintf_s( file, "f %d %d %d\n", tri.x+1, tri.y+1, tri.z+1 );
+		fprintf_s
+		(
+			file, 
+			"f %d %d %d\n", 
+			indices[ i ] + 1, indices[ i + 1 ] + 1, indices[ i + 2 ] + 1
+		);
 	}
 
 	fclose( file );

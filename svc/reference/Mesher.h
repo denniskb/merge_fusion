@@ -22,13 +22,13 @@ public:
 		Cache & cache,
 
 		flink::vector< flink::float4 > & outVertices,
-		flink::vector< flink::uint4 > & outTriangles
+		flink::vector< unsigned > & outIndices
 	);
 
 	static void Mesh2Obj
 	(
 		flink::vector< flink::float4 > const & vertices,
-		flink::vector< flink::uint4 > const & triangles,
+		flink::vector< unsigned > const & indices,
 
 		char const * outObjFileName
 	);
@@ -38,6 +38,7 @@ public:
 
 private:
 	flink::vector< unsigned > m_vertexIDs;
+	flink::vector< unsigned > m_indexIDs;
 	flink::vector< char > m_scratchPad;
 };
 
