@@ -134,11 +134,11 @@ void svc::Integrator::ExpandBricks
 	Cache & cache,
 
 	flink::vector< unsigned > & inOutBrickIndices,
-	flink::vector< char > & scratchPad
+	flink::vector< char > & tmpScratchPad
 )
 {
-	ExpandBricksHelper< 1 >( volume, cache, 0, flink::packZ( 1 ), inOutBrickIndices, scratchPad );
-	ExpandBricksHelper< 0 >( volume, cache, volume.NumBricksInVolume(), flink::packY( 1 ), inOutBrickIndices, scratchPad );
+	ExpandBricksHelper< 1 >( volume, cache, 0, flink::packZ( 1 ), inOutBrickIndices, tmpScratchPad );
+	ExpandBricksHelper< 0 >( volume, cache, volume.NumBricksInVolume(), flink::packY( 1 ), inOutBrickIndices, tmpScratchPad );
 	ExpandBricksHelperX( volume.NumBricksInVolume(), inOutBrickIndices );
 }
 
@@ -152,7 +152,7 @@ void svc::Integrator::ExpandBricksHelper
 	unsigned deltaStore,
 
 	flink::vector< unsigned > & inOutBrickIndices,
-	flink::vector< char > & scratchPad
+	flink::vector< char > & tmpScratchPad
 )
 {
 	// This method can only be used to expand in z or y direction
@@ -176,7 +176,7 @@ void svc::Integrator::ExpandBricksHelper
 				inOutBrickIndices.push_back( inOutBrickIndices[ i ] + deltaStore );
 		}
 	}
-	flink::radix_sort( inOutBrickIndices.begin(), inOutBrickIndices.size(), scratchPad );
+	flink::radix_sort( inOutBrickIndices.begin(), inOutBrickIndices.size(), tmpScratchPad );
 }
 
 template void svc::Integrator::ExpandBricksHelper< 0 >(Volume const &, Cache &, int, unsigned, flink::vector< unsigned > &, flink::vector< char > &);

@@ -46,7 +46,7 @@ private:
 		Cache & cache,
 
 		flink::vector< unsigned > & inOutBrickIndices,
-		flink::vector< char > & scratchPad
+		flink::vector< char > & tmpScratchPad
 	);
 
 	template< int sliceIdx >
@@ -58,7 +58,7 @@ private:
 		unsigned deltaStore,
 
 		flink::vector< unsigned > & inOutBrickIndices,
-		flink::vector< char > & scratchPad
+		flink::vector< char > & tmpScratchPad
 	);
 
 	static void ExpandBricksHelperX

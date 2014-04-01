@@ -40,6 +40,25 @@ private:
 	flink::vector< unsigned > m_vertexIDs;
 	flink::vector< unsigned > m_indexIDs;
 	flink::vector< char > m_scratchPad;
+
+	static void Generate
+	(
+		Volume const & volume,
+		Cache & cache,
+
+		flink::vector< flink::float4 > & outVertices,
+		flink::vector< unsigned > & outVertexIDs,
+		flink::vector< unsigned > & outIndices
+	);
+
+	static void VertexIDsToIndices
+	(
+		flink::vector< unsigned > const & vertexIDs,
+
+		flink::vector< unsigned > & inOutIndices,
+		flink::vector< unsigned > & tmpIndexIDs,
+		flink::vector< char > & tmpScratchPad
+	);
 };
 
 }
