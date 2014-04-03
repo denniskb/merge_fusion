@@ -1,7 +1,5 @@
 #include <boost/test/auto_unit_test.hpp>
 
-#include <utility>
-
 #include <reference/DepthFrame.h>
 
 

@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE( Triangulate )
 	ds.NextFrame( depth, view );
 	ComputeMatrices( view, eye, forward, viewProj, viewToWorld );
 
-	i.Integrate( v, cache, depth, eye, forward, viewProj, viewToWorld );
+	i.Integrate( v, depth, eye, forward, viewProj, viewToWorld );
 
 	flink::vector< flink::float4 > VB;
 	flink::vector< unsigned > IB;

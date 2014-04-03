@@ -67,13 +67,13 @@ public:
 		K const * const merge_first = std::lower_bound( keys_first(), keys_first() + oldSize, * keys_first2 );
 		K const * const merge_last  = std::upper_bound( keys_first(), keys_first() + oldSize, * ( keys_last2 - 1 ) );
 
-		std::copy_backward( merge_last, keys_first() + oldSize, m_keys.end() );
-		std::copy_backward
-		(
-			values_first() + ( merge_last - keys_first() ),
-			values_first() + oldSize,
-			values_last()
-		);
+		//std::copy_backward( merge_last, keys_first() + oldSize, m_keys.end() );
+		//std::copy_backward
+		//(
+		//	values_first() + ( merge_last - keys_first() ),
+		//	values_first() + oldSize,
+		//	values_last()
+		//);
 
 		T const * values_last1 = values_first() + ( merge_last - keys_first() );
 

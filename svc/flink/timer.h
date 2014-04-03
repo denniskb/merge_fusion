@@ -1,5 +1,8 @@
 #pragma once
 
+#include <string>
+#include <vector>
+
 #define NOMINMAX
 #include <Windows.h>
 
@@ -12,19 +15,18 @@ class timer
 public:
 	timer();
 
-	/*
-	Restarts the timer.
-	*/
+	void record_time( std::string label );
 	void reset();
 
-	/*
-	Returns the time in seconds that passed since
-	the object was created.
-	*/
 	double time();
+
+	void print();
 
 private:
 	LARGE_INTEGER m_start;
+
+	std::vector< double > m_times;
+	std::vector< std::string > m_labels;
 };
 
 }

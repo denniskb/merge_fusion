@@ -161,6 +161,45 @@ inline int intersection_size
 	return result;
 }
 
+// TODO: Test and document
+template< typename T >
+inline void merge_unique_backward
+(
+	T const * const first1, T const * last1,
+	T const * const first2, T const * last2,
+
+	T * result_last
+)
+{
+	assert( first1 <= last1 );
+	assert( first2 <= last2 );
+
+	assert( first2 >= last1 || last2 < first1 );
+
+	last1--;
+	last2--;
+
+	result_last--;
+
+	while( last1 >= first1 && last2 >= first2 )
+	{
+		int gte = ( * last1 >= * last2 );
+		int lte = ( * last1 <= * last2 );
+
+		// TODO: Make sure this translates into a cmov
+		* result_last-- = gte ? * last1 : * last2;
+
+		last1 -= gte;
+		last2 -= lte;
+	}
+
+	while( last1 >= first1 )
+		* result_last-- = * last1--;
+
+	while( last2 >= first2 )
+		* result_last-- = * last2--;
+}
+
 /*
 Merges two key-value ranges backwards, which allows
 the input and output ranges to overlap
@@ -169,7 +208,7 @@ The keys must be sorted ascendingly and be unique.
 The merged sequence is unique, too.
 */
 template< typename K, typename T >
-inline static void merge_unique_backward
+inline void merge_unique_backward
 (
 	K const * const keys_first1, K const * keys_last1,
 	T const * values_last1,

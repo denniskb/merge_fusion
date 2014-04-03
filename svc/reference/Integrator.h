@@ -17,7 +17,6 @@ public:
 	void Integrate
 	( 
 		Volume & volume,
-		Cache & cache,
 		DepthFrame const & frame,
 
 		flink::float4 const & eye,
@@ -41,30 +40,17 @@ private:
 	);
 
 	static void ExpandBricks
-	(
-		Volume const & volume,
-		Cache & cache,
-
+	( 
 		flink::vector< unsigned > & inOutBrickIndices,
 		flink::vector< char > & tmpScratchPad
 	);
 
-	template< int sliceIdx >
 	static void ExpandBricksHelper
 	(
-		Volume const & volume,
-		Cache & cache,
-		int deltaLookUp,
-		unsigned deltaStore,
-
 		flink::vector< unsigned > & inOutBrickIndices,
-		flink::vector< char > & tmpScratchPad
-	);
+		unsigned delta,
 
-	static void ExpandBricksHelperX
-	(
-		int numBricksInVolume,
-		flink::vector< unsigned > & inOutBrickIndices
+		flink::vector< char > & tmpScratchPad
 	);
 
 	static void BricksToVoxels

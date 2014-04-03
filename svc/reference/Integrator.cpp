@@ -17,7 +17,6 @@
 void svc::Integrator::Integrate
 ( 
 	Volume & volume,
-	Cache & cache,
 	DepthFrame const & frame,
 
 	flink::float4 const & eye,
@@ -27,40 +26,33 @@ void svc::Integrator::Integrate
 	flink::float4x4 const & viewToWorld
 )
 {
-	double tsplat, tsort, tdups, texpand, tbricks, tsort2, tmerge, tupdate;
 	flink::timer t;
+	
 	SplatBricks( volume, frame, viewToWorld, m_splattedVoxels );
-	tsplat = t.time(); t.reset();
-	flink::radix_sort( m_splattedVoxels.begin(), m_splattedVoxels.size(), m_scratchPad );
-	tsort = t.time(); t.reset();
-	remove_dups( m_splattedVoxels );
-	tdups = t.time(); t.reset();
+	t.record_time( "tsplat" );
 
-	ExpandBricks( volume, cache, m_splattedVoxels, m_scratchPad );
-	texpand = t.time(); t.reset();
+	flink::radix_sort( m_splattedVoxels.begin(), m_splattedVoxels.size(), m_scratchPad );
+	t.record_time( "tsort" );
+	
+	remove_dups( m_splattedVoxels );
+	t.record_time( "tdups" );
+
+	ExpandBricks( m_splattedVoxels, m_scratchPad );
+	t.record_time( "texpand" );
 	
 	BricksToVoxels( volume, m_splattedVoxels );
-	tbricks = t.time(); t.reset();
+	t.record_time( "tbricks" );
+	
 	flink::radix_sort( m_splattedVoxels.begin(), m_splattedVoxels.size(), m_scratchPad );
-	tsort2 = t.time(); t.reset();
+	t.record_time( "tsort2" );
 
 	volume.Data().merge_unique( m_splattedVoxels.cbegin(), m_splattedVoxels.cend(), 0 );
-	tmerge = t.time(); t.reset();
+	t.record_time( "tmerge" );
 
 	UpdateVoxels( volume, frame, eye, forward, viewProjection );
-	tupdate = t.time();
+	t.record_time( "tupdate" );
 
-	printf( "tsplat: %fms\n", tsplat * 1000.0 );
-	printf( "tsort: %fms\n", tsort * 1000.0 );
-	printf( "tdups: %fms\n", tdups * 1000.0 );
-	printf( "texpand: %fms\n", texpand * 1000.0 );
-
-	printf( "tbricks: %fms\n", tbricks * 1000.0 );
-	printf( "tsort2: %fms\n", tsort2 * 1000.0 );
-	printf( "tmerge: %fms\n", tmerge * 1000.0 );
-	printf( "tupdate: %fms\n", tupdate * 1000.0 );
-
-	printf( "ttotal: %fms\n\n", (tsplat+tsort+tdups+texpand+tbricks+tsort2+tmerge+tupdate)*1000.0 );
+	t.print();
 }
 
 
@@ -129,86 +121,46 @@ void svc::Integrator::SplatBricks
 
 // static 
 void svc::Integrator::ExpandBricks
-(
-	Volume const & volume,
-	Cache & cache,
-
+( 
 	flink::vector< unsigned > & inOutBrickIndices,
 	flink::vector< char > & tmpScratchPad
 )
 {
-	ExpandBricksHelper< 1 >( volume, cache, 0, flink::packZ( 1 ), inOutBrickIndices, tmpScratchPad );
-	ExpandBricksHelper< 0 >( volume, cache, volume.NumBricksInVolume(), flink::packY( 1 ), inOutBrickIndices, tmpScratchPad );
-	ExpandBricksHelperX( volume.NumBricksInVolume(), inOutBrickIndices );
+	ExpandBricksHelper( inOutBrickIndices, flink::packX( 1 ), tmpScratchPad );
+	ExpandBricksHelper( inOutBrickIndices, flink::packY( 1 ), tmpScratchPad );
+	ExpandBricksHelper( inOutBrickIndices, flink::packZ( 1 ), tmpScratchPad );
 }
 
 // static
-template< int sliceIdx >
 void svc::Integrator::ExpandBricksHelper
 (
-	Volume const & volume,
-	Cache & cache,
-	int deltaLookUp,
-	unsigned deltaStore,
-
 	flink::vector< unsigned > & inOutBrickIndices,
+	unsigned delta,
+
 	flink::vector< char > & tmpScratchPad
 )
 {
-	// This method can only be used to expand in z or y direction
-	// otherwise invalid voxel indices are generated
-	assert( deltaLookUp == 0 || deltaLookUp == volume.NumBricksInVolume() );
-
 	int size = inOutBrickIndices.size();
-	cache.Reset( volume.NumBricksInVolume() );
-
-	while( cache.NextSlice( inOutBrickIndices.cbegin(), inOutBrickIndices.cbegin(), size ) )
-	{
-		for( int i = cache.CachedRange().first; i < cache.CachedRange().second; i++ )
-		{
-			int idx = 
-				flink::unpackX( inOutBrickIndices[ i ] ) + 
-				flink::unpackY( inOutBrickIndices[ i ] ) * cache.SliceRes() + 
-				deltaLookUp;
-			
-			if( idx < cache.SliceSize() &&
-				std::get< sliceIdx >( cache.CachedSlices() )[ idx ] == 0 )
-				inOutBrickIndices.push_back( inOutBrickIndices[ i ] + deltaStore );
-		}
-	}
-	flink::radix_sort( inOutBrickIndices.begin(), inOutBrickIndices.size(), tmpScratchPad );
-}
-
-template void svc::Integrator::ExpandBricksHelper< 0 >(Volume const &, Cache &, int, unsigned, flink::vector< unsigned > &, flink::vector< char > &);
-template void svc::Integrator::ExpandBricksHelper< 1 >(Volume const &, Cache &, int, unsigned, flink::vector< unsigned > &, flink::vector< char > &);
-
-// static 
-void svc::Integrator::ExpandBricksHelperX
-(
-	int numBricksInVolume,
-	flink::vector< unsigned > & inOutBrickIndices
-)
-{
-	int size = inOutBrickIndices.size();
-	inOutBrickIndices.resize( size * 2 );
-	std::memset( inOutBrickIndices.begin() + size, 0, size * sizeof( unsigned ) );
 	
-	unsigned tmp = 0;
-	for( int i = size - 1; i >= 0; i-- )
-	{
-		unsigned xyz = inOutBrickIndices[ i ];
-		inOutBrickIndices[ i ] = 0;
-		
-		inOutBrickIndices[ 2 * i ] = xyz;
-		
-		if( (int) flink::unpackX( xyz ) + 1 < numBricksInVolume &&
-			tmp != xyz + 1 )
-			inOutBrickIndices[ 2 * i + 1 ] = xyz + 1;
+	tmpScratchPad.resize( size * sizeof( unsigned ) );
+	unsigned * tmp = reinterpret_cast< unsigned * >( tmpScratchPad.begin() );
 	
-		tmp = xyz;
-	}
+	for( int i = 0; i < size; i++ )
+		tmp[ i ] = inOutBrickIndices[ i ] + delta;
+	
+	inOutBrickIndices.resize( size * 2 - flink::intersection_size
+	(
+		inOutBrickIndices.cbegin(), inOutBrickIndices.cbegin() + size,
+		tmp, tmp + size
+	));
+	
+	flink::merge_unique_backward
+	(
+		inOutBrickIndices.cbegin(), inOutBrickIndices.cbegin() + size,
+		tmp, tmp + size,
 		
-	remove_value( inOutBrickIndices, 0u );
+		inOutBrickIndices.end()
+	);
 }
 
 // static 

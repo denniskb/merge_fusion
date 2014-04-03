@@ -20,22 +20,18 @@ void svc::Mesher::Triangulate
 	flink::vector< unsigned > & outIndices
 )
 {
-	double tgen, tsort, tidx;
-
 	flink::timer t;
+	
 	Generate( volume, cache, outVertices, m_vertexIDs, outIndices );	
-	tgen = t.time(); t.reset();
+	t.record_time( "tgen" );
 
 	flink::radix_sort( m_vertexIDs.begin(), outVertices.begin(), m_vertexIDs.size(), m_scratchPad );
-	tsort = t.time(); t.reset();
+	t.record_time( "tsort" );
 	
 	VertexIDsToIndices( m_vertexIDs, outIndices, m_indexIDs, m_scratchPad );
-	tidx = t.time(); t.reset();
+	t.record_time( "tidx" );
 
-	printf( "tgen: %fms\n", tgen * 1000.0 );
-	printf( "tsort: %fms\n", tsort * 1000.0 );
-	printf( "tidx: %fms\n", tidx * 1000.0 );
-	printf( "ttotal: %fms\n\n", (tgen+tsort+tidx) * 1000.0 );
+	t.print();
 }
 
 

@@ -156,32 +156,32 @@ inline flink::float4 operator/( flink::float4 const & a, flink::float4 const & b
 inline bool operator<( flink::float4 const & a, flink::float4 const & b )
 {
 	return
-		a.x < b.x &&
-		a.y < b.y &&
+		a.x < b.x ||
+		a.y < b.y ||
 		a.z < b.z;
 }
 
 inline bool operator<=( flink::float4 const & a, flink::float4 const & b )
 {
 	return
-		a.x <= b.x &&
-		a.y <= b.y &&
+		a.x <= b.x ||
+		a.y <= b.y ||
 		a.z <= b.z;
 }
 
 inline bool operator>( flink::float4 const & a, flink::float4 const & b )
 {
 	return
-		a.x > b.x &&
-		a.y > b.y &&
+		a.x > b.x ||
+		a.y > b.y ||
 		a.z > b.z;
 }
 
 inline bool operator>=( flink::float4 const & a, flink::float4 const & b )
 {
 	return
-		a.x >= b.x &&
-		a.y >= b.y &&
+		a.x >= b.x ||
+		a.y >= b.y ||
 		a.z >= b.z;
 }
 

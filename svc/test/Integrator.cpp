@@ -41,8 +41,8 @@ BOOST_AUTO_TEST_CASE( Integrate )
 	ds.NextFrame( depth, view );
 	ComputeMatrices( view, eye, forward, viewProj, viewToWorld );
 
-	i.Integrate( v, cache, depth, eye, forward, viewProj, viewToWorld );
-	i.Integrate( v, cache, depth, eye, forward, viewProj, viewToWorld );
+	i.Integrate( v, depth, eye, forward, viewProj, viewToWorld );
+	i.Integrate( v, depth, eye, forward, viewProj, viewToWorld );
 
 	FILE * debug;
 	fopen_s( & debug, "C:/TEMP/volume_integrate.obj", "w" );
