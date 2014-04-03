@@ -1,15 +1,11 @@
 #include "Volume.h"
 
-#include <algorithm>
 #include <cassert>
-#include <cstdio>
 
-#include <flink/algorithm.h>
+#include <flink/flat_map.h>
 #include <flink/math.h>
-#include <flink/util.h>
 
-#include "DepthFrame.h"
-#include "Voxel.h"
+#include "Brick.h"
 
 
 

@@ -1,8 +1,6 @@
 #include "util.h"
 
-#include <stdio.h>
-
-#include "vector.h"
+#include <cstdio>
 
 
 
@@ -62,10 +60,3 @@ void flink::unpackInts( unsigned packedInt, unsigned & outX, unsigned & outY, un
 	outY = unpackY( packedInt );
 	outX = unpackX( packedInt );
 }
-
-
-
-bool flink::powerOf2( int x )
-{
-	return x > 0 && ! ( x & ( x - 1 ) );
-} 

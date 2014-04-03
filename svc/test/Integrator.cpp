@@ -8,10 +8,9 @@
 #include <flink/util.h>
 
 #include <reference/DepthFrame.h>
+#include <reference/DepthStream.h>
 #include <reference/Integrator.h>
 #include <reference/Volume.h>
-#include <reference/DepthStream.h>
-#include <reference/Voxel.h>
 
 #include "util.h"
 

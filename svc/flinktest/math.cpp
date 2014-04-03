@@ -26,4 +26,20 @@ BOOST_AUTO_TEST_CASE( clamp )
 	BOOST_REQUIRE( flink::clamp( 7, 0, 5 ) == 5 );
 }
 
+BOOST_AUTO_TEST_CASE( powerOf2 )
+{
+	BOOST_REQUIRE( flink::powerOf2( 1 ) );
+	BOOST_REQUIRE( flink::powerOf2( 2 ) );
+	BOOST_REQUIRE( flink::powerOf2( 4 ) );
+	BOOST_REQUIRE( flink::powerOf2( 2048 ) );
+	BOOST_REQUIRE( flink::powerOf2( 65536 ) );
+	BOOST_REQUIRE( flink::powerOf2( 2048 * 2048 ) );
+
+	BOOST_REQUIRE( ! flink::powerOf2( 0 ) );
+	BOOST_REQUIRE( ! flink::powerOf2( 3 ) );
+	BOOST_REQUIRE( ! flink::powerOf2( 13 ) );
+	BOOST_REQUIRE( ! flink::powerOf2( 26 ) );
+	BOOST_REQUIRE( ! flink::powerOf2( 48 ) );
+}
+
 BOOST_AUTO_TEST_SUITE_END()

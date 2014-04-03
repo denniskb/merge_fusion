@@ -4,7 +4,7 @@
 #include <flink/util.h>
 #include <flink/vector.h>
 
-#include "Cache.h"
+#include "Brick.h"
 #include "DepthFrame.h"
 #include "Volume.h"
 #include "Voxel.h"

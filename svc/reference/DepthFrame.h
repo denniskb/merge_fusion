@@ -9,11 +9,8 @@ namespace svc {
 class DepthFrame
 {
 public:
-	/*
-	@precond width >= 0
-	@precond height >= 0
-	*/
-	explicit DepthFrame( int width = 0, int height = 0 );
+	DepthFrame();
+	DepthFrame( int width, int height );
 	void Resize( int newWidth, int newHeight );
 
 	int Width() const;

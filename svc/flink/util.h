@@ -1,7 +1,5 @@
 #pragma once
 
-#include "vector.h"
-
 
 
 namespace flink {
@@ -18,7 +16,5 @@ unsigned unpackZ( unsigned packedInt );
 
 unsigned packInts( unsigned x, unsigned y, unsigned z );
 void unpackInts( unsigned packedInt, unsigned & outX, unsigned & outY, unsigned & outZ );
-
-bool powerOf2( int x );
 
 }

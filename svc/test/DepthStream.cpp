@@ -1,12 +1,12 @@
 #include <boost/test/auto_unit_test.hpp>
 
-#include <stdio.h>
+#include <cstdio>
 #include <vector>
 
 #include <flink/math.h>
 
-#include <reference/DepthStream.h>
 #include <reference/DepthFrame.h>
+#include <reference/DepthStream.h>
 
 
 

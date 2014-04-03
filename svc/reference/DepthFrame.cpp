@@ -5,6 +5,12 @@
 
 
 
+svc::DepthFrame::DepthFrame() :
+	m_width( 0 ),
+	m_height( 0 )
+{
+}
+
 svc::DepthFrame::DepthFrame( int width, int height ) :
 	m_width( 0 ),
 	m_height( 0 )

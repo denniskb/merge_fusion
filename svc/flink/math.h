@@ -94,6 +94,11 @@ inline T clamp( T x, T a, T b )
 	return std::max( a, std::min( x, b ) );
 }
 
+inline bool powerOf2( int x )
+{
+	return x > 0 && ! ( x & ( x - 1 ) );
+}
+
 }
 
 #pragma region float4 ops

@@ -1,6 +1,7 @@
 #include <boost/test/auto_unit_test.hpp>
 
 #include <flink/flat_map.h>
+#include <flink/vector.h>
 
 
 

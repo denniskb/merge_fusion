@@ -1,7 +1,7 @@
 #include "DepthStream.h"
 
 #include <cassert>
-#include <stdio.h>
+#include <cstdio>
 #include <vector>
 
 #include <flink/util.h>
