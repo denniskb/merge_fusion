@@ -11,9 +11,10 @@
 
 
 
+template< int BrickRes >
 void svc::Mesher::Triangulate
 (
-	Volume const & volume,
+	Volume< BrickRes > const & volume,
 	Cache & cache,
 
 	flink::vector< flink::float4 > & outVertices,
@@ -311,9 +312,10 @@ flink::uint4 const * svc::Mesher::TriTable()
 
 
 // static 
+template< int BrickRes >
 void svc::Mesher::Generate
 (
-	Volume const & volume,
+	Volume< BrickRes > const & volume,
 	Cache & cache,
 
 	flink::vector< flink::float4 > & outVertices,
@@ -489,3 +491,13 @@ void svc::Mesher::VertexIDsToIndices
 	for( int i = 0; i < inOutIndices.size(); i++ )
 		inOutIndices[ tmpIndexIDs[ i ] ] = tmp[ i ];
 }
+
+
+
+template void svc::Mesher::Triangulate<1>(const Volume<1>&, Cache&, flink::vector<flink::float4>&, flink::vector<unsigned>&);
+template void svc::Mesher::Triangulate<2>(const Volume<2>&, Cache&, flink::vector<flink::float4>&, flink::vector<unsigned>&);
+template void svc::Mesher::Triangulate<4>(const Volume<4>&, Cache&, flink::vector<flink::float4>&, flink::vector<unsigned>&);
+
+template void svc::Mesher::Generate<1>(const Volume<1>&, Cache&, flink::vector<flink::float4>&, flink::vector<unsigned>&, flink::vector<unsigned>&);
+template void svc::Mesher::Generate<2>(const Volume<2>&, Cache&, flink::vector<flink::float4>&, flink::vector<unsigned>&, flink::vector<unsigned>&);
+template void svc::Mesher::Generate<4>(const Volume<4>&, Cache&, flink::vector<flink::float4>&, flink::vector<unsigned>&, flink::vector<unsigned>&);

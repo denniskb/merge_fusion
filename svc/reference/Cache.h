@@ -6,6 +6,8 @@
 
 namespace svc {
 
+class Voxel;
+
 class Cache
 {
 public:
@@ -15,11 +17,11 @@ public:
 	bool NextSlice
 	(
 		unsigned const * keys,
-		unsigned const * values,
+		Voxel const * values,
 		int numEntries
 	);
 
-	std::pair< unsigned const *, unsigned const * > CachedSlices() const;
+	std::pair< Voxel const *, Voxel const * > CachedSlices() const;
 	std::pair< int, int > CachedRange() const; // [ startIndex, endIndex )
 
 	int SliceRes() const;
@@ -27,10 +29,10 @@ public:
 
 private:
 	int m_sliceRes;
-	flink::vector< unsigned > m_cachedSlices;
+	flink::vector< Voxel > m_cachedSlices;
 
-	unsigned * m_slice0;
-	unsigned * m_slice1;
+	Voxel * m_slice0;
+	Voxel * m_slice1;
 
 	std::pair< int, int > m_slice0range;
 	std::pair< int, int > m_slice1range;

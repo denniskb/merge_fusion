@@ -13,70 +13,76 @@
 
 
 
-svc::Volume::Volume( int resolution, float sideLength, int footPrint, float truncMargin ) :
+template< int BrickRes >
+svc::Volume< BrickRes >::Volume( int resolution, float sideLength, float truncMargin ) :
 	m_res( resolution ),
 	m_sideLen( sideLength ),
-	m_footPrint( footPrint ),
 	m_truncMargin( truncMargin )
 {
+	static_assert( 
+		BrickRes == 1 || BrickRes == 2 || BrickRes == 4,
+		"BrickRes \\in { 1, 2, 4 }"
+	);
+
 	assert( resolution > 0 && resolution <= 1024 );
 	assert( sideLength > 0.0f );
-	assert( footPrint > 0 && footPrint <= resolution );
 	assert( truncMargin > 0.0f );
 
 	assert( flink::powerOf2( resolution ) );
-	assert( flink::powerOf2( footPrint ) );
 }
 
 
 
-int svc::Volume::Resolution() const
+template< int BrickRes >
+int svc::Volume< BrickRes >::Resolution() const
 {
 	return m_res;
 }
 
-float svc::Volume::SideLength() const
+template< int BrickRes >
+float svc::Volume< BrickRes >::SideLength() const
 {
 	return m_sideLen;
 }
 
-float svc::Volume::VoxelLength() const
-{
-	return SideLength() / Resolution();
-}
-
-float svc::Volume::TruncationMargin() const
+template< int BrickRes >
+float svc::Volume< BrickRes >::TruncationMargin() const
 {
 	return m_truncMargin;
 }
 
 
 
-int svc::Volume::BrickResolution() const
+template< int BrickRes >
+float svc::Volume< BrickRes >::VoxelLength() const
 {
-	return m_footPrint;
+	return m_sideLen / m_res;
 }
 
-int svc::Volume::BrickSlice() const
+template< int BrickRes >
+int svc::Volume< BrickRes >::BrickSlice() const
 {
-	return BrickResolution() * BrickResolution();
+	return BrickRes * BrickRes;
 }
 
-int svc::Volume::BrickVolume() const
+template< int BrickRes >
+int svc::Volume< BrickRes >::BrickVolume() const
 {
-	return BrickResolution() * BrickSlice();
+	return BrickRes * BrickRes * BrickRes;
 }
 
-int svc::Volume::NumBricksInVolume() const
+template< int BrickRes >
+int svc::Volume< BrickRes >::NumBricksInVolume() const
 {
-	return Resolution() / BrickResolution();
+	return m_res / BrickRes;
 }
 
 
 
-flink::float4 svc::Volume::Minimum() const
+template< int BrickRes >
+flink::float4 svc::Volume< BrickRes >::Minimum() const
 {
-	float minimum = -SideLength() * 0.5f;
+	float minimum = -m_sideLen * 0.5f;
 
 	return flink::float4
 	(
@@ -87,9 +93,10 @@ flink::float4 svc::Volume::Minimum() const
 	);
 }
 
-flink::float4 svc::Volume::Maximum() const
+template< int BrickRes >
+flink::float4 svc::Volume< BrickRes >::Maximum() const
 {
-	float maximum = 0.5f * SideLength();
+	float maximum = 0.5f * m_sideLen;
 
 	return flink::float4
 	(
@@ -102,7 +109,8 @@ flink::float4 svc::Volume::Maximum() const
 
 
 
-flink::float4 svc::Volume::VoxelCenter( int x, int y, int z ) const
+template< int BrickRes >
+flink::float4 svc::Volume< BrickRes >::VoxelCenter( int x, int y, int z ) const
 {
 	assert( x >= 0 && x < Resolution() );
 	assert( y >= 0 && y < Resolution() );
@@ -120,7 +128,8 @@ flink::float4 svc::Volume::VoxelCenter( int x, int y, int z ) const
 		( Maximum() - Minimum() );
 }
 
-flink::float4 svc::Volume::BrickIndex( flink::float4 const & world ) const
+template< int BrickRes >
+flink::float4 svc::Volume< BrickRes >::BrickIndex( flink::float4 const & world ) const
 {
 	return
 		( world - Minimum() ) / ( Maximum() - Minimum() ) *
@@ -129,12 +138,20 @@ flink::float4 svc::Volume::BrickIndex( flink::float4 const & world ) const
 
 
 
-flink::flat_map< unsigned, unsigned > & svc::Volume::Data()
+template< int BrickRes >
+flink::flat_map< unsigned, svc::Voxel > & svc::Volume< BrickRes >::Data()
 {
 	return m_data;
 }
 
-flink::flat_map< unsigned, unsigned > const & svc::Volume::Data() const
+template< int BrickRes >
+flink::flat_map< unsigned, svc::Voxel > const & svc::Volume< BrickRes >::Data() const
 {
 	return m_data;
 }
+
+
+
+template svc::Volume< 1 >;
+template svc::Volume< 2 >;
+template svc::Volume< 4 >;

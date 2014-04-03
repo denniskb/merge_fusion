@@ -14,9 +14,10 @@
 
 
 // static 
+template< int BrickRes >
 void svc::Integrator::Integrate
 ( 
-	Volume & volume,
+	Volume< BrickRes > & volume,
 	DepthFrame const & frame,
 
 	flink::float4 const & eye,
@@ -58,9 +59,10 @@ void svc::Integrator::Integrate
 
 
 // static 
+template< int BrickRes >
 void svc::Integrator::SplatBricks
 (
-	Volume const & volume,
+	Volume< BrickRes > const & volume,
 	DepthFrame const & frame,
 	flink::float4x4 const & viewToWorld,
 
@@ -163,47 +165,51 @@ void svc::Integrator::ExpandBricksHelper
 	);
 }
 
+#pragma warning( push )
+#pragma warning( disable : 4127 )
+
 // static 
+template< int BrickRes >
 void svc::Integrator::BricksToVoxels
 (
-	Volume const & volume,
+	Volume< BrickRes > const & volume,
 	flink::vector< unsigned > & inOutIndices
 )
 {
-	if( volume.BrickResolution() > 1 )
+	if( BrickRes == 1 )
+		return;
+
+	int const size = inOutIndices.size();
+	inOutIndices.resize( size * volume.BrickVolume() );
+
+	for( int i = size - 1; i >= 0; i-- )
 	{
-		int const brickSlice = volume.BrickSlice();
-		int const brickVolume = volume.BrickVolume();
+		unsigned brickX, brickY, brickZ;
+		flink::unpackInts( inOutIndices[ i ], brickX, brickY, brickZ );
 
-		int const size = inOutIndices.size();
-		inOutIndices.resize( size * brickVolume );
-
-		for( int i = size - 1; i >= 0; i-- )
+		for( int j = 0; j < volume.BrickVolume(); j++ )
 		{
-			unsigned brickX, brickY, brickZ;
-			flink::unpackInts( inOutIndices[ i ], brickX, brickY, brickZ );
+			unsigned z = j / volume.BrickSlice();
+			unsigned y = ( j - z * volume.BrickSlice() ) / BrickRes;
+			unsigned x = j % BrickRes;
 
-			for( int j = 0; j < brickVolume; j++ )
-			{
-				unsigned z = j / brickSlice;
-				unsigned y = ( j - z * brickSlice ) / volume.BrickResolution();
-				unsigned x = j % volume.BrickResolution();
-
-				inOutIndices[ i * brickVolume + j ] = flink::packInts
-				(
-					brickX * volume.BrickResolution() + x,
-					brickY * volume.BrickResolution() + y,
-					brickZ * volume.BrickResolution() + z
-				);
-			}
+			inOutIndices[ i * volume.BrickVolume() + j ] = flink::packInts
+			(
+				brickX * BrickRes + x,
+				brickY * BrickRes + y,
+				brickZ * BrickRes + z
+			);
 		}
 	}
 }
 
+#pragma warning( pop )
+
 // static 
+template< int BrickRes >
 void svc::Integrator::UpdateVoxels
 (
-	Volume & volume,
+	Volume< BrickRes > & volume,
 
 	DepthFrame const & frame, 
 
@@ -248,3 +254,21 @@ void svc::Integrator::UpdateVoxels
 		volume.Data().values_first()[ i ] = vx;
 	}
 }
+
+
+
+template void svc::Integrator::Integrate(Volume<1>&, const DepthFrame&, const flink::float4&, const flink::float4&, const flink::float4x4&, const flink::float4x4&);
+template void svc::Integrator::Integrate(Volume<2>&, const DepthFrame&, const flink::float4&, const flink::float4&, const flink::float4x4&, const flink::float4x4&);
+template void svc::Integrator::Integrate(Volume<4>&, const DepthFrame&, const flink::float4&, const flink::float4&, const flink::float4x4&, const flink::float4x4&);
+
+template void svc::Integrator::SplatBricks(const Volume<1>&, const DepthFrame&, const flink::float4x4&, flink::vector<unsigned>&);
+template void svc::Integrator::SplatBricks(const Volume<2>&, const DepthFrame&, const flink::float4x4&, flink::vector<unsigned>&);
+template void svc::Integrator::SplatBricks(const Volume<4>&, const DepthFrame&, const flink::float4x4&, flink::vector<unsigned>&);
+
+template void svc::Integrator::BricksToVoxels(const Volume<1>&, flink::vector<unsigned>&);
+template void svc::Integrator::BricksToVoxels(const Volume<2>&, flink::vector<unsigned>&);
+template void svc::Integrator::BricksToVoxels(const Volume<4>&, flink::vector<unsigned>&);
+
+template void svc::Integrator::UpdateVoxels(Volume<1>&, const DepthFrame&, const flink::float4&, const flink::float4&, const flink::float4x4&);
+template void svc::Integrator::UpdateVoxels(Volume<2>&, const DepthFrame&, const flink::float4&, const flink::float4&, const flink::float4x4&);
+template void svc::Integrator::UpdateVoxels(Volume<4>&, const DepthFrame&, const flink::float4&, const flink::float4&, const flink::float4x4&);

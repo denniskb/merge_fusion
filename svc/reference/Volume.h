@@ -10,6 +10,7 @@ namespace svc {
 class DepthFrame;
 class Voxel;
 
+template< int BrickRes >
 class Volume
 {
 public:
@@ -23,14 +24,13 @@ public:
 	@precond sideLength > 0
 	@precond footPrint foot print in voxels of depth sample, must be power of 2
 	*/
-	Volume( int resolution, float sideLength, int footPrint, float truncationMargin );
+	Volume( int resolution, float sideLength, float truncationMargin );
 
 	int Resolution() const;
 	float SideLength() const;
-	float VoxelLength() const;
 	float TruncationMargin() const; // in meters
 
-	int BrickResolution() const;
+	float VoxelLength() const;
 	int BrickSlice() const;
 	int BrickVolume() const;
 	int NumBricksInVolume() const;
@@ -41,18 +41,15 @@ public:
 	flink::float4 VoxelCenter( int x, int y, int z ) const;
 	flink::float4 BrickIndex( flink::float4 const & world ) const;
 
-	flink::flat_map< unsigned, unsigned > & Data();
-	flink::flat_map< unsigned, unsigned > const & Data() const;
+	flink::flat_map< unsigned, Voxel > & Data();
+	flink::flat_map< unsigned, Voxel > const & Data() const;
 
 private:
-	Volume & operator=( Volume const & rhs );
+	int m_res;
+	float m_sideLen;
+	float m_truncMargin;
 
-	int const m_res;
-	float const m_sideLen;
-	int const m_footPrint;
-	float const m_truncMargin;
-
-	flink::flat_map< unsigned, unsigned > m_data;
+	flink::flat_map< unsigned, Voxel > m_data;
 };
 
 }

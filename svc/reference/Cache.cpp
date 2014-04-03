@@ -4,6 +4,8 @@
 
 #include <flink/util.h>
 
+#include "Voxel.h"
+
 
 
 svc::Cache::Cache() :
@@ -33,7 +35,7 @@ void svc::Cache::Reset( int sliceRes )
 bool svc::Cache::NextSlice
 (
 	unsigned const * keys,
-	unsigned const * values,
+	Voxel const * values,
 	int numEntries
 )
 {
@@ -76,7 +78,7 @@ bool svc::Cache::NextSlice
 
 
 
-std::pair< unsigned const *, unsigned const * > svc::Cache::CachedSlices() const
+std::pair< svc::Voxel const *, svc::Voxel const * > svc::Cache::CachedSlices() const
 {
 	return std::make_pair( m_slice0, m_slice1 );
 }

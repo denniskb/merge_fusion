@@ -3,20 +3,21 @@
 #include <flink/math.h>
 #include <flink/vector.h>
 
+#include "Volume.h"
+
 
 
 namespace svc {
 
-class Cache;
 class DepthFrame;
-class Volume;
 
 class Integrator
 {
 public:
+	template< int BrickRes >
 	void Integrate
 	( 
-		Volume & volume,
+		Volume< BrickRes > & volume,
 		DepthFrame const & frame,
 
 		flink::float4 const & eye,
@@ -30,9 +31,10 @@ private:
 	flink::vector< unsigned > m_splattedVoxels;
 	flink::vector< char > m_scratchPad;
 
+	template< int BrickRes >
 	static void SplatBricks
 	(
-		Volume const & volume,
+		Volume< BrickRes > const & volume,
 		DepthFrame const & frame,
 		flink::float4x4 const & viewToWorld,
 
@@ -53,15 +55,17 @@ private:
 		flink::vector< char > & tmpScratchPad
 	);
 
+	template< int BrickRes >
 	static void BricksToVoxels
 	(
-		Volume const & volume,
+		Volume< BrickRes > const & volume,
 		flink::vector< unsigned > & inOutIndices
 	);
 
+	template< int BrickRes >
 	static void UpdateVoxels
 	(
-		Volume & volume,
+		Volume< BrickRes > & volume,
 
 		DepthFrame const & frame, 
 

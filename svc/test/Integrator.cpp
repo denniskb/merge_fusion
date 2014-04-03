@@ -7,7 +7,6 @@
 #include <flink/math.h>
 #include <flink/util.h>
 
-#include <reference/Cache.h>
 #include <reference/DepthFrame.h>
 #include <reference/Integrator.h>
 #include <reference/Volume.h>
@@ -29,8 +28,7 @@ BOOST_AUTO_TEST_CASE( Integrate )
 	*/
 	svc::Integrator i;
 
-	svc::Volume v( 512, 2.0f, 2, 0.02f );
-	svc::Cache cache;
+	svc::Volume< 2 > v( 512, 2.0f, 0.02f );
 
 	svc::DepthStream ds( ( boost::filesystem::current_path() / "content/imrod_v2.depth" ).string().c_str() );
 
