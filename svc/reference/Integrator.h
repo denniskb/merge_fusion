@@ -28,7 +28,7 @@ public:
 	);
 
 private:
-	flink::vector< unsigned > m_splattedVoxels;
+	flink::vector< unsigned > m_splattedBricks;
 	flink::vector< char > m_scratchPad;
 
 	template< int BrickRes >
@@ -53,13 +53,6 @@ private:
 		unsigned delta,
 
 		flink::vector< char > & tmpScratchPad
-	);
-
-	template< int BrickRes >
-	static void BricksToVoxels
-	(
-		Volume< BrickRes > const & volume,
-		flink::vector< unsigned > & inOutIndices
 	);
 
 	template< int BrickRes >

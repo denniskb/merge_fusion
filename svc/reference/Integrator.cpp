@@ -29,25 +29,19 @@ void svc::Integrator::Integrate
 {
 	flink::timer t;
 	
-	SplatBricks( volume, frame, viewToWorld, m_splattedVoxels );
+	SplatBricks( volume, frame, viewToWorld, m_splattedBricks );
 	t.record_time( "tsplat" );
 
-	flink::radix_sort( m_splattedVoxels.begin(), m_splattedVoxels.size(), m_scratchPad );
+	flink::radix_sort( m_splattedBricks.begin(), m_splattedBricks.size(), m_scratchPad );
 	t.record_time( "tsort" );
 	
-	remove_dups( m_splattedVoxels );
+	remove_dups( m_splattedBricks );
 	t.record_time( "tdups" );
 
-	ExpandBricks( m_splattedVoxels, m_scratchPad );
+	ExpandBricks( m_splattedBricks, m_scratchPad );
 	t.record_time( "texpand" );
-	
-	BricksToVoxels( volume, m_splattedVoxels );
-	t.record_time( "tbricks" );
-	
-	flink::radix_sort( m_splattedVoxels.begin(), m_splattedVoxels.size(), m_scratchPad );
-	t.record_time( "tsort2" );
 
-	volume.Data().merge_unique( m_splattedVoxels.cbegin(), m_splattedVoxels.cend(), 0 );
+	volume.Data().merge_unique( m_splattedBricks.cbegin(), m_splattedBricks.cend(), Brick< BrickRes >() );
 	t.record_time( "tmerge" );
 
 	UpdateVoxels( volume, frame, eye, forward, viewProjection );
@@ -165,46 +159,6 @@ void svc::Integrator::ExpandBricksHelper
 	);
 }
 
-#pragma warning( push )
-#pragma warning( disable : 4127 )
-
-// static 
-template< int BrickRes >
-void svc::Integrator::BricksToVoxels
-(
-	Volume< BrickRes > const & volume,
-	flink::vector< unsigned > & inOutIndices
-)
-{
-	if( BrickRes == 1 )
-		return;
-
-	int const size = inOutIndices.size();
-	inOutIndices.resize( size * volume.BrickVolume() );
-
-	for( int i = size - 1; i >= 0; i-- )
-	{
-		unsigned brickX, brickY, brickZ;
-		flink::unpackInts( inOutIndices[ i ], brickX, brickY, brickZ );
-
-		for( int j = 0; j < volume.BrickVolume(); j++ )
-		{
-			unsigned z = j / volume.BrickSlice();
-			unsigned y = ( j - z * volume.BrickSlice() ) / BrickRes;
-			unsigned x = j % BrickRes;
-
-			inOutIndices[ i * volume.BrickVolume() + j ] = flink::packInts
-			(
-				brickX * BrickRes + x,
-				brickY * BrickRes + y,
-				brickZ * BrickRes + z
-			);
-		}
-	}
-}
-
-#pragma warning( pop )
-
 // static 
 template< int BrickRes >
 void svc::Integrator::UpdateVoxels
@@ -223,35 +177,46 @@ void svc::Integrator::UpdateVoxels
 		
 	for( int i = 0; i < volume.Data().size(); i++ )
 	{
-		unsigned x, y, z;
-		flink::unpackInts( volume.Data().keys_first()[ i ], x, y, z );
+		unsigned brickX, brickY, brickZ;
+		flink::unpackInts( volume.Data().keys_first()[ i ], brickX, brickY, brickZ );
 
-		flink::float4 centerWorld = volume.VoxelCenter( x, y, z );
-		flink::vec _centerWorld = flink::load( centerWorld );
+		Brick< BrickRes > & brick = volume.Data().values_first()[ i ];
+
+		for( int j = 0; j < volume.BrickVolume(); j++ )
+		{
+			unsigned voxelZ = j / volume.BrickSlice();
+			unsigned voxelY = ( j - voxelZ * volume.BrickSlice() ) / BrickRes;
+			unsigned voxelX = j % BrickRes;
+
+			unsigned x = brickX * BrickRes + voxelX;
+			unsigned y = brickY * BrickRes + voxelY;
+			unsigned z = brickZ * BrickRes + voxelZ;
+
+			flink::float4 centerWorld = volume.VoxelCenter( x, y, z );
+			flink::vec _centerWorld = flink::load( centerWorld );
 		
-		flink::vec _centerNDC = flink::homogenize( _centerWorld * _viewProj );
+			flink::vec _centerNDC = flink::homogenize( _centerWorld * _viewProj );
 		
-		flink::vec _centerScreen = _mm_macc_ps( _centerNDC, _ndcToUV, _ndcToUV );
-		flink::float4 centerScreen = flink::store( _centerScreen );
+			flink::vec _centerScreen = _mm_macc_ps( _centerNDC, _ndcToUV, _ndcToUV );
+			flink::float4 centerScreen = flink::store( _centerScreen );
 
-		int u = (int) centerScreen.x;
-		int v = (int) centerScreen.y;
+			int u = (int) centerScreen.x;
+			int v = (int) centerScreen.y;
 
-		float depth = 0.0f;
-		// CUDA: Clamp out of bounds access to 0 to avoid divergence
-		if( u >= 0 && u < frame.Width() && v >= 0 && v < frame.Height() )
-			depth = frame( u, frame.Height() - v - 1 );
+			float depth = 0.0f;
+			// CUDA: Clamp out of bounds access to 0 to avoid divergence
+			if( u >= 0 && u < frame.Width() && v >= 0 && v < frame.Height() )
+				depth = frame( u, frame.Height() - v - 1 );
 
-		bool update = ( depth != 0.0f );
+			bool update = ( depth != 0.0f );
 
-		float dist = flink::dot( centerWorld - eye, forward );
-		float signedDist = depth - dist;
+			float dist = flink::dot( centerWorld - eye, forward );
+			float signedDist = depth - dist;
 				
-		update = update && ( dist >= 0.8f && signedDist >= -volume.TruncationMargin() );
+			update = update && dist >= 0.8f && signedDist >= -volume.TruncationMargin();
 
-		Voxel vx = volume.Data().values_first()[ i ];
-		vx.Update( signedDist, volume.TruncationMargin(), (int) update );
-		volume.Data().values_first()[ i ] = vx;
+			brick.voxels[ j ].Update( signedDist, volume.TruncationMargin(), (int) update );
+		}
 	}
 }
 
@@ -264,10 +229,6 @@ template void svc::Integrator::Integrate(Volume<4>&, const DepthFrame&, const fl
 template void svc::Integrator::SplatBricks(const Volume<1>&, const DepthFrame&, const flink::float4x4&, flink::vector<unsigned>&);
 template void svc::Integrator::SplatBricks(const Volume<2>&, const DepthFrame&, const flink::float4x4&, flink::vector<unsigned>&);
 template void svc::Integrator::SplatBricks(const Volume<4>&, const DepthFrame&, const flink::float4x4&, flink::vector<unsigned>&);
-
-template void svc::Integrator::BricksToVoxels(const Volume<1>&, flink::vector<unsigned>&);
-template void svc::Integrator::BricksToVoxels(const Volume<2>&, flink::vector<unsigned>&);
-template void svc::Integrator::BricksToVoxels(const Volume<4>&, flink::vector<unsigned>&);
 
 template void svc::Integrator::UpdateVoxels(Volume<1>&, const DepthFrame&, const flink::float4&, const flink::float4&, const flink::float4x4&);
 template void svc::Integrator::UpdateVoxels(Volume<2>&, const DepthFrame&, const flink::float4&, const flink::float4&, const flink::float4x4&);

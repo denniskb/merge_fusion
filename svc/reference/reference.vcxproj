@@ -10,27 +10,56 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Brick.h" />
+    <ClInclude Include="Cache.h" />
+    <ClInclude Include="DepthFrame.h" />
+    <ClInclude Include="DepthStream.h" />
+    <ClInclude Include="Integrator.h" />
+    <ClInclude Include="Mesher.h" />
+    <ClInclude Include="Volume.h" />
+    <ClInclude Include="Voxel.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Cache.cpp" />
+    <ClCompile Include="DepthFrame.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="DepthStream.cpp" />
+    <ClCompile Include="Integrator.cpp" />
+    <ClCompile Include="Mesher.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Volume.cpp" />
+    <ClCompile Include="Voxel.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\flink\flink.vcxproj">
+      <Project>{c82ea146-94dd-4c5a-b3eb-4a243ae9b818}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{AB9844F0-EC12-42BD-90BD-DDFE115A7404}</ProjectGuid>
-    <RootNamespace>test</RootNamespace>
+    <ProjectGuid>{6372D9A0-C97E-4758-8039-31C3B26F0963}</ProjectGuid>
+    <RootNamespace>server</RootNamespace>
+    <ProjectName>reference</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v110</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v110</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-  <ImportGroup Label="ExtensionSettings">
-  </ImportGroup>
+  <ImportGroup Label="ExtensionSettings" />
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="..\svc_debug_x64.props" />
   </ImportGroup>
@@ -42,53 +71,27 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile />
-    <Link />
-    <ClCompile>
-      <AdditionalIncludeDirectories>$(BOOST_ROOT);..</AdditionalIncludeDirectories>
-    </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(BOOST_LIB_PATH_X64);$(KINECTSDK10_DIR)lib\amd64</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Kinect10.lib</AdditionalDependencies>
+      <AdditionalDependencies />
     </Link>
+    <ClCompile>
+      <AdditionalIncludeDirectories>..;$(KINECTSDK10_DIR)inc</AdditionalIncludeDirectories>
+    </ClCompile>
+    <CudaCompile>
+      <Include>$(CUDA_PATH)\include;$(NVCUDASAMPLES_ROOT)\common\inc</Include>
+    </CudaCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile />
     <Link />
-    <Link>
-      <AdditionalLibraryDirectories>$(BOOST_LIB_PATH_X64);$(KINECTSDK10_DIR)lib\amd64</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Kinect10.lib</AdditionalDependencies>
-    </Link>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(BOOST_ROOT);..</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..;$(KINECTSDK10_DIR)inc</AdditionalIncludeDirectories>
     </ClCompile>
+    <CudaCompile>
+      <Include>$(CUDA_PATH)\include;$(NVCUDASAMPLES_ROOT)\common\inc</Include>
+      <PtxAsOptionV>false</PtxAsOptionV>
+    </CudaCompile>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <!--<ClCompile Include="DeviceDepthFrame.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="DeviceVolume.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>-->
-    <ClCompile Include="DepthFrame.cpp" />
-    <ClCompile Include="DepthStream.cpp" />
-    <ClCompile Include="Integrator.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="Mesher.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="Volume.cpp" />
-    <ClCompile Include="Voxel.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="util.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\reference\reference.vcxproj">
-      <Project>{6372d9a0-c97e-4758-8039-31c3b26f0963}</Project>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-  </ImportGroup>
+  <ImportGroup Label="ExtensionTargets" />
 </Project>

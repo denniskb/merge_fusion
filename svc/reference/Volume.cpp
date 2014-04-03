@@ -139,13 +139,13 @@ flink::float4 svc::Volume< BrickRes >::BrickIndex( flink::float4 const & world )
 
 
 template< int BrickRes >
-flink::flat_map< unsigned, svc::Voxel > & svc::Volume< BrickRes >::Data()
+flink::flat_map< unsigned, svc::Brick< BrickRes > > & svc::Volume< BrickRes >::Data()
 {
 	return m_data;
 }
 
 template< int BrickRes >
-flink::flat_map< unsigned, svc::Voxel > const & svc::Volume< BrickRes >::Data() const
+flink::flat_map< unsigned, svc::Brick< BrickRes > > const & svc::Volume< BrickRes >::Data() const
 {
 	return m_data;
 }

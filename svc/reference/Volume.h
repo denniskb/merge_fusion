@@ -3,12 +3,13 @@
 #include <flink/flat_map.h>
 #include <flink/math.h>
 
+#include "Brick.h"
+
 
 
 namespace svc {
 
 class DepthFrame;
-class Voxel;
 
 template< int BrickRes >
 class Volume
@@ -41,15 +42,15 @@ public:
 	flink::float4 VoxelCenter( int x, int y, int z ) const;
 	flink::float4 BrickIndex( flink::float4 const & world ) const;
 
-	flink::flat_map< unsigned, Voxel > & Data();
-	flink::flat_map< unsigned, Voxel > const & Data() const;
+	flink::flat_map< unsigned, Brick< BrickRes > > & Data();
+	flink::flat_map< unsigned, Brick< BrickRes > > const & Data() const;
 
 private:
 	int m_res;
 	float m_sideLen;
 	float m_truncMargin;
 
-	flink::flat_map< unsigned, Voxel > m_data;
+	flink::flat_map< unsigned, Brick< BrickRes > > m_data;
 };
 
 }

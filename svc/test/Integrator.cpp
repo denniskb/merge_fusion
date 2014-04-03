@@ -47,9 +47,10 @@ BOOST_AUTO_TEST_CASE( Integrate )
 
 	for( int i = 0; i < v.Data().size(); i++ )
 	{
-		svc::Voxel vx = v.Data().values_first()[ i ];
-		if( vx.Weight() == 0 )
-			continue;
+		// TODO: Adapt code to work with bricks
+		//svc::Voxel vx = v.Data().values_first()[ i ];
+		//if( vx.Weight() == 0 )
+		//	continue;
 
 		unsigned x, y, z;
 		flink::unpackInts( v.Data().keys_first()[ i ], x, y, z );
