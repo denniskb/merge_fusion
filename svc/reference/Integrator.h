@@ -14,11 +14,12 @@ class DepthFrame;
 class Integrator
 {
 public:
-	template< int BrickRes >
 	void Integrate
 	( 
-		Volume< BrickRes > & volume,
+		Volume & volume,
 		DepthFrame const & frame,
+		float truncationMargin,
+		int chunkFootPrint,
 
 		flink::float4 const & eye,
 		flink::float4 const & forward,
@@ -28,39 +29,47 @@ public:
 	);
 
 private:
-	flink::vector< unsigned > m_splattedBricks;
+	flink::vector< unsigned > m_splattedChunks;
 	flink::vector< char > m_scratchPad;
 
-	template< int BrickRes >
-	static void SplatBricks
+	static void SplatChunks
 	(
-		Volume< BrickRes > const & volume,
+		Volume const & volume,
 		DepthFrame const & frame,
 		flink::float4x4 const & viewToWorld,
+		int chunkFootPrint,
 
-		flink::vector< unsigned > & outBrickIndices
+		flink::vector< unsigned > & outChunkIndices
 	);
 
-	static void ExpandBricks
+	static void ExpandChunks
 	( 
-		flink::vector< unsigned > & inOutBrickIndices,
+		flink::vector< unsigned > & inOutChunkIndices,
 		flink::vector< char > & tmpScratchPad
 	);
 
-	static void ExpandBricksHelper
+	static void ExpandChunksHelper
 	(
-		flink::vector< unsigned > & inOutBrickIndices,
+		flink::vector< unsigned > & inOutChunkIndices,
 		unsigned delta,
+		bool disjunct,
 
 		flink::vector< char > & tmpScratchPad
 	);
 
-	template< int BrickRes >
+	static void ChunksToBricks
+	(
+		flink::vector< unsigned > & inOutChunkIndices,
+		int chunkFootPrint,
+
+		flink::vector< char > & tmpScratchPad
+	);
+
 	static void UpdateVoxels
 	(
-		Volume< BrickRes > & volume,
-
-		DepthFrame const & frame, 
+		Volume & volume,
+		DepthFrame const & frame,
+		float truncationMargin,
 
 		flink::float4 const & eye,
 		flink::float4 const & forward,

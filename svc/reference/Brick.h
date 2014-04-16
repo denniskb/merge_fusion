@@ -6,11 +6,14 @@
 
 namespace svc {
 
-template< int BrickRes >
 class Brick
 {
 public:
-	Voxel voxels[ BrickRes * BrickRes * BrickRes ];
+	static int const RESOLUTION = 2;
+	static int const SLICE = RESOLUTION * RESOLUTION;
+	static int const VOLUME = SLICE * RESOLUTION;
+
+	Voxel voxels[ VOLUME ];
 };
 
 }

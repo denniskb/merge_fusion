@@ -14,22 +14,6 @@ template< typename K, typename T >
 class flat_map
 {
 public:
-	flat_map(){}
-
-	/*
-	@precond keys.size == values.size
-	@precond keys is sorted ascending
-	@precond keys contains no duplicates
-	*/
-	flat_map( vector< K > keys, vector< T > values ) :
-		m_keys( std::move( keys ) ),
-		m_values( std::move( values ) )
-	{
-		assert( keys.size() == values.size() );
-	}
-
-
-
 	inline int size() const
 	{
 		return m_keys.size();
@@ -54,13 +38,14 @@ public:
 
 		if( 0 == size() )
 		{
-			m_keys = vector< K >( keys_first2, keys_last2 );
-			m_values.resize( m_keys.size() );
+			resize( (int) ( keys_last2 - keys_first2 ) );
+			std::copy( keys_first2, keys_last2, m_keys.begin() );
 			std::fill( m_values.begin(), m_values.end(), value );
 			
 			return;
 		}
 
+		// TODO: Test if 3 section approach (prefix, merge, suffix) pays off.
 		int oldSize = size();
 		int intersection = intersection_size( m_keys.cbegin(), m_keys.cend(), keys_first2, keys_last2 );
 		resize( size() + (int)( keys_last2 - keys_first2 ) - intersection );

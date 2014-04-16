@@ -9,64 +9,52 @@ BOOST_AUTO_TEST_SUITE( flat_map )
 
 BOOST_AUTO_TEST_CASE( ctor )
 {
-	flink::flat_map< int, int > test;
-	BOOST_REQUIRE( test.size() == 0 );
+	flink::flat_map< int, int > a;
 
-	flink::vector< int > keys, values;
-	keys.push_back( 2 );
-	keys.push_back( 3 );
-	values.push_back( 13 );
-	values.push_back( -7 );
-	test = flink::flat_map< int, int >( std::move( keys ), std::move( values ) );
-	
-	BOOST_REQUIRE( test.size() == 2 );
-	BOOST_REQUIRE( test.keys_first()[ 0 ] == 2 );
-	BOOST_REQUIRE( test.keys_first()[ 1 ] == 3 );
-	BOOST_REQUIRE( test.values_first()[ 0 ] == 13 );
-	BOOST_REQUIRE( test.values_first()[ 1 ] == -7 );
+	BOOST_REQUIRE( a.size() == 0 );
+}
 
-	test.clear();
-	BOOST_REQUIRE( test.size() == 0 );
+BOOST_AUTO_TEST_CASE( clear )
+{
+	flink::flat_map< int, int > a;
+	int k = 7;
+
+	a.merge_unique( &k, &k+1, 3 );
+	BOOST_REQUIRE( a.size() == 1 );
+
+	a.clear();
+	BOOST_REQUIRE( a.size() == 0 );
 }
 
 BOOST_AUTO_TEST_CASE( merge_unique )
 {
-	flink::vector< int > keys1, values1, keys2;
-	flink::flat_map< int, int >test( keys1, values1 );
+	{
+		flink::flat_map< int, int > a;
+		int k = 7;
 
-	test.merge_unique( keys2.cbegin(), keys2.cend(), 0 );
-	BOOST_REQUIRE( test.size() == 0 );
+		a.merge_unique( &k, &k+1, 3 );
+		BOOST_REQUIRE( a.size() == 1 );
+		BOOST_REQUIRE( a.keys_first()[ 0 ] == 7 );
+		BOOST_REQUIRE( a.values_first()[ 0 ] == 3 );
 
-	keys1.push_back( 1 ); values1.push_back( -7 );
-	test = flink::flat_map< int, int >( keys1, values1 );
-	
-	test.merge_unique( keys2.cbegin(), keys2.cend(), 0 );
-	BOOST_REQUIRE( test.size() == 1 );
-	BOOST_REQUIRE( test.keys_first()[ 0 ] == 1 );
-	BOOST_REQUIRE( test.values_first()[ 0 ] == -7 );
+		a.merge_unique( &k, &k+1, 3 );
+		BOOST_REQUIRE( a.size() == 1 );
+		BOOST_REQUIRE( a.keys_first()[ 0 ] == 7 );
+		BOOST_REQUIRE( a.values_first()[ 0 ] == 3 );
 
-	test.clear();
-	keys2.push_back( 1 );
+		int k2[] = { 0, 3, 7, 55 };
 
-	test.merge_unique( keys2.cbegin(), keys2.cend(), 5 );
-	BOOST_REQUIRE( test.size() == 1 );
-	BOOST_REQUIRE( test.keys_first()[ 0 ] == 1 );
-	BOOST_REQUIRE( test.values_first()[ 0 ] == 5 );
-
-	test = flink::flat_map< int, int >( keys1, values1 );
-	test.merge_unique( keys2.cbegin(), keys2.cend(), 5 );
-
-	BOOST_REQUIRE( test.size() == 1 );
-	BOOST_REQUIRE( test.keys_first()[ 0 ] == 1 );
-	BOOST_REQUIRE( test.values_first()[ 0 ] == -7 );
-
-	keys2.push_back( 3 );
-	test.merge_unique( keys2.cbegin(), keys2.cend(), 5 );
-	BOOST_REQUIRE( test.size() == 2 );
-	BOOST_REQUIRE( test.keys_first()[ 0 ] == 1 );
-	BOOST_REQUIRE( test.keys_first()[ 1 ] == 3 );
-	BOOST_REQUIRE( test.values_first()[ 0 ] == -7 );
-	BOOST_REQUIRE( test.values_first()[ 1 ] ==  5 );
+		a.merge_unique( k2, k2+4, 9 );
+		BOOST_REQUIRE( a.size() == 4 );
+		BOOST_REQUIRE( a.keys_first()[ 0 ] ==  0 );
+		BOOST_REQUIRE( a.keys_first()[ 1 ] ==  3 );
+		BOOST_REQUIRE( a.keys_first()[ 2 ] ==  7 );
+		BOOST_REQUIRE( a.keys_first()[ 3 ] == 55 );
+		BOOST_REQUIRE( a.values_first()[ 0 ] == 9 );
+		BOOST_REQUIRE( a.values_first()[ 1 ] == 9 );
+		BOOST_REQUIRE( a.values_first()[ 2 ] == 3 );
+		BOOST_REQUIRE( a.values_first()[ 3 ] == 9 );
+	}
 }
 
 BOOST_AUTO_TEST_SUITE_END()

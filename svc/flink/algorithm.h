@@ -171,6 +171,14 @@ inline void merge_unique_backward
 	T * result_last
 )
 {
+	assert( first1 != nullptr );
+	assert( first2 != nullptr );
+	
+	assert( last1 != nullptr );
+	assert( last1 != nullptr );
+
+	assert( result_last != nullptr );
+
 	assert( first1 <= last1 );
 	assert( first2 <= last2 );
 

@@ -27,7 +27,7 @@ BOOST_AUTO_TEST_CASE( Integrate )
 	*/
 	svc::Integrator i;
 
-	svc::Volume< 2 > v( 512, 2.0f, 0.02f );
+	svc::Volume v( 512, 2.0f );
 
 	svc::DepthStream ds( ( boost::filesystem::current_path() / "content/imrod_v2.depth" ).string().c_str() );
 
@@ -38,8 +38,8 @@ BOOST_AUTO_TEST_CASE( Integrate )
 	ds.NextFrame( depth, view );
 	ComputeMatrices( view, eye, forward, viewProj, viewToWorld );
 
-	i.Integrate( v, depth, eye, forward, viewProj, viewToWorld );
-	i.Integrate( v, depth, eye, forward, viewProj, viewToWorld );
+	i.Integrate( v, depth, 0.02f, 2, eye, forward, viewProj, viewToWorld );
+	i.Integrate( v, depth, 0.02f, 2, eye, forward, viewProj, viewToWorld );
 
 	FILE * debug;
 	fopen_s( & debug, "C:/TEMP/volume_integrate.obj", "w" );
