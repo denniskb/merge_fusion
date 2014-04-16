@@ -48,19 +48,19 @@ private:
 		flink::vector< char > & tmpScratchPad
 	);
 
-	static void ExpandChunksHelper
-	(
-		flink::vector< unsigned > & inOutChunkIndices,
-		unsigned delta,
-		bool disjunct,
-
-		flink::vector< char > & tmpScratchPad
-	);
-
 	static void ChunksToBricks
 	(
 		flink::vector< unsigned > & inOutChunkIndices,
 		int chunkFootPrint,
+
+		flink::vector< char > & tmpScratchPad
+	);
+
+	static void ExpandChunksHelper
+	(
+		flink::vector< unsigned > & inOutChunkIndices,
+		unsigned delta,
+		bool hintDefinitlyDisjunct,
 
 		flink::vector< char > & tmpScratchPad
 	);

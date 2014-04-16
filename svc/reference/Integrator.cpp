@@ -131,56 +131,7 @@ void svc::Integrator::ExpandChunks
 {
 	ExpandChunksHelper( inOutChunkIndices, flink::packZ( 1 ), false, tmpScratchPad);
 	ExpandChunksHelper( inOutChunkIndices, flink::packY( 1 ), false, tmpScratchPad);
-
-	assert( flink::packX( 1 ) == 1 );
-
-	int oldSize = inOutChunkIndices.size();
-	inOutChunkIndices.resize( 2 * oldSize );
-	
-	for( int i = oldSize - 1; i >= 0; i-- )
-	{
-		unsigned tmp = inOutChunkIndices[ i ];
-		inOutChunkIndices[ 2 * i ] = tmp;
-		inOutChunkIndices[ 2 * i + 1 ] = tmp + 1;
-	}
-	
-	flink::remove_dups( inOutChunkIndices );
-}
-
-// static
-void svc::Integrator::ExpandChunksHelper
-(
-	flink::vector< unsigned > & inOutChunkIndices,
-	unsigned delta,
-	bool disjunct,
-
-	flink::vector< char > & tmpScratchPad
-)
-{
-	int oldSize = inOutChunkIndices.size();
-	
-	tmpScratchPad.resize( oldSize * sizeof( unsigned ) );
-	unsigned * tmp = reinterpret_cast< unsigned * >( tmpScratchPad.begin() );
-	
-	for( int i = 0; i < oldSize; i++ )
-		tmp[ i ] = inOutChunkIndices[ i ] + delta;
-	
-	if( disjunct )
-		inOutChunkIndices.resize( oldSize * 2 );
-	else
-		inOutChunkIndices.resize( oldSize * 2 - flink::intersection_size
-		(
-			inOutChunkIndices.cbegin(), inOutChunkIndices.cbegin() + oldSize,
-			tmp, tmp + oldSize
-		));
-	
-	flink::merge_unique_backward
-	(
-		inOutChunkIndices.cbegin(), inOutChunkIndices.cbegin() + oldSize,
-		tmp, tmp + oldSize,
-		
-		inOutChunkIndices.end()
-	);
+	ExpandChunksHelper( inOutChunkIndices, flink::packX( 1 ), false, tmpScratchPad);
 }
 
 // static 
@@ -204,17 +155,68 @@ void svc::Integrator::ChunksToBricks
 
 	ExpandChunksHelper( inOutChunkIndices, flink::packZ( 1 ), true, tmpScratchPad);
 	ExpandChunksHelper( inOutChunkIndices, flink::packY( 1 ), true, tmpScratchPad);
+	ExpandChunksHelper( inOutChunkIndices, flink::packX( 1 ), true, tmpScratchPad);
+}
 
-	assert( flink::packX( 1 ) == 1 );
+// static
+void svc::Integrator::ExpandChunksHelper
+(
+	flink::vector< unsigned > & inOutChunkIndices,
+	unsigned delta,
+	bool disjunct,
 
-	int oldSize = inOutChunkIndices.size();
-	inOutChunkIndices.resize( 2 * oldSize );
-
-	for( int i = oldSize - 1; i >= 0; i-- )
+	flink::vector< char > & tmpScratchPad
+)
+{
+	switch( delta )
 	{
-		unsigned tmp = inOutChunkIndices[ i ];
-		inOutChunkIndices[ 2 * i ] = tmp;
-		inOutChunkIndices[ 2 * i + 1 ] = tmp + 1;
+	default:
+		{
+			int oldSize = inOutChunkIndices.size();
+
+			tmpScratchPad.resize( oldSize * sizeof( unsigned ) );
+			unsigned * tmp = reinterpret_cast< unsigned * >( tmpScratchPad.begin() );
+	
+			for( int i = 0; i < oldSize; i++ )
+				tmp[ i ] = inOutChunkIndices[ i ] + delta;
+	
+			int newSize;
+			if( disjunct )
+				newSize = 2 * oldSize;
+			else
+				newSize = 2 * oldSize - flink::intersection_size(
+					inOutChunkIndices.cbegin(), inOutChunkIndices.cbegin() + oldSize,
+					tmp, tmp + oldSize
+				);
+
+			inOutChunkIndices.resize( newSize );
+	
+			flink::merge_unique_backward
+			(
+				inOutChunkIndices.cbegin(), inOutChunkIndices.cbegin() + oldSize,
+				tmp, tmp + oldSize,
+		
+				inOutChunkIndices.end()
+			);
+		}
+		break;
+
+	case 1:
+		{
+			int oldSize = inOutChunkIndices.size();
+			inOutChunkIndices.resize( 2 * oldSize );
+	
+			for( int i = oldSize - 1; i >= 0; i-- )
+			{
+				unsigned tmp = inOutChunkIndices[ i ];
+				inOutChunkIndices[ 2 * i ] = tmp;
+				inOutChunkIndices[ 2 * i + 1 ] = tmp + 1;
+			}
+
+			if( ! disjunct )
+				flink::remove_dups( inOutChunkIndices );
+		}
+		break;
 	}
 }
 
