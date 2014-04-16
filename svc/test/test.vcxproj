@@ -73,10 +73,7 @@
     <ClCompile Include="DepthStream.cpp" />
     <ClCompile Include="Integrator.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Mesher.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="Mesher.cpp" />
     <ClCompile Include="Volume.cpp" />
     <ClCompile Include="Voxel.cpp" />
   </ItemGroup>

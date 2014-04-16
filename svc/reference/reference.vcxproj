@@ -12,7 +12,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Brick.h" />
-    <ClInclude Include="Cache.h" />
     <ClInclude Include="DepthFrame.h" />
     <ClInclude Include="DepthStream.h" />
     <ClInclude Include="Integrator.h" />
@@ -21,16 +20,13 @@
     <ClInclude Include="Voxel.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Cache.cpp" />
+    <ClCompile Include="Brick.cpp" />
     <ClCompile Include="DepthFrame.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="DepthStream.cpp" />
     <ClCompile Include="Integrator.cpp" />
-    <ClCompile Include="Mesher.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="Mesher.cpp" />
     <ClCompile Include="Volume.cpp" />
     <ClCompile Include="Voxel.cpp" />
   </ItemGroup>

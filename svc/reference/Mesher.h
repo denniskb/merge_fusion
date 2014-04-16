@@ -3,13 +3,11 @@
 #include <flink/math.h>
 #include <flink/vector.h>
 
-#include "Volume.h"
-
 
 
 namespace svc {
 
-class Cache;
+class Volume;
 
 class Mesher
 {
@@ -17,11 +15,9 @@ public:
 	/*
 	Marching cubes ported from http://paulbourke.net/geometry/polygonise/
 	*/
-	template< int BrickRes >
 	void Triangulate
 	(
-		Volume< BrickRes > const & volume,
-		Cache & cache,
+		Volume const & volume,
 
 		flink::vector< flink::float4 > & outVertices,
 		flink::vector< unsigned > & outIndices
@@ -43,11 +39,9 @@ private:
 	flink::vector< unsigned > m_indexIDs;
 	flink::vector< char > m_scratchPad;
 
-	template< int BrickRes >
 	static void Generate
 	(
-		Volume< BrickRes > const & volume,
-		Cache & cache,
+		Volume const & volume,
 
 		flink::vector< flink::float4 > & outVertices,
 		flink::vector< unsigned > & outVertexIDs,

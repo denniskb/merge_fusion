@@ -12,13 +12,16 @@
 svc::Volume::Volume
 ( 
 	int resolution, 
-	float sideLength
+	float sideLength,
+	float truncMargin
 ) :
 	m_res( resolution ),
-	m_sideLen( sideLength )
+	m_sideLen( sideLength ),
+	m_truncMargin( truncMargin )
 {
 	assert( resolution > 0 && resolution <= 1024 );
 	assert( sideLength > 0.0f );
+	assert( truncMargin > 0.0f );
 
 	assert( flink::powerOf2( resolution ) );
 }
@@ -34,6 +37,13 @@ float svc::Volume::SideLength() const
 {
 	return m_sideLen;
 }
+
+float svc::Volume::TruncationMargin() const
+{
+	return m_truncMargin;
+}
+
+
 
 float svc::Volume::VoxelLength() const
 {

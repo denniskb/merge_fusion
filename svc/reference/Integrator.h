@@ -3,13 +3,12 @@
 #include <flink/math.h>
 #include <flink/vector.h>
 
-#include "Volume.h"
-
 
 
 namespace svc {
 
 class DepthFrame;
+class Volume;
 
 class Integrator
 {
@@ -18,7 +17,6 @@ public:
 	( 
 		Volume & volume,
 		DepthFrame const & frame,
-		float truncationMargin,
 		int chunkFootPrint,
 
 		flink::float4 const & eye,
@@ -69,7 +67,6 @@ private:
 	(
 		Volume & volume,
 		DepthFrame const & frame,
-		float truncationMargin,
 
 		flink::float4 const & eye,
 		flink::float4 const & forward,

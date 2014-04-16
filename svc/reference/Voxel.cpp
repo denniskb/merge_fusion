@@ -10,11 +10,6 @@ svc::Voxel::Voxel( unsigned data ) : m_data( data )
 {
 }
 
-svc::Voxel::operator unsigned()
-{
-	return m_data;
-}
-
 
 
 float svc::Voxel::Distance( float truncationMargin ) const
@@ -41,6 +36,18 @@ void svc::Voxel::Update( float newDistance, float truncationMargin, int newWeigh
 	float d = ( w * Distance( truncationMargin ) + newWeight * flink::clamp( newDistance, -truncationMargin, truncationMargin ) ) / w1;
 
 	m_data = PackDistance( d, truncationMargin ) << 16 | w1;
+}
+
+
+
+bool svc::Voxel::operator==( Voxel rhs ) const
+{
+	return m_data == rhs.m_data;
+}
+
+bool svc::Voxel::operator!=( Voxel rhs ) const
+{
+	return m_data != rhs.m_data;
 }
 
 

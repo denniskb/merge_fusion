@@ -12,10 +12,12 @@ namespace svc {
 class Volume
 {
 public:
-	Volume( int resolution, float sideLength );
+	Volume( int resolution, float sideLength, float truncationMargin );
 
 	int Resolution() const;
 	float SideLength() const;
+	float TruncationMargin() const;
+
 	float VoxelLength() const;
 	int NumChunksInVolume( int chunkRes ) const;
 
@@ -31,6 +33,7 @@ public:
 private:
 	int m_res;
 	float m_sideLen;
+	float m_truncMargin;
 
 	flink::flat_map< unsigned, Brick > m_data;
 };

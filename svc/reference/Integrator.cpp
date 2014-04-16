@@ -18,7 +18,6 @@ void svc::Integrator::Integrate
 ( 
 	Volume & volume,
 	DepthFrame const & frame,
-	float truncMargin,
 	int footPrint,
 
 	flink::float4 const & eye,
@@ -28,7 +27,6 @@ void svc::Integrator::Integrate
 	flink::float4x4 const & viewToWorld
 )
 {
-	assert( truncMargin > 0.0f );
 	assert( footPrint == 2 || footPrint == 4 );
 
 	flink::timer t;
@@ -51,7 +49,7 @@ void svc::Integrator::Integrate
 	volume.Data().merge_unique( m_splattedChunks.cbegin(), m_splattedChunks.cend(), Brick() );
 	t.record_time( "tmerge" );
 
-	UpdateVoxels( volume, frame, truncMargin, eye, forward, viewProjection );
+	UpdateVoxels( volume, frame, eye, forward, viewProjection );
 	t.record_time( "tupdate" );
 
 	t.print();
@@ -225,7 +223,6 @@ void svc::Integrator::UpdateVoxels
 (
 	Volume & volume,
 	DepthFrame const & frame,
-	float truncMargin,
 
 	flink::float4 const & eye,
 	flink::float4 const & forward,
@@ -240,17 +237,20 @@ void svc::Integrator::UpdateVoxels
 		unsigned brickX, brickY, brickZ;
 		flink::unpackInts( volume.Data().keys_first()[ i ], brickX, brickY, brickZ );
 
+		brickX *= 2;
+		brickY *= 2;
+		brickZ *= 2;
+
 		Brick & brick = volume.Data().values_first()[ i ];
 
 		for( int j = 0; j < Brick::VOLUME; j++ )
 		{
-			unsigned voxelZ = j / Brick::SLICE;
-			unsigned voxelY = ( j - voxelZ * Brick::SLICE ) / Brick::RESOLUTION;
-			unsigned voxelX = j % Brick::RESOLUTION;
+			unsigned voxelX, voxelY, voxelZ;
+			Brick::Index1Dto3D( j, voxelX, voxelY, voxelZ );
 
-			unsigned x = brickX * Brick::RESOLUTION + voxelX;
-			unsigned y = brickY * Brick::RESOLUTION + voxelY;
-			unsigned z = brickZ * Brick::RESOLUTION + voxelZ;
+			unsigned x = brickX + voxelX;
+			unsigned y = brickY + voxelY;
+			unsigned z = brickZ + voxelZ;
 
 			flink::float4 centerWorld = volume.VoxelCenter( x, y, z );
 			flink::vec _centerWorld = flink::load( centerWorld );
@@ -273,9 +273,9 @@ void svc::Integrator::UpdateVoxels
 			float dist = flink::dot( centerWorld - eye, forward );
 			float signedDist = depth - dist;
 				
-			update = update && dist >= 0.8f && signedDist >= -truncMargin;
+			update = update && dist >= 0.8f && signedDist >= -volume.TruncationMargin();
 
-			brick.voxels[ j ].Update( signedDist, truncMargin, (int) update );
+			brick[ j ].Update( signedDist, volume.TruncationMargin(), (int) update );
 		}
 	}
 }

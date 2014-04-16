@@ -43,7 +43,7 @@ BOOST_AUTO_TEST_SUITE( DepthStream )
 BOOST_AUTO_TEST_CASE( NextFrame_v1 )
 {
 	int const FRAME_RES = 640 * 480;
-	char const * fileName = _tempnam( nullptr, nullptr );
+	char * fileName = _tempnam( nullptr, nullptr );
 
 	float viewMatrix[ 16 ] = { 0.0f };
 	viewMatrix[ 3 + 1 * 4 ] = 0.271f;
@@ -76,12 +76,13 @@ BOOST_AUTO_TEST_CASE( NextFrame_v1 )
 	BOOST_CHECK( ! ds.NextFrame( depth, view ) );
 
 	remove( fileName );
+	std::free( fileName );
 }
 
 BOOST_AUTO_TEST_CASE( NextFrame_v2_short )
 {
 	int const FRAME_RES = 640 * 480;
-	char const * fileName = _tempnam( nullptr, nullptr );
+	char * fileName = _tempnam( nullptr, nullptr );
 
 	float viewMatrix[ 16 ] = { 0.0f };
 	viewMatrix[ 3 + 1 * 4 ] = 0.271f;
@@ -114,12 +115,13 @@ BOOST_AUTO_TEST_CASE( NextFrame_v2_short )
 	BOOST_CHECK( ! ds.NextFrame( depth, view ) );
 
 	remove( fileName );
+	std::free( fileName );
 }
 
 BOOST_AUTO_TEST_CASE( NextFrame_v2_float )
 {
 	int const FRAME_RES = 640 * 480;
-	char const * fileName = _tempnam( nullptr, nullptr );
+	char * fileName = _tempnam( nullptr, nullptr );
 
 	float viewMatrix[ 16 ] = { 0.0f };
 	viewMatrix[ 3 + 1 * 4 ] = 0.271f;
@@ -152,6 +154,7 @@ BOOST_AUTO_TEST_CASE( NextFrame_v2_float )
 	BOOST_CHECK( ! ds.NextFrame( depth, view ) );
 
 	remove( fileName );
+	std::free( fileName );
 }
 
 BOOST_AUTO_TEST_SUITE_END()
