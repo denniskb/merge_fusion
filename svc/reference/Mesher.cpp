@@ -1,6 +1,7 @@
 #include "Mesher.h"
 
 #include <flink/algorithm.h>
+#include <flink/array_view.h>
 #include <flink/util.h>
 
 #include "Volume.h"
@@ -22,14 +23,12 @@ void svc::Mesher::Triangulate
 	
 	Generate( volume, outVertices, m_vertexIDs, outIndices );	
 	t.record_time( "tgen" );
-	
-	outIndices.clear();
 
-	//flink::radix_sort( m_vertexIDs.begin(), outVertices.begin(), m_vertexIDs.size(), m_scratchPad );
-	//t.record_time( "tsort" );
-	//
-	//VertexIDsToIndices( m_vertexIDs, outIndices, m_indexIDs, m_scratchPad );
-	//t.record_time( "tidx" );
+	flink::radix_sort( m_vertexIDs.begin(), outVertices.begin(), m_vertexIDs.size(), m_scratchPad );
+	t.record_time( "tsort" );
+	
+	VertexIDsToIndices( m_vertexIDs, outIndices, m_indexIDs, m_scratchPad );
+	t.record_time( "tidx" );
 
 	t.print();
 }
@@ -324,218 +323,160 @@ void svc::Mesher::Generate
 	outVertexIDs.clear();
 	outIndices.clear();
 
-	for( int i = 0; i < volume.Data().size(); i++ )
+	Voxel buffer[ 64 ];
+	flink::array_view< Voxel, 4, 4, 4 > cache( buffer );
+
+	unsigned const * bricks[ 8 ];
+	std::fill( bricks, bricks + 8, volume.Data().keys_first() );
+
+	unsigned deltas[ 8 ];
+	for( int i = 0; i < 8; i++ )
 	{
-		Brick const & b = volume.Data().values_first()[ i ];
-
-		Voxel v[ 8 ];
-		v[ 2 ] = b[ 0 ];
-		v[ 3 ] = b[ 1 ];
-		v[ 6 ] = b[ 2 ];
-		v[ 7 ] = b[ 3 ];
-																 
-		v[ 1 ] = b[ 4 ];
-		v[ 0 ] = b[ 5 ];
-		v[ 5 ] = b[ 6 ];
-		v[ 4 ] = b[ 7 ];
-
-		if( 0 == v[ 2 ].Weight() )
-			continue;
-
-		// Generate vertices
-		float d[ 8 ];
-		for( int j = 0; j < 8; j++ )
-			d[ j ] = v[ j ].Distance( volume.TruncationMargin() );
-
-		unsigned x0, y0, z0, x1, y1, z1;
-		flink::unpackInts( volume.Data().keys_first()[ i ], x0, y0, z0 );
-		
-		x0 *= 2;
-		y0 *= 2;
-		z0 *= 2;
-
-		x1 = x0 + 1;
-		y1 = y0 + 1;
-		z1 = z0 + 1;
-
-		flink::float4 vert000 = volume.VoxelCenter( x0, y0, z0 );
-		unsigned i000 = flink::packInts( x0, y0, z0 );
-
-		// TODO: Re-evaluate interpolation (esp. use of weights in lerp)
-		if( v[ 3 ].Weight() > 0 && d[ 2 ] * d[ 3 ] < 0.0f )
-		{
-			outVertexIDs.push_back( 3 * i000 );
-			outVertices.push_back( flink::float4
-			(
-				vert000.x + flink::lerp( 0.0f, volume.VoxelLength(), abs( d[ 3 ] ), abs( d[ 2 ] ) ),
-				vert000.y,
-				vert000.z,
-				1.0f
-			));
-		}
-				
-		if( v[ 6 ].Weight() > 0 && d[ 2 ] * d[ 6 ] < 0.0f )
-		{
-			outVertexIDs.push_back( 3 * i000 + 1 );
-			outVertices.push_back( flink::float4
-			(
-				vert000.x,
-				vert000.y + flink::lerp( 0.0f, volume.VoxelLength(), abs( d[ 6 ] ), abs( d[ 2 ] ) ),
-				vert000.z,
-				1.0f
-			));
-		}
-				
-		if( v[ 1 ].Weight() > 0 && d[ 2 ] * d[ 1 ] < 0.0f )
-		{
-			outVertexIDs.push_back( 3 * i000 + 2 );
-			outVertices.push_back( flink::float4
-			(
-				vert000.x,
-				vert000.y,
-				vert000.z + flink::lerp( 0.0f, volume.VoxelLength(), abs( d[ 1 ] ), abs( d[ 2 ] ) ),
-				1.0f
-			));
-		}
-
-		// Generate indices
-		bool skip = false;
-		for( int i = 0; i < 8; i++ )
-			skip = skip || ( 0 == v[ i ].Weight() );
-
-		if( skip )
-			continue;
-
-		int lutIdx = 0;
-		for( int i = 0; i < 8; i++ )
-			if( d[ i ] < 0.0f )
-				lutIdx |= ( 1u << i );
-
-		// Maps local edge indices to global vertex indices
-		unsigned localToGlobal[ 12 ];
-		localToGlobal[  0 ] = flink::packInts( x0, y0, z1 ) * 3;
-		localToGlobal[  1 ] = flink::packInts( x0, y0, z0 ) * 3 + 2;
-		localToGlobal[  2 ] = flink::packInts( x0, y0, z0 ) * 3;
-		localToGlobal[  3 ] = flink::packInts( x1, y0, z0 ) * 3 + 2;
-		localToGlobal[  4 ] = flink::packInts( x0, y1, z1 ) * 3;
-		localToGlobal[  5 ] = flink::packInts( x0, y1, z0 ) * 3 + 2;
-		localToGlobal[  6 ] = flink::packInts( x0, y1, z0 ) * 3;
-		localToGlobal[  7 ] = flink::packInts( x1, y1, z0 ) * 3 + 2;
-		localToGlobal[  8 ] = flink::packInts( x1, y0, z1 ) * 3 + 1;
-		localToGlobal[  9 ] = flink::packInts( x0, y0, z1 ) * 3 + 1;
-		localToGlobal[ 10 ] = flink::packInts( x0, y0, z0 ) * 3 + 1;
-		localToGlobal[ 11 ] = flink::packInts( x1, y0, z0 ) * 3 + 1;
-
-		for (
-			int i = TriOffsets()[ lutIdx ],
-			end   = TriOffsets()[ std::min( 255, lutIdx + 1 ) ];
-			i < end;
-			i++
-		)
-		{
-			flink::uint4 tri = TriTable()[ i ];
-			outIndices.push_back( localToGlobal[ tri.x ] );
-			outIndices.push_back( localToGlobal[ tri.y ] );
-			outIndices.push_back( localToGlobal[ tri.z ] );
-		}
+		unsigned x, y, z;
+		Brick::Index1Dto3D( i, x, y, z );
+		deltas[ i ] = flink::packInts( x, y, z );
 	}
 
-	/*unsigned const resMinus1 = volume.Resolution() - 1;
+	for
+	(
+		unsigned const * start = volume.Data().keys_first(),
+		* end = volume.Data().keys_last(),
+		* self = start;
 
-	while( cache.NextSlice( volume.Data().keys_first(), volume.Data().values_first(), volume.Data().size() ) )
+		self < end;
+
+		self++
+	)
 	{
-		for( int i = cache.CachedRange().first; i < cache.CachedRange().second; i++ )
-		{
-			unsigned x0, y0, z0;
-			flink::unpackInts( volume.Data().keys_first()[ i ], x0, y0, z0 );
+		for( int j = 0; j < 64; j++ )
+			cache[ j ] = Voxel();
 
-			unsigned x1 = std::min( x0 + 1, resMinus1 );
-			unsigned y1 = std::min( y0 + 1, resMinus1 );
-			unsigned z1 = std::min( z0 + 1, resMinus1 );
+		bricks[ 0 ] = self;
+		bricks[ 1 ] = self + 1;
+		
+		for( int j = 2; j <= 6; j += 2 )
+			while( bricks[ j ] < end - 1 && * bricks[ j ] < * self + deltas[ j ] )
+				bricks[ j ]++;
+		
+		for( int j = 3; j <= 7; j += 2 )
+		{
+			unsigned const * tmp = bricks[ j - 1 ];
+			bricks[ j ] = ( * tmp < * self + deltas[ j ] ) ? tmp + 1 : tmp;
+		}
+
+		for( int j = 0; j < 8; j++ )
+			if( * bricks[ j ] == * self + deltas[ j ] )
+			{
+				Brick const & b = volume.Data().values_first()[ bricks[ j ] - start ];
+
+				unsigned x0, y0, z0, x1, y1, z1;
+				Brick::Index1Dto3D( j, x0, y0, z0 );
+
+				x0 *= 2;
+				y0 *= 2;
+				z0 *= 2;
+
+				x1 = x0 + 1;
+				y1 = y0 + 1;
+				z1 = z0 + 1;
+
+				cache( x0, y0, z0 ) = b[ 0 ];
+				cache( x1, y0, z0 ) = b[ 1 ];
+				cache( x0, y1, z0 ) = b[ 2 ];
+				cache( x1, y1, z0 ) = b[ 3 ];
+
+				cache( x0, y0, z1 ) = b[ 4 ];
+				cache( x1, y0, z1 ) = b[ 5 ];
+				cache( x0, y1, z1 ) = b[ 6 ];
+				cache( x1, y1, z1 ) = b[ 7 ];
+			}
+
+		unsigned bx, by, bz;
+		flink::unpackInts( * self, bx, by, bz );
+
+		bx *= 2;
+		by *= 2;
+		bz *= 2;
+
+		for( int j = 0; j < 8; j++ )
+		{
+			unsigned x0, y0, z0, x1, y1, z1;
+			Brick::Index1Dto3D( j, x0, y0, z0 );
+
+			x1 = x0 + 1;
+			y1 = y0 + 1;
+			z1 = z0 + 1;
 
 			Voxel v[ 8 ];
-
-			v[ 2 ] = cache.CachedSlices().first[ x0 + volume.Resolution() * y0 ];
+			v[ 2 ] = cache( x0, y0, z0 );
 
 			if( 0 == v[ 2 ].Weight() )
 				continue;
 
-			v[ 3 ] = cache.CachedSlices().first[ x1 + volume.Resolution() * y0 ];
-			v[ 6 ] = cache.CachedSlices().first[ x0 + volume.Resolution() * y1 ];
-			v[ 7 ] = cache.CachedSlices().first[ x1 + volume.Resolution() * y1 ];
-					
-			v[ 1 ] = cache.CachedSlices().second[ x0 + volume.Resolution() * y0 ];
-			v[ 0 ] = cache.CachedSlices().second[ x1 + volume.Resolution() * y0 ];
-			v[ 5 ] = cache.CachedSlices().second[ x0 + volume.Resolution() * y1 ];
-			v[ 4 ] = cache.CachedSlices().second[ x1 + volume.Resolution() * y1 ];
-			
+			v[ 3 ] = cache( x1, y0, z0 );
+			v[ 6 ] = cache( x0, y1, z0 );
+			v[ 7 ] = cache( x1, y1, z0 );
+
+			v[ 1 ] = cache( x0, y0, z1 );
+			v[ 0 ] = cache( x1, y0, z1 );
+			v[ 5 ] = cache( x0, y1, z1 );
+			v[ 4 ] = cache( x1, y1, z1 );
+
+			x0 += bx;
+			y0 += by;
+			z0 += bz;
+
+			x1 += bx;
+			y1 += by;
+			z1 += bz;
+
 			// Generate vertices
 			float d[ 8 ];
-			d[ 1 ] = v[ 1 ].Distance( volume.TruncationMargin() );
-			d[ 2 ] = v[ 2 ].Distance( volume.TruncationMargin() );
-			d[ 3 ] = v[ 3 ].Distance( volume.TruncationMargin() );
-			d[ 6 ] = v[ 6 ].Distance( volume.TruncationMargin() );
+			for( int j = 0; j < 8; j++ )
+				d[ j ] = v[ j ].Distance( volume.TruncationMargin() );
 
 			flink::float4 vert000 = volume.VoxelCenter( x0, y0, z0 );
 			unsigned i000 = flink::packInts( x0, y0, z0 );
 
-			// TODO: Re-evaluate interpolation
-
+			// TODO: Re-evaluate interpolation (esp. use of weights in lerp)
 			if( v[ 3 ].Weight() > 0 && d[ 2 ] * d[ 3 ] < 0.0f )
 			{
+				flink::float4 vert = vert000;
+				vert.x += flink::lerp( 0.0f, volume.VoxelLength(), abs( d[ 3 ] ), abs( d[ 2 ] ) );
+
 				outVertexIDs.push_back( 3 * i000 );
-				outVertices.push_back( flink::float4
-				(
-					vert000.x + flink::lerp( 0.0f, volume.VoxelLength(), v[ 2 ].Weight() * abs( d[ 3 ] ), v[ 3 ].Weight() * abs( d[ 2 ] ) ),
-					vert000.y,
-					vert000.z,
-					1.0f
-				));
+				outVertices.push_back( vert );
 			}
 				
 			if( v[ 6 ].Weight() > 0 && d[ 2 ] * d[ 6 ] < 0.0f )
 			{
+				flink::float4 vert = vert000;
+				vert.y += flink::lerp( 0.0f, volume.VoxelLength(), abs( d[ 6 ] ), abs( d[ 2 ] ) );
+
 				outVertexIDs.push_back( 3 * i000 + 1 );
-				outVertices.push_back( flink::float4
-				(
-					vert000.x,
-					vert000.y + flink::lerp( 0.0f, volume.VoxelLength(), v[ 2 ].Weight() * abs( d[ 6 ] ), v[ 6 ].Weight() * abs( d[ 2 ] ) ),
-					vert000.z,
-					1.0f
-				));
+				outVertices.push_back( vert );
 			}
 				
 			if( v[ 1 ].Weight() > 0 && d[ 2 ] * d[ 1 ] < 0.0f )
 			{
-				outVertexIDs.push_back( 3 * i000 + 2 );
-				outVertices.push_back( flink::float4
-				(
-					vert000.x,
-					vert000.y,
-					vert000.z + flink::lerp( 0.0f, volume.VoxelLength(), v[ 2 ].Weight() * abs( d[ 1 ] ), v[ 1 ].Weight() * abs( d[ 2 ] ) ),
-					1.0f
-				));
-			}
+				flink::float4 vert = vert000;
+				vert.z += flink::lerp( 0.0f, volume.VoxelLength(), abs( d[ 1 ] ), abs( d[ 2 ] ) );
 
+				outVertexIDs.push_back( 3 * i000 + 2 );
+				outVertices.push_back( vert );
+			}
+			
 			// Generate indices
 			bool skip = false;
 			for( int i = 0; i < 8; i++ )
 				skip = skip || ( 0 == v[ i ].Weight() );
 
-			if( skip ||					
-				x0 == resMinus1 ||
-				y0 == resMinus1 ||
-				z0 == resMinus1 )
+			if( skip )
 				continue;
-
-			d[ 0 ] = v[ 0 ].Distance( volume.TruncationMargin() );
-			d[ 4 ] = v[ 4 ].Distance( volume.TruncationMargin() );
-			d[ 5 ] = v[ 5 ].Distance( volume.TruncationMargin() );
-			d[ 7 ] = v[ 7 ].Distance( volume.TruncationMargin() );
 
 			int lutIdx = 0;
 			for( int i = 0; i < 8; i++ )
-				if( d[ i ] < 0 )
+				if( d[ i ] < 0.0f )
 					lutIdx |= ( 1u << i );
 
 			// Maps local edge indices to global vertex indices
@@ -566,7 +507,7 @@ void svc::Mesher::Generate
 				outIndices.push_back( localToGlobal[ tri.z ] );
 			}
 		}
-	}*/
+	}
 }
 
 // static 

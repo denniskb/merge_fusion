@@ -12,6 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="algorithm.h" />
+    <ClInclude Include="array_view.h" />
     <ClInclude Include="flat_map.h" />
     <ClInclude Include="math.h" />
     <ClInclude Include="timer.h" />

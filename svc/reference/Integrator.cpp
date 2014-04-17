@@ -243,14 +243,14 @@ void svc::Integrator::UpdateVoxels
 
 		Brick & brick = volume.Data().values_first()[ i ];
 
-		for( int j = 0; j < Brick::VOLUME; j++ )
+		for( int j = 0; j < brick.size(); j++ )
 		{
-			unsigned voxelX, voxelY, voxelZ;
-			Brick::Index1Dto3D( j, voxelX, voxelY, voxelZ );
+			unsigned x, y, z;
+			Brick::Index1Dto3D( j, x, y, z );
 
-			unsigned x = brickX + voxelX;
-			unsigned y = brickY + voxelY;
-			unsigned z = brickZ + voxelZ;
+			x += brickX;
+			y += brickY;
+			z += brickZ;
 
 			flink::float4 centerWorld = volume.VoxelCenter( x, y, z );
 			flink::vec _centerWorld = flink::load( centerWorld );
