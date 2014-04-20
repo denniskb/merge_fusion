@@ -93,25 +93,14 @@ inline void radix_sort
 
 
 template< typename T >
-inline void remove_dups( vector< T > & data )
+inline int remove_dups( T * first, int size )
 {
 	int idst = 0;
-	for( int i = 1; i < data.size(); i++ )
-		if( data[ i ] != data[ idst ] )
-			data[ ++idst ] = data[ i ];
+	for( int i = 1; i < size; i++ )
+		if( first[ i ] != first[ idst ] )
+			first[ ++idst ] = first[ i ];
 
-	data.resize( idst + 1 );
-}
-
-template< typename T >
-inline void remove_value( vector< T > & data, T const & value )
-{
-	int idst = 0;
-	for( int i = 0; i < data.size(); i++ )
-		if( data[ i ] != value )
-			data[ idst++ ] = data[ i ];
-
-	data.resize( idst );
+	return idst + 1;
 }
 
 template< typename T >

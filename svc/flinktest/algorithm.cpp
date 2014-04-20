@@ -47,24 +47,11 @@ BOOST_AUTO_TEST_CASE( remove_dups )
 	test.push_back( 1 );
 	test.push_back( 2 );
 
-	flink::remove_dups( test );
+	test.resize( flink::remove_dups( test.begin(), test.size() ) );
 
 	BOOST_REQUIRE( test.size() == 2 );
 	BOOST_REQUIRE( test[ 0 ] == 1 );
 	BOOST_REQUIRE( test[ 1 ] == 2 );
-}
-
-BOOST_AUTO_TEST_CASE( remove_value )
-{
-	flink::vector< int > test;
-	test.push_back( 1 );
-	test.push_back( 1 );
-	test.push_back( 2 );
-
-	flink::remove_value( test, 1 );
-
-	BOOST_REQUIRE( test.size() == 1 );
-	BOOST_REQUIRE( test[ 0 ] == 2 );
 }
 
 

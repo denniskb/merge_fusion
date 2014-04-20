@@ -4,11 +4,14 @@
 *.suo
 *.vcxproj.user
 
+/cuda/bin
+/cuda/obj
+
 /flink/bin
 /flink/obj
 
-flinktest/bin
-flinktest/obj
+/flinktest/bin
+/flinktest/obj
 
 /reference/bin
 /reference/obj

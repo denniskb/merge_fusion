@@ -37,7 +37,7 @@ void svc::Integrator::Integrate
 	flink::radix_sort( m_splattedChunks.begin(), m_splattedChunks.size(), m_scratchPad );
 	t.record_time( "tsort" );
 	
-	remove_dups( m_splattedChunks );
+	m_splattedChunks.resize( flink::remove_dups( m_splattedChunks.begin(), m_splattedChunks.size() ) );
 	t.record_time( "tdups" );
 
 	ExpandChunks( m_splattedChunks, m_scratchPad );
@@ -212,7 +212,9 @@ void svc::Integrator::ExpandChunksHelper
 			}
 
 			if( ! disjunct )
-				flink::remove_dups( inOutChunkIndices );
+				inOutChunkIndices.resize( 
+					flink::remove_dups( inOutChunkIndices.begin(), inOutChunkIndices.size() )
+				);
 		}
 		break;
 	}

@@ -24,6 +24,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "flinktest", "flinktest\flin
 		{C82EA146-94DD-4C5A-B3EB-4A243AE9B818} = {C82EA146-94DD-4C5A-B3EB-4A243AE9B818}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cuda", "cuda\cuda.vcxproj", "{7117D29B-7486-4172-BADB-CB28BF71093F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C82EA146-94DD-4C5A-B3EB-4A243AE9B818} = {C82EA146-94DD-4C5A-B3EB-4A243AE9B818}
+		{6372D9A0-C97E-4758-8039-31C3B26F0963} = {6372D9A0-C97E-4758-8039-31C3B26F0963}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -46,6 +52,10 @@ Global
 		{6165D705-FC97-4394-962A-AA232A86FA81}.Debug|x64.Build.0 = Debug|x64
 		{6165D705-FC97-4394-962A-AA232A86FA81}.Release|x64.ActiveCfg = Release|x64
 		{6165D705-FC97-4394-962A-AA232A86FA81}.Release|x64.Build.0 = Release|x64
+		{7117D29B-7486-4172-BADB-CB28BF71093F}.Debug|x64.ActiveCfg = Debug|x64
+		{7117D29B-7486-4172-BADB-CB28BF71093F}.Debug|x64.Build.0 = Debug|x64
+		{7117D29B-7486-4172-BADB-CB28BF71093F}.Release|x64.ActiveCfg = Release|x64
+		{7117D29B-7486-4172-BADB-CB28BF71093F}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
