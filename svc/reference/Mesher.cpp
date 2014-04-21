@@ -19,6 +19,10 @@ void svc::Mesher::Triangulate
 	std::vector< unsigned > & outIndices
 )
 {
+	outVertices.reserve( 1 << 16 );
+	m_vertexIDs.reserve( 1 << 16 );
+	outIndices.reserve( 1 << 18 );
+
 	flink::timer t;
 	
 	Generate( volume, outVertices, m_vertexIDs, outIndices );	
