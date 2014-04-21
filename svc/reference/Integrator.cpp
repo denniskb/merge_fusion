@@ -31,6 +31,9 @@ void svc::Integrator::Integrate
 {
 	assert( footPrint == 2 || footPrint == 4 );
 
+	m_splattedChunks.reserve( frame.Resolution() );
+	m_scratchPad.reserve( 4 * frame.Resolution() );
+
 	flink::timer t;
 	
 	SplatChunks( volume, frame, viewToWorld, footPrint, m_splattedChunks );
@@ -148,11 +151,11 @@ void svc::Integrator::ChunksToBricks
 	if( footPrint != 4 )
 		return;
 
-	for( int i = 0; i < inOutChunkIndices.size(); i++ )
+	for( auto it = inOutChunkIndices.begin(); it != inOutChunkIndices.end(); ++it )
 	{
 		unsigned x, y, z;
-		flink::unpackInts( inOutChunkIndices[ i ], x, y, z );
-		inOutChunkIndices[ i ] = flink::packInts( 2 * x, 2 * y, 2 * z );
+		flink::unpackInts( * it, x, y, z );
+		* it = flink::packInts( 2 * x, 2 * y, 2 * z );
 	}
 
 	ExpandChunksHelper( inOutChunkIndices, flink::packZ( 1 ), true, tmpScratchPad);
@@ -174,31 +177,30 @@ void svc::Integrator::ExpandChunksHelper
 	{
 	default:
 		{
-			size_t oldSize = inOutChunkIndices.size();
-
-			tmpScratchPad.resize( oldSize * sizeof( unsigned ) );
+			tmpScratchPad.resize( inOutChunkIndices.size() * sizeof( unsigned ) );
 			unsigned * tmp = reinterpret_cast< unsigned * >( tmpScratchPad.data() );
 	
-			for( int i = 0; i < oldSize; i++ )
-				tmp[ i ] = inOutChunkIndices[ i ] + delta;
+			for( auto it = std::make_pair( inOutChunkIndices.cbegin(), tmp );
+				 it.first != inOutChunkIndices.cend();
+				 ++it.first, ++it.second )
+				* it.second = * it.first + delta;
 	
-			size_t newSize;
-			if( disjunct )
-				newSize = 2 * oldSize;
-			else
-				newSize = 2 * oldSize - flink::intersection_size(
-					inOutChunkIndices.data(), inOutChunkIndices.data() + oldSize,
-					tmp, tmp + oldSize
+			size_t newSize = 2 * inOutChunkIndices.size();
+			if( ! disjunct )
+				newSize -= flink::intersection_size(
+					inOutChunkIndices.cbegin(), inOutChunkIndices.cend(),
+					tmp, tmp + inOutChunkIndices.size()
 				);
 
+			size_t oldSize = inOutChunkIndices.size();
 			inOutChunkIndices.resize( newSize );
 	
 			flink::merge_unique_backward
 			(
-				inOutChunkIndices.data(), inOutChunkIndices.data() + oldSize,
+				inOutChunkIndices.cbegin(), inOutChunkIndices.cbegin() + oldSize,
 				tmp, tmp + oldSize,
 		
-				inOutChunkIndices.data() + newSize
+				inOutChunkIndices.end()
 			);
 		}
 		break;
@@ -213,8 +215,9 @@ void svc::Integrator::ExpandChunksHelper
 				size_t ii = oldSize - i - 1;
 				
 				unsigned tmp = inOutChunkIndices[ ii ];
-				inOutChunkIndices[ 2 * ii ] = tmp;
-				inOutChunkIndices[ 2 * ii + 1 ] = tmp + 1;
+				ii *= 2;
+				inOutChunkIndices[ ii ] = tmp;
+				inOutChunkIndices[ ii + 1 ] = tmp + 1;
 			}
 
 			if( ! disjunct )
