@@ -6,13 +6,16 @@
 
 long long flink::fsize( char const * fileName )
 {
+	long long result = -1;
+
 	FILE * test;
-	fopen_s( & test, fileName, "rb" );
+	if( ! fopen_s( & test, fileName, "rb" ) )
+	{
+		_fseeki64( test, 0, SEEK_END );
+		result = _ftelli64( test );
 
-	_fseeki64( test, 0, SEEK_END );
-	long long result = _ftelli64( test );
-
-	fclose( test );
+		fclose( test );
+	}
 
 	return result;
 }

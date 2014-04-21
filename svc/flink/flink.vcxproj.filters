@@ -18,9 +18,6 @@
     <ClInclude Include="math.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="vector.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="flat_map.h">
       <Filter>Header Files</Filter>
     </ClInclude>

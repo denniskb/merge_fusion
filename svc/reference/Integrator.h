@@ -1,7 +1,8 @@
 #pragma once
 
+#include <vector>
+
 #include <flink/math.h>
-#include <flink/vector.h>
 
 
 
@@ -27,8 +28,8 @@ public:
 	);
 
 private:
-	flink::vector< unsigned > m_splattedChunks;
-	flink::vector< char > m_scratchPad;
+	std::vector< unsigned > m_splattedChunks;
+	std::vector< char > m_scratchPad;
 
 	static void SplatChunks
 	(
@@ -37,30 +38,30 @@ private:
 		flink::float4x4 const & viewToWorld,
 		int chunkFootPrint,
 
-		flink::vector< unsigned > & outChunkIndices
+		std::vector< unsigned > & outChunkIndices
 	);
 
 	static void ExpandChunks
 	( 
-		flink::vector< unsigned > & inOutChunkIndices,
-		flink::vector< char > & tmpScratchPad
+		std::vector< unsigned > & inOutChunkIndices,
+		std::vector< char > & tmpScratchPad
 	);
 
 	static void ChunksToBricks
 	(
-		flink::vector< unsigned > & inOutChunkIndices,
+		std::vector< unsigned > & inOutChunkIndices,
 		int chunkFootPrint,
 
-		flink::vector< char > & tmpScratchPad
+		std::vector< char > & tmpScratchPad
 	);
 
 	static void ExpandChunksHelper
 	(
-		flink::vector< unsigned > & inOutChunkIndices,
+		std::vector< unsigned > & inOutChunkIndices,
 		unsigned delta,
 		bool hintDefinitlyDisjunct,
 
-		flink::vector< char > & tmpScratchPad
+		std::vector< char > & tmpScratchPad
 	);
 
 	static void UpdateVoxels

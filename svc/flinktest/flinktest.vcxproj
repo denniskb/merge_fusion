@@ -76,7 +76,6 @@
     <ClCompile Include="util.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="vector.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\flink\flink.vcxproj">

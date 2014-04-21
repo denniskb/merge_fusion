@@ -1,7 +1,8 @@
 #pragma once
 
+#include <vector>
+
 #include <flink/math.h>
-#include <flink/vector.h>
 
 
 
@@ -19,14 +20,14 @@ public:
 	(
 		Volume const & volume,
 
-		flink::vector< flink::float4 > & outVertices,
-		flink::vector< unsigned > & outIndices
+		std::vector< flink::float4 > & outVertices,
+		std::vector< unsigned > & outIndices
 	);
 
 	static void Mesh2Obj
 	(
-		flink::vector< flink::float4 > const & vertices,
-		flink::vector< unsigned > const & indices,
+		std::vector< flink::float4 > const & vertices,
+		std::vector< unsigned > const & indices,
 
 		char const * outObjFileName
 	);
@@ -35,26 +36,26 @@ public:
 	static flink::uint4 const * TriTable();
 
 private:
-	flink::vector< unsigned > m_vertexIDs;
-	flink::vector< unsigned > m_indexIDs;
-	flink::vector< char > m_scratchPad;
+	std::vector< unsigned > m_vertexIDs;
+	std::vector< unsigned > m_indexIDs;
+	std::vector< char > m_scratchPad;
 
 	static void Generate
 	(
 		Volume const & volume,
 
-		flink::vector< flink::float4 > & outVertices,
-		flink::vector< unsigned > & outVertexIDs,
-		flink::vector< unsigned > & outIndices
+		std::vector< flink::float4 > & outVertices,
+		std::vector< unsigned > & outVertexIDs,
+		std::vector< unsigned > & outIndices
 	);
 
 	static void VertexIDsToIndices
 	(
-		flink::vector< unsigned > const & vertexIDs,
+		std::vector< unsigned > const & vertexIDs,
 
-		flink::vector< unsigned > & inOutIndices,
-		flink::vector< unsigned > & tmpIndexIDs,
-		flink::vector< char > & tmpScratchPad
+		std::vector< unsigned > & inOutIndices,
+		std::vector< unsigned > & tmpIndexIDs,
+		std::vector< char > & tmpScratchPad
 	);
 };
 

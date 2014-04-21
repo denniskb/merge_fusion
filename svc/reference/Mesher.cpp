@@ -15,8 +15,8 @@ void svc::Mesher::Triangulate
 (
 	Volume const & volume,
 
-	flink::vector< flink::float4 > & outVertices,
-	flink::vector< unsigned > & outIndices
+	std::vector< flink::float4 > & outVertices,
+	std::vector< unsigned > & outIndices
 )
 {
 	flink::timer t;
@@ -24,7 +24,7 @@ void svc::Mesher::Triangulate
 	Generate( volume, outVertices, m_vertexIDs, outIndices );	
 	t.record_time( "tgen" );
 
-	flink::radix_sort( m_vertexIDs.begin(), outVertices.begin(), m_vertexIDs.size(), m_scratchPad );
+	flink::radix_sort( m_vertexIDs.begin(), m_vertexIDs.end(), outVertices.begin(), m_scratchPad );
 	t.record_time( "tsort" );
 	
 	VertexIDsToIndices( m_vertexIDs, outIndices, m_indexIDs, m_scratchPad );
@@ -38,8 +38,8 @@ void svc::Mesher::Triangulate
 // static 
 void svc::Mesher::Mesh2Obj
 (
-	flink::vector< flink::float4 > const & vertices,
-	flink::vector< unsigned > const & indices,
+	std::vector< flink::float4 > const & vertices,
+	std::vector< unsigned > const & indices,
 
 	char const * outObjFileName
 )
@@ -314,9 +314,9 @@ void svc::Mesher::Generate
 (
 	Volume const & volume,
 
-	flink::vector< flink::float4 > & outVertices,
-	flink::vector< unsigned > & outVertexIDs,
-	flink::vector< unsigned > & outIndices
+	std::vector< flink::float4 > & outVertices,
+	std::vector< unsigned > & outVertexIDs,
+	std::vector< unsigned > & outIndices
 )
 {
 	outVertices.clear();
@@ -326,8 +326,8 @@ void svc::Mesher::Generate
 	Voxel buffer[ 64 ];
 	flink::array_view< Voxel, 4, 4, 4 > cache( buffer );
 
-	unsigned const * bricks[ 8 ];
-	std::fill( bricks, bricks + 8, volume.Data().keys_first() );
+	flink::flat_map< unsigned, Brick >::const_key_iterator bricks[ 8 ];
+	std::fill( bricks, bricks + 8, volume.Data().keys_cbegin() );
 
 	unsigned deltas[ 8 ];
 	for( int i = 0; i < 8; i++ )
@@ -337,15 +337,14 @@ void svc::Mesher::Generate
 		deltas[ i ] = flink::packInts( x, y, z );
 	}
 
+	auto values = volume.Data().values_cbegin();
 	for
 	(
-		unsigned const * start = volume.Data().keys_first(),
-		* end = volume.Data().keys_last(),
-		* self = start;
-
-		self < end;
-
-		self++
+		auto start = volume.Data().keys_cbegin(),
+		end = volume.Data().keys_cend(),
+		self = start;
+		self != end;
+		++self
 	)
 	{
 		for( int j = 0; j < 64; j++ )
@@ -360,14 +359,14 @@ void svc::Mesher::Generate
 		
 		for( int j = 3; j <= 7; j += 2 )
 		{
-			unsigned const * tmp = bricks[ j - 1 ];
+			auto tmp = bricks[ j - 1 ];
 			bricks[ j ] = ( * tmp < * self + deltas[ j ] ) ? tmp + 1 : tmp;
 		}
 
 		for( int j = 0; j < 8; j++ )
 			if( * bricks[ j ] == * self + deltas[ j ] )
 			{
-				Brick const & b = volume.Data().values_first()[ bricks[ j ] - start ];
+				Brick const & b = values[ std::distance( start, bricks[ j ] ) ];
 
 				unsigned x0, y0, z0, x1, y1, z1;
 				Brick::Index1Dto3D( j, x0, y0, z0 );
@@ -513,27 +512,21 @@ void svc::Mesher::Generate
 // static 
 void svc::Mesher::VertexIDsToIndices
 (
-	flink::vector< unsigned > const & vertexIDs,
+	std::vector< unsigned > const & vertexIDs,
 
-	flink::vector< unsigned > & inOutIndices,
-	flink::vector< unsigned > & tmpIndexIDs,
-	flink::vector< char > & tmpScratchPad
+	std::vector< unsigned > & inOutIndices,
+	std::vector< unsigned > & tmpIndexIDs,
+	std::vector< char > & tmpScratchPad
 )
 {
 	tmpIndexIDs.resize( inOutIndices.size() );
 	for( int i = 0; i < inOutIndices.size(); i++ )
 		tmpIndexIDs[ i ] = i;
 
-	flink::radix_sort
-	( 
-		inOutIndices.begin(), 
-		tmpIndexIDs.begin(), 
-		inOutIndices.size(), 
-		tmpScratchPad 
-	);
+	flink::radix_sort( inOutIndices.begin(), inOutIndices.end(), tmpIndexIDs.begin(), tmpScratchPad );
 
 	tmpScratchPad.resize( inOutIndices.size() * sizeof( unsigned ) );
-	unsigned * tmp = reinterpret_cast< unsigned * >( tmpScratchPad.begin() );
+	unsigned * tmp = reinterpret_cast< unsigned * >( tmpScratchPad.data() );
 
 	int j = 0;
 	for( int i = 0; i < vertexIDs.size(); i++ )

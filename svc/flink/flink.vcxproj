@@ -17,7 +17,6 @@
     <ClInclude Include="math.h" />
     <ClInclude Include="timer.h" />
     <ClInclude Include="util.h" />
-    <ClInclude Include="vector.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="timer.cpp" />

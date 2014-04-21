@@ -2,116 +2,164 @@
 
 #include <algorithm>
 #include <cassert>
-
-#include "vector.h"
+#include <cstdlib>
+#include <iterator>
+#include <utility>
+#include <vector>
 
 
 
 namespace flink {
 
-template< typename T >
+template< class RandomAccessIterator >
 inline void radix_sort
 (
-	T * first, int size,
-	vector< char > & scratchPad
+	RandomAccessIterator first, RandomAccessIterator last,
+	std::vector< char > & scratchPad
 )
 {
-	assert( first != nullptr );
-	assert( size >= 0 );
+	typedef std::iterator_traits< RandomAccessIterator > TIter;
 
+	size_t const size = last - first;
+
+	if( size <= 1 )
+		return;
+
+	scratchPad.reserve( size * sizeof( TIter::value_type ) );
+
+	radix_sort< TIter::pointer, TIter::pointer >
+	( 
+		& * first, & * first + size, 
+		reinterpret_cast< TIter::pointer >( scratchPad.data() )
+	);
+}
+
+template< class RandomAccessIterator1, class RandomAccessIterator2 >
+inline void radix_sort
+(
+	RandomAccessIterator1 first, RandomAccessIterator1 last,
+	RandomAccessIterator2 tmp
+)
+{
 	using std::swap;
 
-	unsigned cnt[ 256 ];
-	unsigned const mask = 0xff;
+	size_t cnt[ 256 ];
 
-	scratchPad.resize( size * sizeof( T ) );
-
-	T * A = first;
-	T * B = reinterpret_cast< T * >( scratchPad.begin() );
-
-	for( int shift = 0; shift < 32; shift += 8 )
+	for( unsigned shift = 0; shift != 32; shift += 8 )
 	{
-		std::memset( cnt, 0, 1024 );
+		std::memset( cnt, 0, sizeof( cnt ) );
 
-		for( int i = 0; i < size; i++ )
-			cnt[ ( A[ i ] >> shift ) & mask ]++;
+		for( auto it = first; it != last; ++it )
+			++cnt[ ( * it >> shift ) & 0xff ];
 
-		exclusive_scan( cnt, 256 );
+		exclusive_scan( cnt, cnt + 256 );
 
-		for( int i = 0; i < size; i++ )
-			B[ cnt[ ( A[ i ] >> shift ) & mask ]++ ] = A[ i ];
+		for( auto it = first; it != last; ++it )
+			tmp[ cnt[ ( * it >> shift ) & 0xff ]++ ] = * it;
 
-		swap( A, B );
+		last = tmp + ( last - first );
+		swap( first, tmp );
 	}
 }
 
-template< typename K, typename T >
+template< class RandomAccessIterator1, class RandomAccessIterator2 >
 inline void radix_sort
 (
-	K * keys, T * values,
-	int size,
-	vector< char > & scratchPad
+	RandomAccessIterator1 keys_first, RandomAccessIterator1 keys_last,
+	RandomAccessIterator2 values_first,
+
+	std::vector< char > & scratchPad
 )
 {
-	assert( keys != nullptr );
-	assert( values != nullptr );
-	assert( size >= 0 );
+	typedef std::iterator_traits< RandomAccessIterator1 > TIterKeys;
+	typedef std::iterator_traits< RandomAccessIterator2 > TIterValues;
 
+	size_t const size = keys_last - keys_first;
+
+	if( size <= 1 )
+		return;
+
+	scratchPad.reserve( size * ( sizeof( TIterKeys::value_type ) + sizeof( TIterValues::value_type ) ) );
+
+	radix_sort< TIterKeys::pointer, TIterKeys::pointer, TIterValues::pointer, TIterValues::pointer >
+	( 
+		& * keys_first, & * keys_first + size, 
+		reinterpret_cast< TIterKeys::pointer >( scratchPad.data() ),
+
+		& * values_first,
+		reinterpret_cast< TIterValues::pointer >( scratchPad.data() + size * sizeof( TIterKeys::value_type ) )
+	);
+}
+
+template
+< 
+	class RandomAccessIterator1, class RandomAccessIterator2,
+	class RandomAccessIterator3, class RandomAccessIterator4
+>
+inline void radix_sort
+(
+	RandomAccessIterator1 keys_first, RandomAccessIterator1 keys_last,
+	RandomAccessIterator2 keys_tmp,
+
+	RandomAccessIterator3 values_first,
+	RandomAccessIterator4 values_tmp
+)
+{
 	using std::swap;
 
-	unsigned cnt[ 256 ];
-	unsigned const mask = 0xff;
+	size_t cnt[ 256 ];
 
-	scratchPad.resize( size * ( sizeof( K ) + sizeof( T ) ) );
-
-	K * A = keys;
-	K * B = reinterpret_cast< K * >( scratchPad.begin() );
-	T * C = values;
-	T * D = reinterpret_cast< T * >( scratchPad.begin() + size * sizeof( K ) );
-
-	for( int shift = 0; shift < 32; shift += 8 )
+	for( unsigned shift = 0; shift != 32; shift += 8 )
 	{
-		std::memset( cnt, 0, 1024 );
+		std::memset( cnt, 0, sizeof( cnt ) );
 
-		for( int i = 0; i < size; i++ )
-			cnt[ ( A[ i ] >> shift ) & mask ]++;
-		
-		exclusive_scan( cnt, 256 );
+		for( auto it = keys_first; it != keys_last; ++it )
+			++cnt[ ( * it >> shift ) & 0xff ];
 
-		for( int i = 0; i < size; i++ )
+		exclusive_scan( cnt, cnt + 256 );
+
+		for
+		( 
+			auto it = std::make_pair( keys_first, values_first );
+			it.first != keys_last; 
+			++it.first, ++it.second
+		)
 		{
-			int dstIdx = cnt[ ( A[ i ] >> shift ) & mask ]++;
-			B[ dstIdx ] = A[ i ];
-			D[ dstIdx ] = C[ i ];
+			size_t idst = cnt[ ( * it.first >> shift ) & 0xff ]++;
+			  keys_tmp[ idst ] = * it.first;
+			values_tmp[ idst ] = * it.second;
 		}
 
-		swap( A, B );
-		swap( C, D );
+		keys_last = keys_tmp + ( keys_last - keys_first );
+		swap( keys_first, keys_tmp );
+		swap( values_first, values_tmp );
 	}
 }
 
 
 
-template< typename T >
-inline int remove_dups( T * first, int size )
+template< class OutputIterator >
+inline size_t remove_dups( OutputIterator first, OutputIterator last )
 {
-	int idst = 0;
-	for( int i = 1; i < size; i++ )
-		if( first[ i ] != first[ idst ] )
-			first[ ++idst ] = first[ i ];
+	auto dst = first;
+	for( auto it = first; it != last; ++it )
+		if( * it != * dst )
+			* ++dst = * it;
 
-	return idst + 1;
+	return std::distance( first, dst ) + 1;
 }
 
-template< typename T >
-inline void exclusive_scan( T * data, int size )
+template< class OutputIterator >
+inline void exclusive_scan( OutputIterator first, OutputIterator last )
 {
-	T accu = 0;
-	for( int i = 0; i < size; i++ )
+	typedef std::iterator_traits< OutputIterator >::value_type T;
+
+	T acc = T();
+	for( ; first != last; ++first )
 	{
-		T tmp = data[ i ];
-		data[ i ] = accu;
-		accu += tmp;
+		T tmp = * first;
+		* first = acc;
+		acc += tmp;
 	}
 }
 
@@ -122,135 +170,115 @@ Determines the size of the intersection between the two sets.
 @precond [first1, last1) and [first2, last2) are sorted ascendingly and
 contain no duplicates.
 */
-template< typename T >
-inline int intersection_size
+template< class InputIterator1, class InputIterator2 >
+inline size_t intersection_size
 (
-	T const * first1, T const * last1,
-	T const * first2, T const * last2
+	InputIterator1 first1, InputIterator1 last1,
+	InputIterator2 first2, InputIterator2 last2
 )
 {
-	if( 0 == last1 - first1 ||
-		0 == last2 - first2 )
-		return 0;
+	size_t result = 0;
 
-	auto tmp = std::lower_bound( first1, last1, * first2 );
-	first2 = std::lower_bound( first2, last2, * first1 );
-	first1 = tmp;
-
-	int result = 0;
-	while( first1 < last1 && first2 < last2 )
+	while( first1 != last1 && first2 != last2 )
 	{
-		int lte = ( * first1 <= * first2 );
-		int gte = ( * first1 >= * first2 );
+		unsigned lte = ( * first1 <= * first2 );
+		unsigned gte = ( * first1 >= * first2 );
 
 		result += lte * gte;
-		first1 += lte;
-		first2 += gte;
+
+		std::advance( first1, lte );
+		std::advance( first2, gte );
 	}
+
 	return result;
 }
 
 // TODO: Test and document
-template< typename T >
+template< class BidirectionalIterator1, class BidirectionalIterator2, class BidirectionalIterator3 >
 inline void merge_unique_backward
 (
-	T const * const first1, T const * last1,
-	T const * const first2, T const * last2,
+	BidirectionalIterator1 first1, BidirectionalIterator1 last1,
+	BidirectionalIterator2 first2, BidirectionalIterator2 last2,
 
-	T * result_last
+	BidirectionalIterator3 result_last
 )
 {
-	assert( first1 != nullptr );
-	assert( first2 != nullptr );
-	
-	assert( last1 != nullptr );
-	assert( last1 != nullptr );
+	--first1;
+	--first2;
 
-	assert( result_last != nullptr );
+	--last1;
+	--last2;
 
-	assert( first1 <= last1 );
-	assert( first2 <= last2 );
+	--result_last;
 
-	assert( first2 >= last1 || last2 < first1 );
-
-	last1--;
-	last2--;
-
-	result_last--;
-
-	while( last1 >= first1 && last2 >= first2 )
+	while( last1 != first1 && last2 != first2 )
 	{
-		int gte = ( * last1 >= * last2 );
-		int lte = ( * last1 <= * last2 );
+		int gte = -( * last1 >= * last2 );
+		int lte = -( * last1 <= * last2 );
 
 		// TODO: Make sure this translates into a cmov
 		* result_last-- = gte ? * last1 : * last2;
 
-		last1 -= gte;
-		last2 -= lte;
+		std::advance( last1, gte );
+		std::advance( last2, lte );
 	}
 
-	while( last1 >= first1 )
+	while( last1 != first1 )
 		* result_last-- = * last1--;
 
-	while( last2 >= first2 )
+	while( last2 != first2 )
 		* result_last-- = * last2--;
 }
 
-/*
-Merges two key-value ranges backwards, which allows
-the input and output ranges to overlap
-
-The keys must be sorted ascendingly and be unique.
-The merged sequence is unique, too.
-*/
-template< typename K, typename T >
+template
+<
+	class BidirectionalIterator1, class BidirectionalIterator2,
+	class BidirectionalIterator3, 
+	class BidirectionalIterator5, class BidirectionalIterator6
+>
 inline void merge_unique_backward
 (
-	K const * const keys_first1, K const * keys_last1,
-	T const * values_last1,
+	BidirectionalIterator1 keys_first1, BidirectionalIterator1 keys_last1,
+	BidirectionalIterator2 values_last1,
 
-	K const * const keys_first2, K const * keys_last2,
-	T value, // second range consists of [ value, ..., value )
+	BidirectionalIterator3 keys_first2, BidirectionalIterator3 keys_last2,
+	typename std::iterator_traits< BidirectionalIterator2 >::reference value,
 
-	K * keys_result_last,
-	T * values_result_last
+	BidirectionalIterator5 keys_result_last,
+	BidirectionalIterator6 values_result_last
 )
 {
-	assert( keys_first1 <= keys_last1 );
-	assert( keys_first2 <= keys_last2 );
+	--keys_first1;
+	--keys_first2;
 
-	assert( keys_first2 >= keys_last1 || keys_last2 < keys_first1 );
+	--keys_last1;
+	--keys_last2;
+	--values_last1;
 
-	keys_last1--;
-	values_last1--;
+	--keys_result_last;
+	--values_result_last;
 
-	keys_last2--;
-
-	keys_result_last--;
-	values_result_last--;
-
-	while( keys_last1 >= keys_first1 && keys_last2 >= keys_first2 )
+	while( keys_last1 != keys_first1 && keys_last2 != keys_first2 )
 	{
-		int gte = ( * keys_last1 >= * keys_last2 );
-		int lte = ( * keys_last1 <= * keys_last2 );
+		int gte = -( * keys_last1 >= * keys_last2 );
+		int lte = -( * keys_last1 <= * keys_last2 );
 
 		// TODO: Make sure this translates into a cmov
 		* keys_result_last-- = gte ? * keys_last1 : * keys_last2;
 		* values_result_last-- = gte ? * values_last1 : value;
 
-		values_last1 -= gte;
-		keys_last1 -= gte;
-		keys_last2 -= lte;
+		std::advance( keys_last1, gte );
+		std::advance( keys_last2, lte );
+		std::advance( values_last1, gte );
 	}
 
-	while( keys_last1 >= keys_first1 )
+	while( keys_last1 != keys_first1 )
 	{
 		* keys_result_last-- = * keys_last1--;
 		* values_result_last-- = * values_last1--;
 	}
 
-	while( keys_last2 >= keys_first2 )
+	while( keys_last2 != keys_first2 )
 	{
 		* keys_result_last-- = * keys_last2--;
 		* values_result_last-- = value;

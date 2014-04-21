@@ -47,7 +47,7 @@ void flink::timer::print()
 	double total = 0.0;
 	for( int i = 0; i < m_times.size(); i++ )
 	{
-		printf( "%s: %.2fms\n", m_labels[ i ], m_times[ i ] * 1000.0 );
+		printf( "%s: %.2fms\n", m_labels[ i ].c_str(), m_times[ i ] * 1000.0 );
 		total += m_times[ i ];
 	}
 

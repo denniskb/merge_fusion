@@ -44,16 +44,14 @@ BOOST_AUTO_TEST_CASE( Integrate )
 	FILE * debug;
 	fopen_s( & debug, "C:/TEMP/volume_integrate.obj", "w" );
 
-	for( int i = 0; i < v.Data().size(); i++ )
+	// TODO: Adapt code to work with bricks
+	for( auto it = v.Data().keys_cbegin(), end = v.Data().keys_cend(); it != end; ++it )
 	{
-		// TODO: Adapt code to work with bricks
-		//svc::Voxel vx = v.Data().values_first()[ i ];
-		//if( vx.Weight() == 0 )
-		//	continue;
-
 		unsigned x, y, z;
-		flink::unpackInts( v.Data().keys_first()[ i ], x, y, z );
+		flink::unpackInts( * it, x, y, z );
+		
 		flink::float4 pos = v.VoxelCenter( x, y, z );
+		
 		fprintf_s( debug, "v %f %f %f\n", pos.x, pos.y, pos.z );
 	}
 	

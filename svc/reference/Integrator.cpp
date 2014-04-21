@@ -1,8 +1,10 @@
 #include "Integrator.h"
 
+#include <utility>
+#include <vector>
+
 #include <flink/algorithm.h>
 #include <flink/util.h>
-#include <flink/vector.h>
 
 #include "Brick.h"
 #include "DepthFrame.h"
@@ -34,10 +36,10 @@ void svc::Integrator::Integrate
 	SplatChunks( volume, frame, viewToWorld, footPrint, m_splattedChunks );
 	t.record_time( "tsplat" );
 
-	flink::radix_sort( m_splattedChunks.begin(), m_splattedChunks.size(), m_scratchPad );
+	flink::radix_sort( m_splattedChunks.begin(), m_splattedChunks.end(), m_scratchPad );
 	t.record_time( "tsort" );
 	
-	m_splattedChunks.resize( flink::remove_dups( m_splattedChunks.begin(), m_splattedChunks.size() ) );
+	m_splattedChunks.resize( flink::remove_dups( m_splattedChunks.begin(), m_splattedChunks.end() ) );
 	t.record_time( "tdups" );
 
 	ExpandChunks( m_splattedChunks, m_scratchPad );
@@ -46,7 +48,9 @@ void svc::Integrator::Integrate
 	ChunksToBricks( m_splattedChunks, footPrint, m_scratchPad );
 	t.record_time( "tchunk2brick" );
 
-	volume.Data().merge_unique( m_splattedChunks.cbegin(), m_splattedChunks.cend(), Brick() );
+	volume.Data().merge_unique(
+		m_splattedChunks.data(), m_splattedChunks.data() + m_splattedChunks.size(), Brick() 
+	);
 	t.record_time( "tmerge" );
 
 	UpdateVoxels( volume, frame, eye, forward, viewProjection );
@@ -65,7 +69,7 @@ void svc::Integrator::SplatChunks
 	flink::float4x4 const & viewToWorld,
 	int footPrint,
 
-	flink::vector< unsigned > & outChunkIndices
+	std::vector< unsigned > & outChunkIndices
 )
 {
 	outChunkIndices.clear();
@@ -123,8 +127,8 @@ void svc::Integrator::SplatChunks
 // static 
 void svc::Integrator::ExpandChunks
 ( 
-	flink::vector< unsigned > & inOutChunkIndices,
-	flink::vector< char > & tmpScratchPad
+	std::vector< unsigned > & inOutChunkIndices,
+	std::vector< char > & tmpScratchPad
 )
 {
 	ExpandChunksHelper( inOutChunkIndices, flink::packZ( 1 ), false, tmpScratchPad);
@@ -135,10 +139,10 @@ void svc::Integrator::ExpandChunks
 // static 
 void svc::Integrator::ChunksToBricks
 (
-	flink::vector< unsigned > & inOutChunkIndices,
+	std::vector< unsigned > & inOutChunkIndices,
 	int footPrint,
 
-	flink::vector< char > & tmpScratchPad
+	std::vector< char > & tmpScratchPad
 )
 {
 	if( footPrint != 4 )
@@ -159,31 +163,31 @@ void svc::Integrator::ChunksToBricks
 // static
 void svc::Integrator::ExpandChunksHelper
 (
-	flink::vector< unsigned > & inOutChunkIndices,
+	std::vector< unsigned > & inOutChunkIndices,
 	unsigned delta,
 	bool disjunct,
 
-	flink::vector< char > & tmpScratchPad
+	std::vector< char > & tmpScratchPad
 )
 {
 	switch( delta )
 	{
 	default:
 		{
-			int oldSize = inOutChunkIndices.size();
+			size_t oldSize = inOutChunkIndices.size();
 
 			tmpScratchPad.resize( oldSize * sizeof( unsigned ) );
-			unsigned * tmp = reinterpret_cast< unsigned * >( tmpScratchPad.begin() );
+			unsigned * tmp = reinterpret_cast< unsigned * >( tmpScratchPad.data() );
 	
 			for( int i = 0; i < oldSize; i++ )
 				tmp[ i ] = inOutChunkIndices[ i ] + delta;
 	
-			int newSize;
+			size_t newSize;
 			if( disjunct )
 				newSize = 2 * oldSize;
 			else
 				newSize = 2 * oldSize - flink::intersection_size(
-					inOutChunkIndices.cbegin(), inOutChunkIndices.cbegin() + oldSize,
+					inOutChunkIndices.data(), inOutChunkIndices.data() + oldSize,
 					tmp, tmp + oldSize
 				);
 
@@ -191,29 +195,31 @@ void svc::Integrator::ExpandChunksHelper
 	
 			flink::merge_unique_backward
 			(
-				inOutChunkIndices.cbegin(), inOutChunkIndices.cbegin() + oldSize,
+				inOutChunkIndices.data(), inOutChunkIndices.data() + oldSize,
 				tmp, tmp + oldSize,
 		
-				inOutChunkIndices.end()
+				inOutChunkIndices.data() + newSize
 			);
 		}
 		break;
 
 	case 1:
 		{
-			int oldSize = inOutChunkIndices.size();
+			size_t oldSize = inOutChunkIndices.size();
 			inOutChunkIndices.resize( 2 * oldSize );
 	
-			for( int i = oldSize - 1; i >= 0; i-- )
+			for( size_t i = 0; i < oldSize; i++ )
 			{
-				unsigned tmp = inOutChunkIndices[ i ];
-				inOutChunkIndices[ 2 * i ] = tmp;
-				inOutChunkIndices[ 2 * i + 1 ] = tmp + 1;
+				size_t ii = oldSize - i - 1;
+				
+				unsigned tmp = inOutChunkIndices[ ii ];
+				inOutChunkIndices[ 2 * ii ] = tmp;
+				inOutChunkIndices[ 2 * ii + 1 ] = tmp + 1;
 			}
 
 			if( ! disjunct )
 				inOutChunkIndices.resize( 
-					flink::remove_dups( inOutChunkIndices.begin(), inOutChunkIndices.size() )
+					flink::remove_dups( inOutChunkIndices.begin(), inOutChunkIndices.end() )
 				);
 		}
 		break;
@@ -233,17 +239,23 @@ void svc::Integrator::UpdateVoxels
 {
 	flink::mat _viewProj = flink::load( viewProjection );
 	flink::vec _ndcToUV = flink::set( frame.Width() / 2.0f, frame.Height() / 2.0f, 0, 0 );
-		
-	for( int i = 0; i < volume.Data().size(); i++ )
+
+	auto end = volume.Data().keys_cend();
+	for
+	( 
+		auto it = std::make_pair( volume.Data().keys_cbegin(), volume.Data().values_begin() );
+		it.first != end;
+		++it.first, ++it.second
+	)
 	{
 		unsigned brickX, brickY, brickZ;
-		flink::unpackInts( volume.Data().keys_first()[ i ], brickX, brickY, brickZ );
+		flink::unpackInts( * it.first, brickX, brickY, brickZ );
 
 		brickX *= 2;
 		brickY *= 2;
 		brickZ *= 2;
 
-		Brick & brick = volume.Data().values_first()[ i ];
+		Brick & brick = * it.second;
 
 		for( int j = 0; j < brick.size(); j++ )
 		{

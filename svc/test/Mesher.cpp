@@ -39,8 +39,8 @@ BOOST_AUTO_TEST_CASE( Triangulate )
 
 	i.Integrate( v, depth, 2, eye, forward, viewProj, viewToWorld );
 
-	flink::vector< flink::float4 > VB;
-	flink::vector< unsigned > IB;
+	std::vector< flink::float4 > VB;
+	std::vector< unsigned > IB;
 	m.Triangulate( v, VB, IB );
 	m.Triangulate( v, VB, IB );
 	svc::Mesher::Mesh2Obj( VB, IB, "C:/TEMP/volume_triangulate.obj" );
