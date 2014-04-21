@@ -36,6 +36,9 @@
     <ClCompile Include="Mesher.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Splatter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="util.h">

@@ -187,7 +187,8 @@ void svc::Integrator::ExpandChunksHelper
 	
 			size_t newSize = 2 * inOutChunkIndices.size();
 			if( ! disjunct )
-				newSize -= flink::intersection_size(
+				newSize -= flink::intersection_size
+				(
 					inOutChunkIndices.cbegin(), inOutChunkIndices.cend(),
 					tmp, tmp + inOutChunkIndices.size()
 				);

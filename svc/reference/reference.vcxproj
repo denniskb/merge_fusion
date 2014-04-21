@@ -16,6 +16,7 @@
     <ClInclude Include="DepthStream.h" />
     <ClInclude Include="Integrator.h" />
     <ClInclude Include="Mesher.h" />
+    <ClInclude Include="Splatter.h" />
     <ClInclude Include="Volume.h" />
     <ClInclude Include="Voxel.h" />
   </ItemGroup>
@@ -27,6 +28,7 @@
     <ClCompile Include="DepthStream.cpp" />
     <ClCompile Include="Integrator.cpp" />
     <ClCompile Include="Mesher.cpp" />
+    <ClCompile Include="Splatter.cpp" />
     <ClCompile Include="Volume.cpp" />
     <ClCompile Include="Voxel.cpp" />
   </ItemGroup>

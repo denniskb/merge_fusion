@@ -74,6 +74,7 @@
     <ClCompile Include="Integrator.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Mesher.cpp" />
+    <ClCompile Include="Splatter.cpp" />
     <ClCompile Include="Volume.cpp" />
     <ClCompile Include="Voxel.cpp" />
   </ItemGroup>

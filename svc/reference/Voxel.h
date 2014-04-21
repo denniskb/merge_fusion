@@ -16,7 +16,8 @@ This class is managed (.m), meaning it can be used by both host and device.
 class Voxel
 {
 public:
-	explicit Voxel( unsigned data = 0 );
+	Voxel( unsigned data = 0 );
+	operator unsigned() const;
 
 	float Distance( float truncationMargin ) const;
 	int Weight() const;

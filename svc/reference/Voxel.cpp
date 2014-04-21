@@ -10,6 +10,11 @@ svc::Voxel::Voxel( unsigned data ) : m_data( data )
 {
 }
 
+svc::Voxel::operator unsigned() const
+{
+	return m_data;
+}
+
 
 
 float svc::Voxel::Distance( float truncationMargin ) const
