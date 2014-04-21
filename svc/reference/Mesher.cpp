@@ -351,7 +351,7 @@ void svc::Mesher::Generate
 			cache[ j ] = Voxel();
 
 		bricks[ 0 ] = self;
-		bricks[ 1 ] = self + 1;
+		bricks[ 1 ] = self < end - 1 ? self + 1 : self;
 		
 		for( int j = 2; j <= 6; j += 2 )
 			while( bricks[ j ] < end - 1 && * bricks[ j ] < * self + deltas[ j ] )
@@ -360,7 +360,7 @@ void svc::Mesher::Generate
 		for( int j = 3; j <= 7; j += 2 )
 		{
 			auto tmp = bricks[ j - 1 ];
-			bricks[ j ] = ( * tmp < * self + deltas[ j ] ) ? tmp + 1 : tmp;
+			bricks[ j ] = ( * tmp < * self + deltas[ j ] && tmp < end - 1 ) ? tmp + 1 : tmp;
 		}
 
 		for( int j = 0; j < 8; j++ )

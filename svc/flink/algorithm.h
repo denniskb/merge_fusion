@@ -203,38 +203,38 @@ inline void merge_unique_backward
 	BidirectionalIterator3 result_last
 )
 {
-	--first1;
-	--first2;
+	std::reverse_iterator< BidirectionalIterator1 > rfirst1( last1 );
+	std::reverse_iterator< BidirectionalIterator1 > rlast1( first1 );
 
-	--last1;
-	--last2;
+	std::reverse_iterator< BidirectionalIterator2 > rfirst2( last2 );
+	std::reverse_iterator< BidirectionalIterator2 > rlast2( first2 );
 
-	--result_last;
+	std::reverse_iterator< BidirectionalIterator3 > rresult_first( result_last );
 
-	while( last1 != first1 && last2 != first2 )
+	while( rfirst1 != rlast1 && rfirst2 != rlast2 )
 	{
-		int gte = -( * last1 >= * last2 );
-		int lte = -( * last1 <= * last2 );
+		int gte = ( * rfirst1 >= * rfirst2 );
+		int lte = ( * rfirst1 <= * rfirst2 );
 
 		// TODO: Make sure this translates into a cmov
-		* result_last-- = gte ? * last1 : * last2;
+		* rresult_first++ = gte ? * rfirst1 : * rfirst2;
 
-		std::advance( last1, gte );
-		std::advance( last2, lte );
+		std::advance( rfirst1, gte );
+		std::advance( rfirst2, lte );
 	}
 
-	while( last1 != first1 )
-		* result_last-- = * last1--;
+	while( rfirst1 != rlast1 )
+		* rresult_first++ = * rfirst1++;
 
-	while( last2 != first2 )
-		* result_last-- = * last2--;
+	while( rfirst2 != rlast2 )
+		* rresult_first++ = * rfirst2++;
 }
 
 template
 <
 	class BidirectionalIterator1, class BidirectionalIterator2,
 	class BidirectionalIterator3, 
-	class BidirectionalIterator5, class BidirectionalIterator6
+	class BidirectionalIterator4, class BidirectionalIterator5
 >
 inline void merge_unique_backward
 (
@@ -244,44 +244,44 @@ inline void merge_unique_backward
 	BidirectionalIterator3 keys_first2, BidirectionalIterator3 keys_last2,
 	typename std::iterator_traits< BidirectionalIterator2 >::reference value,
 
-	BidirectionalIterator5 keys_result_last,
-	BidirectionalIterator6 values_result_last
+	BidirectionalIterator4 keys_result_last,
+	BidirectionalIterator5 values_result_last
 )
 {
-	--keys_first1;
-	--keys_first2;
+	std::reverse_iterator< BidirectionalIterator1 > rkeys_first1( keys_last1 );
+	std::reverse_iterator< BidirectionalIterator1 > rkeys_last1( keys_first1 );
+	std::reverse_iterator< BidirectionalIterator2 > rvalues_first1( values_last1 );
 
-	--keys_last1;
-	--keys_last2;
-	--values_last1;
+	std::reverse_iterator< BidirectionalIterator3 > rkeys_first2( keys_last2 );
+	std::reverse_iterator< BidirectionalIterator3 > rkeys_last2( keys_first2 );
 
-	--keys_result_last;
-	--values_result_last;
+	std::reverse_iterator< BidirectionalIterator4 > rkeys_result_first( keys_result_last );
+	std::reverse_iterator< BidirectionalIterator5 > rvalues_result_first( values_result_last );
 
-	while( keys_last1 != keys_first1 && keys_last2 != keys_first2 )
+	while( rkeys_first1 != rkeys_last1 && rkeys_first2 != rkeys_last2 )
 	{
-		int gte = -( * keys_last1 >= * keys_last2 );
-		int lte = -( * keys_last1 <= * keys_last2 );
+		int gte = ( * rkeys_first1 >= * rkeys_first2 );
+		int lte = ( * rkeys_first1 <= * rkeys_first2 );
 
 		// TODO: Make sure this translates into a cmov
-		* keys_result_last-- = gte ? * keys_last1 : * keys_last2;
-		* values_result_last-- = gte ? * values_last1 : value;
+		* rkeys_result_first++ = gte ? * rkeys_first1 : * rkeys_first2;
+		* rvalues_result_first++ = gte ? * rvalues_first1 : value;
 
-		std::advance( keys_last1, gte );
-		std::advance( keys_last2, lte );
-		std::advance( values_last1, gte );
+		std::advance( rkeys_first1, gte );
+		std::advance( rkeys_first2, lte );
+		std::advance( rvalues_first1, gte );
 	}
 
-	while( keys_last1 != keys_first1 )
+	while( rkeys_first1 != rkeys_last1 )
 	{
-		* keys_result_last-- = * keys_last1--;
-		* values_result_last-- = * values_last1--;
+		* rkeys_result_first++ = * rkeys_first1++;
+		* rvalues_result_first++ = * rvalues_first1++;
 	}
 
-	while( keys_last2 != keys_first2 )
+	while( rkeys_first2 != rkeys_last2 )
 	{
-		* keys_result_last-- = * keys_last2--;
-		* values_result_last-- = value;
+		* rkeys_result_first++ = * rkeys_first2++;
+		* rvalues_result_first++ = value;
 	}
 }
 
