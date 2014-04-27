@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include <flink/math.h>
+#include "dxmath.h"
 
 
 
@@ -13,7 +13,7 @@ class Volume;
 class Splatter
 {
 public:
-	static void Splat( Volume const & volume, std::vector< flink::float4 > & outVertices );
+	static void Splat( Volume const & volume, std::vector< float4 > & outVertices );
 };
 
 }

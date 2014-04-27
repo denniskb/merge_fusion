@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include <flink/math.h>
+#include "dxmath.h"
 
 
 
@@ -20,20 +20,20 @@ public:
 	(
 		Volume const & volume,
 
-		std::vector< flink::float4 > & outVertices,
+		std::vector< float4 > & outVertices,
 		std::vector< unsigned > & outIndices
 	);
 
 	static void Mesh2Obj
 	(
-		std::vector< flink::float4 > const & vertices,
+		std::vector< float4 > const & vertices,
 		std::vector< unsigned > const & indices,
 
 		char const * outObjFileName
 	);
 
 	static int const * TriOffsets();
-	static flink::uint4 const * TriTable();
+	static uint4 const * TriTable();
 
 private:
 	std::vector< unsigned > m_vertexIDs;
@@ -44,7 +44,7 @@ private:
 	(
 		Volume const & volume,
 
-		std::vector< flink::float4 > & outVertices,
+		std::vector< float4 > & outVertices,
 		std::vector< unsigned > & outVertexIDs,
 		std::vector< unsigned > & outIndices
 	);

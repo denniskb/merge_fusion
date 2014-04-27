@@ -27,8 +27,8 @@ BOOST_AUTO_TEST_CASE( VoxelCenter_ChunkIndex )
 {
 	svc::Volume v( 128, 2.0f, 0.02f );
 	
-	flink::float4 vc = v.VoxelCenter( 33, 21, 92 );
-	flink::float4 ci = v.ChunkIndex( vc, 1 );
+	svc::float4 vc = v.VoxelCenter( 33, 21, 92 );
+	svc::float4 ci = v.ChunkIndex( vc, 1 );
 
 	BOOST_REQUIRE_CLOSE( 33.5f, ci.x, 0.1f );
 	BOOST_REQUIRE_CLOSE( 21.5f, ci.y, 0.1f );

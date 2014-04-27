@@ -2,13 +2,13 @@
 
 #include <vector>
 
-#include <flink/math.h>
+#include "dxmath.h"
+#include "vector2d.h"
 
 
 
 namespace svc {
 
-class DepthFrame;
 class Volume;
 
 class Integrator
@@ -17,14 +17,14 @@ public:
 	void Integrate
 	( 
 		Volume & volume,
-		DepthFrame const & frame,
+		vector2d< float > const & frame,
 		int chunkFootPrint,
 
-		flink::float4 const & eye,
-		flink::float4 const & forward,
+		float4 const & eye,
+		float4 const & forward,
 
-		flink::float4x4 const & viewProjection,
-		flink::float4x4 const & viewToWorld
+		float4x4 const & viewProjection,
+		float4x4 const & viewToWorld
 	);
 
 private:
@@ -34,8 +34,8 @@ private:
 	static void SplatChunks
 	(
 		Volume const & volume,
-		DepthFrame const & frame,
-		flink::float4x4 const & viewToWorld,
+		vector2d< float > const & frame,
+		float4x4 const & viewToWorld,
 		int chunkFootPrint,
 
 		std::vector< unsigned > & outChunkIndices
@@ -67,11 +67,11 @@ private:
 	static void UpdateVoxels
 	(
 		Volume & volume,
-		DepthFrame const & frame,
+		vector2d< float > const & frame,
 
-		flink::float4 const & eye,
-		flink::float4 const & forward,
-		flink::float4x4 const & viewProjection
+		float4 const & eye,
+		float4 const & forward,
+		float4x4 const & viewProjection
 	);
 };
 

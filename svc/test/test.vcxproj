@@ -69,10 +69,14 @@
     <ClCompile Include="DeviceVolume.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>-->
-    <ClCompile Include="DepthFrame.cpp" />
+    <ClCompile Include="algorithm.cpp" />
+    <ClCompile Include="vector2d.cpp" />
     <ClCompile Include="DepthStream.cpp" />
+    <ClCompile Include="flat_map.cpp" />
+    <ClCompile Include="fstream.cpp" />
     <ClCompile Include="Integrator.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="dxmath.cpp" />
     <ClCompile Include="Mesher.cpp" />
     <ClCompile Include="Splatter.cpp" />
     <ClCompile Include="Volume.cpp" />

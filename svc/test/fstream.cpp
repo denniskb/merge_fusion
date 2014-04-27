@@ -2,11 +2,11 @@
 
 #include <cstdio>
 
-#include <flink/util.h>
+#include <reference/fstream.h>
 
 
 
-BOOST_AUTO_TEST_SUITE( util )
+BOOST_AUTO_TEST_SUITE( fstream )
 
 BOOST_AUTO_TEST_CASE( fsize )
 {
@@ -16,7 +16,7 @@ BOOST_AUTO_TEST_CASE( fsize )
 	if( ! fopen_s( & file, fileName, "wb" ) && file )
 	{
 		fclose( file );	
-		BOOST_CHECK( 0 == flink::fsize( fileName ) );
+		BOOST_CHECK( 0 == svc::fsize( fileName ) );
 	}
 	
 	if( ! fopen_s( & file, fileName, "wb" ) && file )
@@ -25,7 +25,7 @@ BOOST_AUTO_TEST_CASE( fsize )
 		fwrite( & data, 1, 1, file );
 		fclose( file );
 	
-		BOOST_CHECK( 1 == flink::fsize( fileName ) );
+		BOOST_CHECK( 1 == svc::fsize( fileName ) );
 	}
 
 	remove( fileName );

@@ -2,9 +2,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test", "test\test.vcxproj", "{AB9844F0-EC12-42BD-90BD-DDFE115A7404}"
-	ProjectSection(ProjectDependencies) = postProject
-		{6372D9A0-C97E-4758-8039-31C3B26F0963} = {6372D9A0-C97E-4758-8039-31C3B26F0963}
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{6B397F56-3AB5-42B0-A7DD-C915BE6CB16E}"
 	ProjectSection(SolutionItems) = preProject
@@ -13,22 +10,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "reference", "reference\reference.vcxproj", "{6372D9A0-C97E-4758-8039-31C3B26F0963}"
-	ProjectSection(ProjectDependencies) = postProject
-		{C82EA146-94DD-4C5A-B3EB-4A243AE9B818} = {C82EA146-94DD-4C5A-B3EB-4A243AE9B818}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "flink", "flink\flink.vcxproj", "{C82EA146-94DD-4C5A-B3EB-4A243AE9B818}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "flinktest", "flinktest\flinktest.vcxproj", "{6165D705-FC97-4394-962A-AA232A86FA81}"
-	ProjectSection(ProjectDependencies) = postProject
-		{C82EA146-94DD-4C5A-B3EB-4A243AE9B818} = {C82EA146-94DD-4C5A-B3EB-4A243AE9B818}
-	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cuda", "cuda\cuda.vcxproj", "{7117D29B-7486-4172-BADB-CB28BF71093F}"
-	ProjectSection(ProjectDependencies) = postProject
-		{C82EA146-94DD-4C5A-B3EB-4A243AE9B818} = {C82EA146-94DD-4C5A-B3EB-4A243AE9B818}
-		{6372D9A0-C97E-4758-8039-31C3B26F0963} = {6372D9A0-C97E-4758-8039-31C3B26F0963}
-	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cudatest", "cudatest\cudatest.vcxproj", "{59D68FAB-8BBA-4EA5-B4A9-0BFC26C49686}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -44,18 +29,14 @@ Global
 		{6372D9A0-C97E-4758-8039-31C3B26F0963}.Debug|x64.Build.0 = Debug|x64
 		{6372D9A0-C97E-4758-8039-31C3B26F0963}.Release|x64.ActiveCfg = Release|x64
 		{6372D9A0-C97E-4758-8039-31C3B26F0963}.Release|x64.Build.0 = Release|x64
-		{C82EA146-94DD-4C5A-B3EB-4A243AE9B818}.Debug|x64.ActiveCfg = Debug|x64
-		{C82EA146-94DD-4C5A-B3EB-4A243AE9B818}.Debug|x64.Build.0 = Debug|x64
-		{C82EA146-94DD-4C5A-B3EB-4A243AE9B818}.Release|x64.ActiveCfg = Release|x64
-		{C82EA146-94DD-4C5A-B3EB-4A243AE9B818}.Release|x64.Build.0 = Release|x64
-		{6165D705-FC97-4394-962A-AA232A86FA81}.Debug|x64.ActiveCfg = Debug|x64
-		{6165D705-FC97-4394-962A-AA232A86FA81}.Debug|x64.Build.0 = Debug|x64
-		{6165D705-FC97-4394-962A-AA232A86FA81}.Release|x64.ActiveCfg = Release|x64
-		{6165D705-FC97-4394-962A-AA232A86FA81}.Release|x64.Build.0 = Release|x64
 		{7117D29B-7486-4172-BADB-CB28BF71093F}.Debug|x64.ActiveCfg = Debug|x64
 		{7117D29B-7486-4172-BADB-CB28BF71093F}.Debug|x64.Build.0 = Debug|x64
 		{7117D29B-7486-4172-BADB-CB28BF71093F}.Release|x64.ActiveCfg = Release|x64
 		{7117D29B-7486-4172-BADB-CB28BF71093F}.Release|x64.Build.0 = Release|x64
+		{59D68FAB-8BBA-4EA5-B4A9-0BFC26C49686}.Debug|x64.ActiveCfg = Debug|x64
+		{59D68FAB-8BBA-4EA5-B4A9-0BFC26C49686}.Debug|x64.Build.0 = Debug|x64
+		{59D68FAB-8BBA-4EA5-B4A9-0BFC26C49686}.Release|x64.ActiveCfg = Release|x64
+		{59D68FAB-8BBA-4EA5-B4A9-0BFC26C49686}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

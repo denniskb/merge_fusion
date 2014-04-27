@@ -9,9 +9,9 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    <Filter Include="Inline Files">
+      <UniqueIdentifier>{b9b8695e-7e0e-4038-a071-7cc6dc800322}</UniqueIdentifier>
+      <Extensions>inl</Extensions>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -19,9 +19,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Voxel.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DepthFrame.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Integrator.h">
@@ -39,15 +36,33 @@
     <ClInclude Include="Splatter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="algorithm.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="flat_map.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="fstream.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="timer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="vector2d.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dxmath.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="array3d.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DepthStream.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Voxel.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="DepthFrame.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Integrator.cpp">
@@ -65,5 +80,28 @@
     <ClCompile Include="Splatter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="fstream.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="timer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="algorithm.inl">
+      <Filter>Inline Files</Filter>
+    </None>
+    <None Include="vector2d.inl">
+      <Filter>Inline Files</Filter>
+    </None>
+    <None Include="flat_map.inl">
+      <Filter>Inline Files</Filter>
+    </None>
+    <None Include="dxmath.inl">
+      <Filter>Inline Files</Filter>
+    </None>
+    <None Include="array3d.inl">
+      <Filter>Inline Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

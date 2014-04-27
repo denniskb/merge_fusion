@@ -5,15 +5,15 @@ The file format documentation can be found in poly2depth/readme.txt.
 
 #pragma once
 
-#include <vector>
+#include <fstream>
+#include <string>
 
-#include <flink/math.h>
+#include "dxmath.h"
+#include "vector2d.h"
 
 
 
 namespace svc {
-
-class DepthFrame;
 
 class DepthStream
 {
@@ -22,8 +22,7 @@ public:
 	Opens the depth stream specified by 'file_name' and keeps it
 	open until the object is destroyed.
 	*/
-	explicit DepthStream( char const * fileName );
-	~DepthStream();
+	explicit DepthStream( std::string const & fileName );
 
 	/*
 	Copies the next frame into 'outFrame'.
@@ -31,14 +30,14 @@ public:
 	*/
 	bool NextFrame
 	(
-		DepthFrame & outFrame,
-		flink::float4x4 & outView
+		vector2d< float > & outFrame,
+		float4x4 & outView
 	);
 
 private:
 	enum TexelType{ SHORT, FLOAT };
 
-	FILE * m_file;
+	std::ifstream m_file;
 	
 	TexelType m_texelType;
 	
@@ -48,7 +47,7 @@ private:
 	int m_nFrames;
 	int m_iFrame;
 
-	std::vector< short > m_bufferDepth;
+	vector2d< short > m_bufferedDepth;
 
 	/*
 	Copy and assignment are forbidden since we hold an open file handle.

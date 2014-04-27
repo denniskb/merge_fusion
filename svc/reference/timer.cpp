@@ -9,14 +9,14 @@
 
 
 
-flink::timer::timer()
+svc::timer::timer()
 {
 	reset();
 }
 
 
 
-void flink::timer::record_time( std::string label )
+void svc::timer::record_time( std::string label )
 {
 	m_times.push_back( time() );
 	m_labels.push_back( std::move( label ) );
@@ -24,14 +24,14 @@ void flink::timer::record_time( std::string label )
 	reset();
 }
 
-void flink::timer::reset()
+void svc::timer::reset()
 {
 	QueryPerformanceCounter( & m_start );
 }
 
 
 
-double flink::timer::time()
+double svc::timer::time()
 {
 	LARGE_INTEGER end, freq;
 	QueryPerformanceCounter( & end );
@@ -42,7 +42,7 @@ double flink::timer::time()
 
 
 
-void flink::timer::print()
+void svc::timer::print()
 {
 	double total = 0.0;
 	for( int i = 0; i < m_times.size(); i++ )

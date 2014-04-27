@@ -11,7 +11,13 @@ namespace svc {
 class Brick : public std::array< Voxel, 8 >
 {
 public:
-	static void Index1Dto3D( unsigned index, unsigned & outX, unsigned & outY, unsigned & outZ );
+	static void Index1Dto3D
+	( 
+		unsigned index, 
+		unsigned & outX,
+		unsigned & outY, 
+		unsigned & outZ
+	);
 };
 
 }

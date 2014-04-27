@@ -3,10 +3,9 @@
 #include <cstdio>
 #include <vector>
 
-#include <flink/math.h>
-
-#include <reference/DepthFrame.h>
+#include <reference/dxmath.h>
 #include <reference/DepthStream.h>
+#include <reference/vector2d.h>
 
 
 
@@ -60,13 +59,13 @@ BOOST_AUTO_TEST_CASE( NextFrame_v1 )
 
 	fclose( file );
 
-	flink::float4x4 view;
-	svc::DepthFrame depth;
+	svc::float4x4 view;
+	svc::vector2d< float > depth;
 
 	svc::DepthStream ds( fileName );
 	BOOST_CHECK( ds.NextFrame( depth, view ) );
-	BOOST_CHECK( 640 == depth.Width() );
-	BOOST_CHECK( 480 == depth.Height() );
+	BOOST_CHECK( 640 == depth.width() );
+	BOOST_CHECK( 480 == depth.height() );
 	BOOST_CHECK( 0 == depth( 0, 0 ) );
 	BOOST_CHECK_CLOSE( 0.057f, depth( 71, 103 ), 0.1f );
 
@@ -99,13 +98,13 @@ BOOST_AUTO_TEST_CASE( NextFrame_v2_short )
 
 	fclose( file );
 
-	flink::float4x4 view;
-	svc::DepthFrame depth;
+	svc::float4x4 view;
+	svc::vector2d< float > depth;
 
 	svc::DepthStream ds( fileName );
 	BOOST_CHECK( ds.NextFrame( depth, view ) );
-	BOOST_CHECK( 640 == depth.Width() );
-	BOOST_CHECK( 480 == depth.Height() );
+	BOOST_CHECK( 640 == depth.width() );
+	BOOST_CHECK( 480 == depth.height() );
 	BOOST_CHECK( 0 == depth( 0, 0 ) );
 	BOOST_CHECK_CLOSE( 0.057f, depth( 71, 103 ), 0.1f );
 
@@ -138,13 +137,13 @@ BOOST_AUTO_TEST_CASE( NextFrame_v2_float )
 
 	fclose( file );
 
-	flink::float4x4 view;
-	svc::DepthFrame depth;
+	svc::float4x4 view;
+	svc::vector2d< float > depth;
 
 	svc::DepthStream ds( fileName );
 	BOOST_CHECK( ds.NextFrame( depth, view ) );
-	BOOST_CHECK( 640 == depth.Width() );
-	BOOST_CHECK( 480 == depth.Height() );
+	BOOST_CHECK( 640 == depth.width() );
+	BOOST_CHECK( 480 == depth.height() );
 	BOOST_CHECK( 0 == depth( 0, 0 ) );
 	BOOST_CHECK_CLOSE( 0.057f, depth( 71, 103 ), 0.1f );
 

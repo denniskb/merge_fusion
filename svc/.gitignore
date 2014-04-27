@@ -7,11 +7,8 @@
 /cuda/bin
 /cuda/obj
 
-/flink/bin
-/flink/obj
-
-/flinktest/bin
-/flinktest/obj
+/cudatest/bin
+/cudatest/obj
 
 /reference/bin
 /reference/obj

@@ -1,82 +1,17 @@
 #include <boost/test/auto_unit_test.hpp>
 
-#include <flink/algorithm.h>
+#include <reference/algorithm.h>
 
 
 
 BOOST_AUTO_TEST_SUITE( algorithm )
-
-BOOST_AUTO_TEST_CASE( radix_sort )
-{
-	std::vector< unsigned > data( 100 );
-	std::vector< char > tmp;
-
-	for( int i = 0; i < 100; i++ )
-		data[ i ] = rand();
-
-	flink::radix_sort( data.begin(), data.end(), tmp );
-
-	for( int i = 0; i < 99; i++ )
-		BOOST_REQUIRE( data[ i ] < data[ i + 1 ] );
-}
-
-BOOST_AUTO_TEST_CASE( radix_sort2 )
-{
-	std::vector< unsigned > keys( 100 );
-	std::vector< unsigned > values( 100 );
-	std::vector< char > tmp;
-
-	for( int i = 0; i < 100; i++ )
-		keys[ i ] = values[ i ] = rand();
-
-	flink::radix_sort( keys.begin(), keys.end(), values.begin(), tmp );
-
-	for( int i = 0; i < 99; i++ )
-	{
-		BOOST_REQUIRE( keys[ i ] < keys[ i + 1 ] );
-		BOOST_REQUIRE( values[ i ] < values[ i + 1 ] );
-	}
-}
-
-
-
-BOOST_AUTO_TEST_CASE( remove_dups )
-{
-	{
-		int a[] = { 7 };
-
-		size_t newSize = flink::remove_dups( a, a + 1 );
-
-		BOOST_REQUIRE( newSize == 1 );
-		BOOST_REQUIRE( a[ 0 ] == 7 );
-	}
-
-	{
-		int a[] = { 2, 2 };
-
-		size_t newSize = flink::remove_dups( a, a + 2 );
-
-		BOOST_REQUIRE( newSize == 1 );
-		BOOST_REQUIRE( a[ 0 ] == 2 );
-	}
-
-	{
-		int a[] = { 1, 1, 2 };
-
-		size_t newSize = flink::remove_dups( a, a + 3 );
-
-		BOOST_REQUIRE( newSize == 2 );
-		BOOST_REQUIRE( a[ 0 ] == 1 );
-		BOOST_REQUIRE( a[ 1 ] == 2 );
-	}
-}
 
 BOOST_AUTO_TEST_CASE( exclusive_scan )
 {
 	int a[] = { 1, 3, 3, 7,  0,  9 };
 	int b[] = { 0, 1, 4, 7, 14, 14 };
 
-	flink::exclusive_scan( a, a + 6 );
+	svc::exclusive_scan( a, a + 6 );
 
 	for( int i = 0; i < 6; i++ )
 		BOOST_REQUIRE( a[ i ] == b[ i ] );
@@ -87,42 +22,42 @@ BOOST_AUTO_TEST_CASE( exclusive_scan )
 BOOST_AUTO_TEST_CASE( intersection_size )
 {
 	std::vector< int > a, b;
-	BOOST_REQUIRE( flink::intersection_size
+	BOOST_REQUIRE( svc::intersection_size
 	(
 		a.data(), a.data() + a.size(), 
 		b.data(), b.data() + b.size() 
 	) == 0 );
 
 	a.push_back( 1 );
-	BOOST_REQUIRE( flink::intersection_size
+	BOOST_REQUIRE( svc::intersection_size
 	(
 		a.data(), a.data() + a.size(), 
 		b.data(), b.data() + b.size() 
 	) == 0 );
 
 	b.push_back( 1 );
-	BOOST_REQUIRE( flink::intersection_size
+	BOOST_REQUIRE( svc::intersection_size
 	(
 		a.data(), a.data() + a.size(), 
 		b.data(), b.data() + b.size() 
 	) == 1 );
 
 	b.push_back( 3 );
-	BOOST_REQUIRE( flink::intersection_size
+	BOOST_REQUIRE( svc::intersection_size
 	(
 		a.data(), a.data() + a.size(), 
 		b.data(), b.data() + b.size() 
 	) == 1 );
 
 	a.push_back( 3 );
-	BOOST_REQUIRE( flink::intersection_size
+	BOOST_REQUIRE( svc::intersection_size
 	(
 		a.data(), a.data() + a.size(), 
 		b.data(), b.data() + b.size() 
 	) == 2 );
 
 	a.push_back( 7 );
-	BOOST_REQUIRE( flink::intersection_size
+	BOOST_REQUIRE( svc::intersection_size
 	(
 		a.data(), a.data() + a.size(), 
 		b.data(), b.data() + b.size() 
@@ -131,27 +66,27 @@ BOOST_AUTO_TEST_CASE( intersection_size )
 
 
 
-BOOST_AUTO_TEST_CASE( merge_unique_backward )
+BOOST_AUTO_TEST_CASE( set_union_backward )
 {
 	{
 		int a[] = { 0 };
 		int b[] = { 1 };
 		int c[] = { -1, -1 };
 
-		flink::merge_unique_backward( a, a+1, b, b+1, c+2 );
+		svc::set_union_backward( a, a+1, b, b+1, c+2 );
 		BOOST_REQUIRE( c[ 0 ] == 0 );
 		BOOST_REQUIRE( c[ 1 ] == 1 );
 
 		c[ 0 ] = c[ 1 ] = -1;
 
-		flink::merge_unique_backward( b, b+1, a, a+1, c+2 );
+		svc::set_union_backward( b, b+1, a, a+1, c+2 );
 		BOOST_REQUIRE( c[ 0 ] == 0 );
 		BOOST_REQUIRE( c[ 1 ] == 1 );
 
 		a[ 0 ] = b[ 0 ] = 7;
 		c[ 0 ] = c[ 1 ] = -1;
 
-		flink::merge_unique_backward( a, a+1, b, b+1, c+2 );
+		svc::set_union_backward( a, a+1, b, b+1, c+2 );
 		BOOST_REQUIRE( c[ 0 ] == -1 );
 		BOOST_REQUIRE( c[ 1 ] ==  7 );
 	}
@@ -161,7 +96,7 @@ BOOST_AUTO_TEST_CASE( merge_unique_backward )
 		int b[] = { 0, 5, 27, 55, 88 };
 		int c[ 7 ]; std::fill( c, c+7, -1 );
 
-		flink::merge_unique_backward( a, a+4, b, b+5, c+7 );
+		svc::set_union_backward( a, a+4, b, b+5, c+7 );
 		BOOST_REQUIRE( c[ 0 ] ==  0 );
 		BOOST_REQUIRE( c[ 1 ] ==  1 );
 		BOOST_REQUIRE( c[ 2 ] ==  3 );
@@ -172,7 +107,7 @@ BOOST_AUTO_TEST_CASE( merge_unique_backward )
 	}
 }
 
-BOOST_AUTO_TEST_CASE( merge_unique_backward2 )
+BOOST_AUTO_TEST_CASE( set_union_backward2 )
 {
 	{
 		int k1[] = {  0 };
@@ -184,7 +119,7 @@ BOOST_AUTO_TEST_CASE( merge_unique_backward2 )
 		int r2[] = { -1, -1 };
 
 		int v = 7;
-		flink::merge_unique_backward
+		svc::set_union_backward
 		(
 			k1, k1+1, v1+1, 
 			k2, k2+1, v, 
@@ -200,7 +135,7 @@ BOOST_AUTO_TEST_CASE( merge_unique_backward2 )
 		r2[ 0 ] = r2[ 1 ] = -1;
 
 		v = 3;
-		flink::merge_unique_backward
+		svc::set_union_backward
 		(
 			k1, k1+1, v1+1, 
 			k2, k2+1, v, 
@@ -222,7 +157,7 @@ BOOST_AUTO_TEST_CASE( merge_unique_backward2 )
 		int r2[ 7 ]; std::fill( r2, r2+7, -1 );
 
 		int v = 3;
-		flink::merge_unique_backward
+		svc::set_union_backward
 		(
 			k1, k1+4, v1+4, 
 			k2, k2+5, v, 
@@ -243,6 +178,73 @@ BOOST_AUTO_TEST_CASE( merge_unique_backward2 )
 		BOOST_REQUIRE( r2[ 4 ] ==  3 );
 		BOOST_REQUIRE( r2[ 5 ] == 27 );
 		BOOST_REQUIRE( r2[ 6 ] ==  3 );
+	}
+}
+
+
+
+BOOST_AUTO_TEST_CASE( radix_sort )
+{
+	std::vector< unsigned > data( 100 );
+	std::vector< char > tmp;
+
+	for( int i = 0; i < 100; i++ )
+		data[ i ] = rand();
+
+	svc::radix_sort( data.begin(), data.end(), tmp );
+
+	for( int i = 0; i < 99; i++ )
+		BOOST_REQUIRE( data[ i ] < data[ i + 1 ] );
+}
+
+BOOST_AUTO_TEST_CASE( radix_sort2 )
+{
+	std::vector< unsigned > keys( 100 );
+	std::vector< unsigned > values( 100 );
+	std::vector< char > tmp;
+
+	for( int i = 0; i < 100; i++ )
+		keys[ i ] = values[ i ] = rand();
+
+	svc::radix_sort( keys.begin(), keys.end(), values.begin(), tmp );
+
+	for( int i = 0; i < 99; i++ )
+	{
+		BOOST_REQUIRE( keys[ i ] < keys[ i + 1 ] );
+		BOOST_REQUIRE( values[ i ] < values[ i + 1 ] );
+	}
+}
+
+
+
+BOOST_AUTO_TEST_CASE( unique )
+{
+	{
+		int a[] = { 7 };
+
+		size_t newSize = svc::unique( a, a + 1 );
+
+		BOOST_REQUIRE( newSize == 1 );
+		BOOST_REQUIRE( a[ 0 ] == 7 );
+	}
+
+	{
+		int a[] = { 2, 2 };
+
+		size_t newSize = svc::unique( a, a + 2 );
+
+		BOOST_REQUIRE( newSize == 1 );
+		BOOST_REQUIRE( a[ 0 ] == 2 );
+	}
+
+	{
+		int a[] = { 1, 1, 2 };
+
+		size_t newSize = svc::unique( a, a + 3 );
+
+		BOOST_REQUIRE( newSize == 2 );
+		BOOST_REQUIRE( a[ 0 ] == 1 );
+		BOOST_REQUIRE( a[ 1 ] == 2 );
 	}
 }
 

@@ -11,31 +11,38 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="algorithm.h" />
+    <ClInclude Include="array3d.h" />
     <ClInclude Include="Brick.h" />
-    <ClInclude Include="DepthFrame.h" />
     <ClInclude Include="DepthStream.h" />
+    <ClInclude Include="flat_map.h" />
+    <ClInclude Include="fstream.h" />
     <ClInclude Include="Integrator.h" />
+    <ClInclude Include="dxmath.h" />
     <ClInclude Include="Mesher.h" />
+    <ClInclude Include="vector2d.h" />
     <ClInclude Include="Splatter.h" />
+    <ClInclude Include="timer.h" />
     <ClInclude Include="Volume.h" />
     <ClInclude Include="Voxel.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Brick.cpp" />
-    <ClCompile Include="DepthFrame.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="DepthStream.cpp" />
+    <ClCompile Include="fstream.cpp" />
     <ClCompile Include="Integrator.cpp" />
     <ClCompile Include="Mesher.cpp" />
     <ClCompile Include="Splatter.cpp" />
+    <ClCompile Include="timer.cpp" />
     <ClCompile Include="Volume.cpp" />
     <ClCompile Include="Voxel.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\flink\flink.vcxproj">
-      <Project>{c82ea146-94dd-4c5a-b3eb-4a243ae9b818}</Project>
-    </ProjectReference>
+    <None Include="algorithm.inl" />
+    <None Include="dxmath.inl" />
+    <None Include="flat_map.inl" />
+    <None Include="array3d.inl" />
+    <None Include="vector2d.inl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{6372D9A0-C97E-4758-8039-31C3B26F0963}</ProjectGuid>
@@ -73,7 +80,7 @@
       <AdditionalDependencies />
     </Link>
     <ClCompile>
-      <AdditionalIncludeDirectories>..;$(KINECTSDK10_DIR)inc</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..</AdditionalIncludeDirectories>
       <AdditionalOptions>/D_SCL_SECURE_NO_WARNINGS %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <CudaCompile>
@@ -84,7 +91,7 @@
     <ClCompile />
     <Link />
     <ClCompile>
-      <AdditionalIncludeDirectories>..;$(KINECTSDK10_DIR)inc</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..</AdditionalIncludeDirectories>
     </ClCompile>
     <CudaCompile>
       <Include>$(CUDA_PATH)\include;$(NVCUDASAMPLES_ROOT)\common\inc</Include>

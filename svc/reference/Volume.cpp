@@ -2,10 +2,9 @@
 
 #include <cassert>
 
-#include <flink/flat_map.h>
-#include <flink/math.h>
-
 #include "Brick.h"
+#include "dxmath.h"
+#include "flat_map.h"
 
 
 
@@ -23,7 +22,7 @@ svc::Volume::Volume
 	assert( sideLength > 0.0f );
 	assert( truncMargin > 0.0f );
 
-	assert( flink::powerOf2( resolution ) );
+	assert( powerOf2( resolution ) );
 }
 
 
@@ -55,11 +54,11 @@ int svc::Volume::NumChunksInVolume( int chunkRes ) const
 	return m_res / chunkRes;
 }
 
-flink::float4 svc::Volume::Minimum() const
+svc::float4 svc::Volume::Minimum() const
 {
 	float minimum = -m_sideLen * 0.5f;
 
-	return flink::float4
+	return float4
 	(
 		minimum,
 		minimum,
@@ -68,11 +67,11 @@ flink::float4 svc::Volume::Minimum() const
 	);
 }
 
-flink::float4 svc::Volume::Maximum() const
+svc::float4 svc::Volume::Maximum() const
 {
 	float maximum = 0.5f * m_sideLen;
 
-	return flink::float4
+	return float4
 	(
 		maximum,
 		maximum,
@@ -83,7 +82,7 @@ flink::float4 svc::Volume::Maximum() const
 
 
 
-flink::float4 svc::Volume::VoxelCenter( int x, int y, int z ) const
+svc::float4 svc::Volume::VoxelCenter( int x, int y, int z ) const
 {
 	assert( x >= 0 && x < Resolution() );
 	assert( y >= 0 && y < Resolution() );
@@ -91,7 +90,7 @@ flink::float4 svc::Volume::VoxelCenter( int x, int y, int z ) const
 
 	return 
 		Minimum() +
-		flink::float4
+		float4
 		( 
 			( x + 0.5f ) / Resolution(), 
 			( y + 0.5f ) / Resolution(), 
@@ -101,21 +100,21 @@ flink::float4 svc::Volume::VoxelCenter( int x, int y, int z ) const
 		( Maximum() - Minimum() );
 }
 
-flink::float4 svc::Volume::ChunkIndex( flink::float4 const & world, int chunkRes ) const
+svc::float4 svc::Volume::ChunkIndex( float4 const & world, int chunkRes ) const
 {
 	return
 		( world - Minimum() ) / ( Maximum() - Minimum() ) *
-		flink::make_float4( (float) NumChunksInVolume( chunkRes ) );
+		make_float4( (float) NumChunksInVolume( chunkRes ) );
 }
 
 
 
-flink::flat_map< unsigned, svc::Brick > & svc::Volume::Data()
+svc::flat_map< unsigned, svc::Brick > & svc::Volume::Data()
 {
 	return m_data;
 }
 
-flink::flat_map< unsigned, svc::Brick > const & svc::Volume::Data() const
+svc::flat_map< unsigned, svc::Brick > const & svc::Volume::Data() const
 {
 	return m_data;
 }

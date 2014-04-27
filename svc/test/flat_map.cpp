@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include <flink/flat_map.h>
+#include <reference/flat_map.h>
 
 
 
@@ -10,14 +10,14 @@ BOOST_AUTO_TEST_SUITE( flat_map )
 
 BOOST_AUTO_TEST_CASE( ctor )
 {
-	flink::flat_map< int, int > a;
+	svc::flat_map< int, int > a;
 
 	BOOST_REQUIRE( a.size() == 0 );
 }
 
 BOOST_AUTO_TEST_CASE( clear )
 {
-	flink::flat_map< int, int > a;
+	svc::flat_map< int, int > a;
 	int k = 7;
 
 	a.merge_unique( &k, &k+1, 3 );
@@ -30,10 +30,10 @@ BOOST_AUTO_TEST_CASE( clear )
 BOOST_AUTO_TEST_CASE( merge_unique )
 {
 	{
-		flink::flat_map< int, int > a;
+		svc::flat_map< int, int > a;
 		int k = 7;
 
-		flink::flat_map< int, int > const & ca = a;
+		svc::flat_map< int, int > const & ca = a;
 
 		a.merge_unique( &k, &k+1, 3 );
 		BOOST_REQUIRE( ca.size() == 1 );

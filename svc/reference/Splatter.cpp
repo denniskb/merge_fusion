@@ -2,32 +2,30 @@
 
 #include <cassert>
 
-#include <flink/array_view.h>
-#include <flink/util.h>
-
+#include "array3d.h"
+#include "dxmath.h"
 #include "Volume.h"
 
-#include <flink/timer.h>
+#include "timer.h"
 
 
 
 // static
-void svc::Splatter::Splat( Volume const & volume, std::vector< flink::float4 > & outVertices )
+void svc::Splatter::Splat( Volume const & volume, std::vector< float4 > & outVertices )
 {
-	assert( 1 == flink::packX( 1 ) );
+	assert( 1 == packX( 1 ) );
 
 	outVertices.reserve( 1 << 16 );
 	outVertices.clear();
 
-	flink::timer t;
+	timer t;
 
-	Voxel buffer[ 64 ];
-	flink::array_view< Voxel, 4, 4, 4 > cache( buffer );
+	array3d< Voxel, 4, 4, 4 > cache;
 
 	// self, right, top, front
-	unsigned deltas[] = { 0, flink::packX( 1 ), flink::packY( 1 ), flink::packZ( 1 ) };
+	unsigned deltas[] = { 0, packX( 1 ), packY( 1 ), packZ( 1 ) };
 
-	flink::flat_map< unsigned, Brick >::const_key_iterator bricks[ 4 ];
+	flat_map< unsigned, Brick >::const_key_iterator bricks[ 4 ];
 	std::fill( bricks, bricks + 4, volume.Data().keys_cbegin() );
 
 	auto last = volume.Data().keys_cend() - 1;
@@ -65,13 +63,13 @@ void svc::Splatter::Splat( Volume const & volume, std::vector< flink::float4 > &
 		}
 
 		unsigned bx, by, bz;
-		flink::unpackInts( * bricks[ 0 ], bx, by, bz );
+		unpackInts( * bricks[ 0 ], bx, by, bz );
 
 		bx *= 2;
 		by *= 2;
 		bz *= 2;
 
-		for( int i = 0; i < 8; i++ )
+		for( int i = 0; i < 8; ++i )
 		{
 			unsigned x, y, z;
 			Brick::Index1Dto3D( i, x, y, z );
@@ -90,7 +88,7 @@ void svc::Splatter::Splat( Volume const & volume, std::vector< flink::float4 > &
 			y += by;
 			z += bz;
 
-			flink::float4 vert000 = volume.VoxelCenter( x, y, z );
+			float4 vert000 = volume.VoxelCenter( x, y, z );
 
 			float dself, dright, dtop, dfront;
 			dself  = self. Distance( volume.TruncationMargin() );
@@ -103,24 +101,24 @@ void svc::Splatter::Splat( Volume const & volume, std::vector< flink::float4 > &
 			// TODO: Re-evaluate interpolation (esp. use of weights in lerp)
 			if( right.Weight() > 0 && dself * dright < 0.0f )
 			{
-				flink::float4 vert = vert000;
-				vert.x += flink::lerp( 0.0f, volume.VoxelLength(), abs( dright ), abs( dself ) );
+				float4 vert = vert000;
+				vert.x += lerp( 0.0f, volume.VoxelLength(), abs( dright ), abs( dself ) );
 
 				outVertices.push_back( vert );
 			}
 				
 			if( top.Weight() > 0 && dself * dtop < 0.0f )
 			{
-				flink::float4 vert = vert000;
-				vert.y += flink::lerp( 0.0f, volume.VoxelLength(), abs( dtop ), abs( dself ) );
+				float4 vert = vert000;
+				vert.y += lerp( 0.0f, volume.VoxelLength(), abs( dtop ), abs( dself ) );
 
 				outVertices.push_back( vert );
 			}
 				
 			if( front.Weight() > 0 && dself * dfront < 0.0f )
 			{
-				flink::float4 vert = vert000;
-				vert.z += flink::lerp( 0.0f, volume.VoxelLength(), abs( dfront ), abs( dself ) );
+				float4 vert = vert000;
+				vert.z += lerp( 0.0f, volume.VoxelLength(), abs( dfront ), abs( dself ) );
 
 				outVertices.push_back( vert );
 			}
@@ -128,5 +126,5 @@ void svc::Splatter::Splat( Volume const & volume, std::vector< flink::float4 > &
 	}
 
 	t.record_time( "tsplat" );
-	t.print();
+	//t.print();
 }
