@@ -116,17 +116,12 @@ __global__ void SplatChunksKernel
 	unsigned * outChunkIndices, unsigned * outChunkIndicesSize
 )
 {
-	__shared__ unsigned blockWriteOffset;
-
 	unsigned x = threadIdx.x + blockIdx.x * blockDim.x;
 	unsigned y = threadIdx.y + blockIdx.y * blockDim.y;
 
 	float depth = depthFrame[ x + y * frameWidth ];
-
-	if( 0 == threadIdx.x && 0 == threadIdx.y )
-		blockWriteOffset = 0;
-
-	if( __syncthreads_and( 0.0f == depth ) )
+	
+	if( 0.0f == depth )
 		return;
 
 	float4 pxView = make_float4
@@ -147,8 +142,6 @@ __global__ void SplatChunksKernel
 	);
 
 	unsigned writeMask =
-		0.0f != depth && 
-		
 		pxVol.x >= 0.5f &&
 		pxVol.y >= 0.5f &&
 		pxVol.z >= 0.5f &&
@@ -157,18 +150,8 @@ __global__ void SplatChunksKernel
 		pxVol.y < volume.NumChunksInVolume( footPrint ) - 0.5f &&
 		pxVol.z < volume.NumChunksInVolume( footPrint ) - 0.5f;
 
-	// TODO: extract KernelQueue
-	unsigned offset = atomicAdd( & blockWriteOffset, writeMask );
-
-	__syncthreads();
-
-	if( 0 == threadIdx.x && 0 == threadIdx.y )
-		blockWriteOffset = atomicAdd( outChunkIndicesSize, blockWriteOffset );
-
-	__syncthreads();
-
-	offset += blockWriteOffset;
+	unsigned writeOffset = atomicAdd( outChunkIndicesSize, writeMask );
 
 	if( writeMask )
-		outChunkIndices[ offset ] = chunkIndex;
+		outChunkIndices[ writeOffset ] = chunkIndex;
 }
