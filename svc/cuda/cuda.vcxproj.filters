@@ -35,6 +35,9 @@
     <ClInclude Include="vector_functions_ext.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="cuda_timer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="DepthFrame.cu">
@@ -49,6 +52,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Volume.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cuda_timer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #define WIN32_LEAN_AND_MEAN
@@ -19,15 +20,13 @@ public:
 	void record_time( std::string label );
 	void reset();
 
-	double time();
-
-	void print();
+	void print() const;
 
 private:
 	LARGE_INTEGER m_start;
+	std::vector< std::pair< double, std::string > > m_timings;
 
-	std::vector< double > m_times;
-	std::vector< std::string > m_labels;
+	double time();
 };
 
 }

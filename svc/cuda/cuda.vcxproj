@@ -78,6 +78,7 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="cuda_timer.h" />
     <ClInclude Include="DepthFrame.h" />
     <ClInclude Include="flat_map.h" />
     <ClInclude Include="helper_math_ext.h" />
@@ -93,6 +94,7 @@
     </CudaCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="cuda_timer.cpp" />
     <ClCompile Include="dummy.cpp" />
     <ClCompile Include="Volume.cpp" />
     <CudaCompile Include="Integrator.cu">

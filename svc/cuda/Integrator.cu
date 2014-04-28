@@ -5,6 +5,7 @@
 #include <vector_functions.h>
 #include <vector_types.h>
 
+#include "cuda_timer.h"
 #include "DepthFrame.h"
 #include "helper_math_ext.h"
 #include "vector_functions_ext.h"
@@ -77,11 +78,7 @@ void svcu::Integrator::SplatChunks
 	outChunkIndices.clear();
 	outChunkIndicesSize[ 0 ] = 0;
 
-	cudaEvent_t start, stop;
-	cudaEventCreate( & start );
-	cudaEventCreate( & stop );
-
-	cudaEventRecord( start );
+	cuda_timer t;
 
 	SplatChunksKernel<<< dim3( frame.Width() / 16, frame.Height() / 16 ), dim3( 16, 16 ) >>>
 	(
@@ -94,12 +91,8 @@ void svcu::Integrator::SplatChunks
 		thrust::raw_pointer_cast( outChunkIndicesSize.data() )
 	);
 
-	cudaEventRecord( stop );
-	cudaEventSynchronize( stop );
-
-	float t;
-	cudaEventElapsedTime( &t, start, stop );
-	printf( "tsplat: %.2fms\n", t );
+	t.record_time( "tsplat" );
+	t.print();
 
 	outChunkIndices.resize( outChunkIndicesSize[ 0 ] );
 }
@@ -109,6 +102,7 @@ void svcu::Integrator::SplatChunks
 __global__ void SplatChunksKernel
 (
 	svcu::KernelVolume const volume,
+	// TODO: Test using 2d textures
 	float const * depthFrame, unsigned frameWidth, unsigned frameHeight,
 	float4x4 viewToWorld,
 	unsigned footPrint,
@@ -118,6 +112,8 @@ __global__ void SplatChunksKernel
 {
 	unsigned x = threadIdx.x + blockIdx.x * blockDim.x;
 	unsigned y = threadIdx.y + blockIdx.y * blockDim.y;
+
+	// TODO: Test reordering warps into 8x4 pixel groups for better coherence.
 
 	float depth = depthFrame[ x + y * frameWidth ];
 	
