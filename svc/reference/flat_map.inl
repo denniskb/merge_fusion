@@ -1,9 +1,3 @@
-#ifdef flat_map_inl
-#error File included multiple times
-#endif
-
-#define flat_map_inl
-
 #include "algorithm.h"
 
 

@@ -12,6 +12,10 @@ template< class OutputIterator >
 inline void 
 exclusive_scan( OutputIterator first, OutputIterator last );
 
+template< class OutputIterator >
+inline void
+inclusive_scan( OutputIterator first, OutputIterator last );
+
 template< class InputIterator1, class InputIterator2 >
 inline size_t 
 intersection_size
@@ -19,6 +23,10 @@ intersection_size
 	InputIterator1 first1, InputIterator1 last1,
 	InputIterator2 first2, InputIterator2 last2
 );
+
+template< class InputIterator >
+inline typename std::iterator_traits< InputIterator >::value_type
+reduce( InputIterator first, InputIterator last );
 
 template< class BidirectionalIterator1, class BidirectionalIterator2, class BidirectionalIterator3 >
 inline void 

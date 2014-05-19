@@ -15,13 +15,13 @@ BOOST_AUTO_TEST_CASE( load_and_store )
 
 	hf( 0, 0 ) = 7.0f;
 	hf( 2, 1 ) = 3.0f;
-	df << hf;
+	df.CopyFrom( hf );
 
 	BOOST_REQUIRE( df.Width() == 4 );
 	BOOST_REQUIRE( df.Height() == 3 );
 
 	std::fill( & hf( 0, 0 ), & hf( 3, 2 ), 0.0f );
-	df >> hf;
+	df.CopyTo( hf );
 
 	BOOST_REQUIRE( hf.width() == 4 );
 	BOOST_REQUIRE( hf.height() == 3 );

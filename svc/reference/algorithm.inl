@@ -1,9 +1,3 @@
-#ifdef algorithm_inl
-#error File included multiple times
-#endif
-
-#define algorithm_inl
-
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
@@ -24,6 +18,19 @@ void svc::exclusive_scan( OutputIterator first, OutputIterator last )
 		T tmp = * first;
 		* first = acc;
 		acc += tmp;
+	}
+}
+
+template< class OutputIterator >
+void svc::inclusive_scan( OutputIterator first, OutputIterator last )
+{
+	typedef std::iterator_traits< OutputIterator >::value_type T;
+
+	T prev = T();
+	for( ; first != last; ++first )
+	{
+		* first += prev;
+		prev = * first;
 	}
 }
 
@@ -48,6 +55,21 @@ size_t svc::intersection_size
 		std::advance( first1, lte );
 		std::advance( first2, gte );
 	}
+
+	return result;
+}
+
+
+
+template< class InputIterator >
+typename std::iterator_traits< InputIterator >::value_type
+svc::reduce( InputIterator first, InputIterator last )
+{
+	typedef std::iterator_traits< InputIterator >::value_type T;
+
+	T result = T();
+	for( ; first != last; ++first )
+		result += * first;
 
 	return result;
 }

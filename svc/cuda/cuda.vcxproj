@@ -50,7 +50,7 @@
     </ClCompile>
     <CudaCompile>
       <Include>..;$(CUDA_PATH)\include;$(NVCUDASAMPLES_ROOT)\common\inc</Include>
-      <Warning>W3</Warning>
+      <PtxAsOptionV>true</PtxAsOptionV>
     </CudaCompile>
     <Lib>
       <AdditionalDependencies>cudart.lib</AdditionalDependencies>
@@ -67,8 +67,9 @@
     </ClCompile>
     <CudaCompile>
       <Include>..;$(CUDA_PATH)\include;$(NVCUDASAMPLES_ROOT)\common\inc</Include>
-      <FastMath>true</FastMath>
-      <Warning>W3</Warning>
+      <PtxAsOptionV>true</PtxAsOptionV>
+      <Keep>true</Keep>
+      <MaxRegCount>32</MaxRegCount>
     </CudaCompile>
     <Lib>
       <AdditionalDependencies>cudart.lib</AdditionalDependencies>
@@ -78,28 +79,43 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="cuda_timer.h" />
+    <ClInclude Include="buffer.h" />
+    <ClInclude Include="constants.h" />
+    <ClInclude Include="cuda_device.h" />
+    <ClInclude Include="cuda_event.h" />
+    <ClInclude Include="device_allocator.h" />
+    <ClInclude Include="kernel_vector2d.h" />
+    <ClInclude Include="kernel_vector.h" />
+    <ClInclude Include="page_locked_allocator.h" />
+    <ClInclude Include="radix_sort.h" />
+    <ClInclude Include="reduce.h" />
+    <ClInclude Include="scan.h" />
+    <ClInclude Include="timer.h" />
     <ClInclude Include="DepthFrame.h" />
     <ClInclude Include="flat_map.h" />
     <ClInclude Include="helper_math_ext.h" />
     <ClInclude Include="Integrator.h" />
+    <ClInclude Include="IntegratorKernels.h" />
     <ClInclude Include="KernelVolume.h" />
+    <ClInclude Include="vector.h" />
     <ClInclude Include="vector_functions_ext.h" />
     <ClInclude Include="vector_types_ext.h" />
     <ClInclude Include="Volume.h" />
   </ItemGroup>
   <ItemGroup>
-    <CudaCompile Include="DepthFrame.cu">
-      <FileType>CppCode</FileType>
-    </CudaCompile>
+    <ClCompile Include="cuda_device.cpp" />
+    <ClCompile Include="DepthFrame.cpp" />
+    <CudaCompile Include="IntegratorKernels.cu" />
+    <CudaCompile Include="radix_sort.cu" />
+    <CudaCompile Include="reduce.cu" />
+    <CudaCompile Include="scan.cu" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="cuda_timer.cpp" />
+    <ClCompile Include="cuda_event.cpp" />
+    <ClCompile Include="timer.cpp" />
     <ClCompile Include="dummy.cpp" />
     <ClCompile Include="Volume.cpp" />
-    <CudaCompile Include="Integrator.cu">
-      <FileType>CppCode</FileType>
-    </CudaCompile>
+    <ClCompile Include="Integrator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\reference\reference.vcxproj">
@@ -108,6 +124,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Brick.h" />
+    <None Include="buffer.inl" />
+    <None Include="device_allocator.inl" />
+    <None Include="page_locked_allocator.inl" />
+    <None Include="reduce.cuh" />
+    <None Include="scan.cuh" />
+    <None Include="vector.inl" />
     <None Include="Voxel.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

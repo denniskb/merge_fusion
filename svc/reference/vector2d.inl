@@ -1,9 +1,3 @@
-#ifdef vector2d_inl
-#error File included multiple times
-#endif
-
-#define vector2d_inl
-
 #include <cassert>
 
 
@@ -11,8 +5,7 @@
 template< typename T, class Alloc >
 svc::vector2d< T, Alloc >::vector2d( Alloc const & allocator ) :
 	std::vector< T, Alloc >( allocator ),
-	m_width( 0 ),
-	m_height( 0 )
+	m_width( 0 )
 {
 }
 
@@ -24,8 +17,7 @@ svc::vector2d< T, Alloc >::vector2d
 	Alloc const & allocator 
 ) :
 	std::vector< T, Alloc >( width * height, val, allocator ),
-	m_width( width ),
-	m_height( height )
+	m_width( width )
 {
 }
 
@@ -40,7 +32,7 @@ size_t svc::vector2d< T, Alloc >::width() const
 template< typename T, class Alloc >
 size_t svc::vector2d< T, Alloc >::height() const
 {
-	return m_height;
+	return width() ? size() / width() : 0;
 }
 
 
@@ -69,7 +61,6 @@ template< typename T, class Alloc >
 void svc::vector2d< T, Alloc >::resize( size_t width, size_t height, T const & val )
 {
 	m_width = width;
-	m_height = height;
 
 	std::vector< T, Alloc >::resize( width * height, val );
 }

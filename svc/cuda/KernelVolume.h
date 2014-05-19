@@ -1,5 +1,6 @@
 #pragma once
 
+#include <host_defines.h>
 #include <vector_functions.h>
 #include <vector_types.h>
 
@@ -7,20 +8,13 @@
 
 namespace svcu {
 
-struct KernelVolume
+class KernelVolume
 {
-	unsigned resolution;
-	float sideLength;
-
+public:
 	inline __host__ KernelVolume( unsigned resolution, float sideLength ) :
 		resolution( resolution ),
 		sideLength( sideLength )
 	{
-	}
-
-	inline __device__ unsigned NumChunksInVolume( unsigned chunkRes ) const
-	{
-		return resolution / chunkRes;
 	}
 
 	inline __device__ float4 ChunkIndex( float4 world, unsigned chunkRes ) const
@@ -33,6 +27,15 @@ struct KernelVolume
 			1.0f
 		);
 	}
+
+	inline __device__ unsigned NumChunksInVolume( unsigned chunkRes ) const
+	{
+		return resolution / chunkRes;
+	}
+
+private:
+	unsigned resolution;
+	float sideLength;
 };
 
 }

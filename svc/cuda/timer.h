@@ -4,26 +4,25 @@
 #include <utility>
 #include <vector>
 
-#include <driver_types.h>
+#include "cuda_event.h"
 
 
 
 namespace svcu {
 
-class cuda_timer
+class timer
 {
 public:
-	cuda_timer( cudaStream_t stream = 0 );
-	~cuda_timer();
+	timer( cudaStream_t stream = 0 );
 	
-	void record_time( std::string label );
+	float record_time( std::string label );
 	void reset();
 
 	void print() const;
 
 private:
-	cudaEvent_t m_start;
-	cudaEvent_t m_end;
+	cuda_event m_start;
+	cuda_event m_end;
 	cudaStream_t m_stream;
 
 	std::vector< std::pair< float, std::string > > m_timings;

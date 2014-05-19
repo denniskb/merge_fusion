@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE( Integrate )
 	ComputeMatrices( view, eye, forward, viewProj, viewToWorld );
 
 	svcu::DepthFrame ddepth;
-	ddepth << depth;
+	ddepth.CopyFrom( depth );
 
 	i.Integrate( v, ddepth, 2, eye, forward, viewProj, viewToWorld );
 

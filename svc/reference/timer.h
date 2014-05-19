@@ -17,7 +17,7 @@ class timer
 public:
 	timer();
 
-	void record_time( std::string label );
+	double record_time( std::string label );
 	void reset();
 
 	void print() const;

@@ -9,6 +9,10 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
+    <Filter Include="Inline Files">
+      <UniqueIdentifier>{2510e0f5-f59b-45fb-b617-8149e80331ea}</UniqueIdentifier>
+      <Extensions>inl</Extensions>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DepthFrame.h">
@@ -35,15 +39,60 @@
     <ClInclude Include="vector_functions_ext.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="cuda_timer.h">
+    <ClInclude Include="IntegratorKernels.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="timer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="vector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cuda_event.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel_vector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel_vector2d.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="buffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="device_allocator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="page_locked_allocator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="reduce.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cuda_device.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="scan.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="radix_sort.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="constants.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <CudaCompile Include="DepthFrame.cu">
+    <CudaCompile Include="IntegratorKernels.cu">
       <Filter>Source Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="Integrator.cu">
+    <CudaCompile Include="reduce.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="scan.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="radix_sort.cu">
       <Filter>Source Files</Filter>
     </CudaCompile>
   </ItemGroup>
@@ -54,7 +103,19 @@
     <ClCompile Include="Volume.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="cuda_timer.cpp">
+    <ClCompile Include="Integrator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="timer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cuda_event.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DepthFrame.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cuda_device.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -63,6 +124,24 @@
       <Filter>Header Files</Filter>
     </None>
     <None Include="Voxel.h">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="vector.inl">
+      <Filter>Inline Files</Filter>
+    </None>
+    <None Include="buffer.inl">
+      <Filter>Inline Files</Filter>
+    </None>
+    <None Include="device_allocator.inl">
+      <Filter>Inline Files</Filter>
+    </None>
+    <None Include="page_locked_allocator.inl">
+      <Filter>Inline Files</Filter>
+    </None>
+    <None Include="reduce.cuh">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="scan.cuh">
       <Filter>Header Files</Filter>
     </None>
   </ItemGroup>

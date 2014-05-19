@@ -17,6 +17,17 @@ BOOST_AUTO_TEST_CASE( exclusive_scan )
 		BOOST_REQUIRE( a[ i ] == b[ i ] );
 }
 
+BOOST_AUTO_TEST_CASE( inclusive_scan )
+{
+	int a[] = { 1, 3, 3,  7,  0,  9 };
+	int b[] = { 1, 4, 7, 14, 14, 23 };
+
+	svc::inclusive_scan( a, a + 6 );
+
+	for( int i = 0; i < 6; i++ )
+		BOOST_REQUIRE( a[ i ] == b[ i ] );
+}
+
 
 
 BOOST_AUTO_TEST_CASE( intersection_size )
@@ -62,6 +73,17 @@ BOOST_AUTO_TEST_CASE( intersection_size )
 		a.data(), a.data() + a.size(), 
 		b.data(), b.data() + b.size() 
 	) == 2 );
+}
+
+
+
+BOOST_AUTO_TEST_CASE( reduce )
+{
+	int a[] = { 1, 3, 3,  7,  0,  9 };
+
+	int sum = svc::reduce( a, a + 6 );
+
+	BOOST_REQUIRE( 23 == sum );
 }
 
 

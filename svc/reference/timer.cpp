@@ -17,11 +17,15 @@ svc::timer::timer()
 
 
 
-void svc::timer::record_time( std::string label )
+double svc::timer::record_time( std::string label )
 {
-	m_timings.push_back( std::make_pair( time(), std::move( label ) ) );
+	double result = time();
+
+	m_timings.push_back( std::make_pair( result, std::move( label ) ) );
 
 	reset();
+
+	return result;
 }
 
 void svc::timer::reset()

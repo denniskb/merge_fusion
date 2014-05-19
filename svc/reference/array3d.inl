@@ -1,9 +1,3 @@
-#ifdef array3d_inl
-#error File included multiple times
-#endif
-
-#define array3d_inl
-
 #include <cassert>
 
 

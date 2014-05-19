@@ -1,9 +1,3 @@
-#ifdef dxmath_inl
-#error File included multiple times
-#endif
-
-#define dxmath_inl
-
 #include <algorithm>
 
 

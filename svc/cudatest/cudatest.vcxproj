@@ -46,7 +46,6 @@
     <Link />
     <ClCompile>
       <AdditionalIncludeDirectories>$(BOOST_ROOT);..;$(CUDA_PATH)\include</AdditionalIncludeDirectories>
-      <SDLCheck>false</SDLCheck>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(BOOST_LIB_PATH_X64)</AdditionalLibraryDirectories>
@@ -57,7 +56,6 @@
     <Link />
     <ClCompile>
       <AdditionalIncludeDirectories>$(BOOST_ROOT);..;$(CUDA_PATH)\include</AdditionalIncludeDirectories>
-      <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(BOOST_LIB_PATH_X64)</AdditionalLibraryDirectories>
@@ -67,6 +65,9 @@
     <ClCompile Include="DepthFrame.cpp" />
     <ClCompile Include="Integrator.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="radix_sort.cpp" />
+    <ClCompile Include="reduce.cpp" />
+    <ClCompile Include="scan.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\cuda\cuda.vcxproj">

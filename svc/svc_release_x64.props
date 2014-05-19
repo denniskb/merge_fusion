@@ -36,9 +36,9 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
     </Link>
     <CudaCompile>
-      <FastMath>false</FastMath>
       <CodeGeneration>compute_30,sm_30</CodeGeneration>
-      <TargetMachinePlatform>64</TargetMachinePlatform>
+      <FastMath>true</FastMath>
+      <CudaRuntime>Shared</CudaRuntime>
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup />

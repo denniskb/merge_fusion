@@ -1,8 +1,13 @@
 #pragma once
 
-#include <thrust/device_vector.h>
+#include <cstddef>
+
+#include <driver_types.h>
 
 #include <reference/vector2d.h>
+
+#include "kernel_vector2d.h"
+#include "vector.h"
 
 
 
@@ -13,19 +18,19 @@ class DepthFrame
 public:
 	DepthFrame();
 
-	int Width() const;
-	int Height() const;
+	unsigned Width() const;
+	unsigned Height() const;
 
-	float * Data();
-	float const * Data() const;
+	kernel_vector2d< float > KernelFrame();
+	kernel_vector2d< const float > KernelFrame() const;
 
-	void operator<<( svc::vector2d< float > const & frame );
-	void operator>>( svc::vector2d< float > & frame ) const;
+	void CopyFrom( svc::vector2d< float > const & frame, cudaStream_t stream = 0 );
+	void CopyTo( svc::vector2d< float > & frame, cudaStream_t stream = 0 ) const;
 
 private:
-	thrust::device_vector< float > m_data;
-	int m_width;
-	int m_height;
+	vector< float > m_data;
+	size_t m_width;
+	size_t m_height;
 };
 
 }

@@ -1,8 +1,8 @@
 #pragma once
 
-#include <thrust/device_vector.h>
-
 #include <reference/dxmath.h>
+
+#include "vector.h"
 
 
 
@@ -14,13 +14,11 @@ class Volume;
 class Integrator
 {
 public:
-	Integrator();
-
 	void Integrate
 	( 
 		Volume & volume,
 		DepthFrame const & frame,
-		int chunkFootPrint,
+		unsigned chunkFootPrint,
 
 		svc::float4 const & eye,
 		svc::float4 const & forward,
@@ -30,18 +28,16 @@ public:
 	);
 
 private:
-	thrust::device_vector< unsigned > m_splattedChunkIndices;
-	thrust::device_vector< unsigned > m_splattedChunkIndicesSize;
+	vector< unsigned > m_splattedChunkIndices;
 
 	static void SplatChunks
 	(
 		Volume const & volume,
 		DepthFrame const & frame,
 		svc::float4x4 const & viewToWorld,
-		int chunkFootPrint,
+		unsigned chunkFootPrint,
 
-		thrust::device_vector< unsigned > & outChunkIndices,
-		thrust::device_vector< unsigned > & outChunkIndicesSize
+		vector< unsigned > & outChunkIndices
 	);
 };
 
