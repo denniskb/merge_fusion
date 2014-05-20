@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_CASE( segmented_inclusive_scan )
 
 BOOST_AUTO_TEST_CASE( segmented_exclusive_scan )
 {
-	int const segmentSize = 256;
+	int const segmentSize = 1024;
 
 	std::vector< unsigned > data( 109487 );
 	for( int i = 0; i < data.size(); i++ )
@@ -50,7 +50,11 @@ BOOST_AUTO_TEST_CASE( segmented_exclusive_scan )
 	for( int i = 0; i < data.size(); i += segmentSize )
 		svc::exclusive_scan( data.data() + i, data.data() + std::min< size_t >( data.size(), i + segmentSize ) );
 
+	//svcu::timer t;
 	svcu::segmented_exclusive_scan( ddata.data(), (int) data.size(), segmentSize, ddata.data() );
+
+	//float time = t.record_time( "test" );
+	//printf( "%.2fms (%.1fGB/s)\n", time, data.capacity() / time * 4000 / 1024 / 1024 / 1024 );
 
 	std::vector< unsigned > testdata;
 	svcu::copy( testdata, ddata );

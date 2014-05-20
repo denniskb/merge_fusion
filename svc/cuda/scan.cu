@@ -49,9 +49,9 @@ static __global__ void _segmented_scan
 
 			unsigned warpOffset, warpSum;
 			if( i < VT / 4 - 1 )
-				warpOffset = svcu::warp_exclusive_scan< WARP_SZ >( horizontal_sum( word ), warpSum );
+				warpOffset = svcu::warp_exclusive_scan( horizontal_sum( word ), warpSum );
 			else
-				warpOffset = svcu::warp_exclusive_scan< WARP_SZ >( horizontal_sum( word ) );
+				warpOffset = svcu::warp_exclusive_scan( horizontal_sum( word ) );
 			
 			warpOffset += segmentOffset;
 			segmentOffset += warpSum;
@@ -79,7 +79,7 @@ static __global__ void _segmented_scan
 			unsigned word = tid < size ? data[ tid ] : 0;
 
 			unsigned warpSum;
-			word = svcu::warp_scan< WARP_SZ, includeSelf >( word, warpSum );
+			word = svcu::warp_scan< includeSelf >( word, warpSum );
 
 			word += segmentOffset;
 			segmentOffset += warpSum;

@@ -34,8 +34,12 @@ BOOST_AUTO_TEST_CASE( segmented_reduce )
 
 	svcu::copy( ddata, data );
 
+	//svcu::timer t;
 	svcu::segmented_reduce( ddata.data(), (int) data.size(), segmentSize, dsums.data() );
-	
+
+	//float time = t.record_time( "test" );
+	//printf( "%.2fms (%.1fGB/s)\n", time, data.capacity() / time * 4000 / 1024 / 1024 / 1024 );
+
 	svcu::copy( testSums, dsums );
 	
 	for( int i = 0; i < sums.size(); i++ )

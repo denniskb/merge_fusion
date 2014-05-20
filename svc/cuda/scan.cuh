@@ -79,22 +79,20 @@ inline __device__ float add_up( float var, int delta )
 
 
 
-template< int Width, typename T >
+template< typename T >
 inline __device__ T warp_inclusive_scan( T partialScan )
 {
-	static_assert( Width <= WARP_SZ, "warp_scan can only scan up to WARP_SZ values" );
-
 #pragma unroll
-	for( int i = 1; i <= Width / 2; i *= 2 )
+	for( int i = 1; i <= WARP_SZ / 2; i *= 2 )
 		partialScan = add_up( partialScan,  i );
 
 	return partialScan;
 }
 
-template< int Width, typename T >
+template< typename T >
 inline __device__ T warp_inclusive_scan( T partialScan, T & outSum )
 {
-	T result = warp_inclusive_scan< Width, T >( partialScan );
+	T result = warp_inclusive_scan< T >( partialScan );
 
 	outSum = shfl< T >( result, WARP_SZ - 1 );
 
@@ -103,36 +101,36 @@ inline __device__ T warp_inclusive_scan( T partialScan, T & outSum )
 
 
 
-template< int Width, typename T >
+template< typename T >
 inline __device__ T warp_exclusive_scan( T partialScan )
 {
-	return warp_inclusive_scan< Width, T >( partialScan ) - partialScan;
+	return warp_inclusive_scan< T >( partialScan ) - partialScan;
 }
 
-template< int Width, typename T >
+template< typename T >
 inline __device__ T warp_exclusive_scan( T partialScan, T & outSum )
 {
-	return warp_inclusive_scan< Width, T >( partialScan, outSum ) - partialScan;
+	return warp_inclusive_scan< T >( partialScan, outSum ) - partialScan;
 }
 
 
 
-template< int Width, bool includeSelf, typename T >
+template< bool includeSelf, typename T >
 inline __device__ T warp_scan( T partialScan )
 {
 	if( includeSelf )
-		return warp_inclusive_scan< Width, T >( partialScan );
+		return warp_inclusive_scan< T >( partialScan );
 	else
-		return warp_exclusive_scan< Width, T >( partialScan );
+		return warp_exclusive_scan< T >( partialScan );
 }
 
-template< int Width, bool includeSelf, typename T >
+template< bool includeSelf, typename T >
 inline __device__ T warp_scan( T partialScan, T & outSum )
 {
 	if( includeSelf )
-		return warp_inclusive_scan< Width, T >( partialScan, outSum );
+		return warp_inclusive_scan< T >( partialScan, outSum );
 	else
-		return warp_exclusive_scan< Width, T >( partialScan, outSum );
+		return warp_exclusive_scan< T >( partialScan, outSum );
 }
 
 
@@ -145,9 +143,9 @@ inline __device__ T block_scan
 )
 {
 	T warpSum;
-	partialScan = warp_scan< WARP_SZ, includeSelf, T >( partialScan, warpSum );
+	partialScan = warp_scan< includeSelf, T >( partialScan, warpSum );
 
-	if( laneIdx == 0 )
+	if( 0 == laneIdx )
 		shared[ warpIdx ] = warpSum;
 	__syncthreads();
 
@@ -167,9 +165,9 @@ inline __device__ T block_scan
 )
 {
 	T warpSum;
-	partialScan = warp_scan< WARP_SZ, includeSelf, T >( partialScan, warpSum );
+	partialScan = warp_scan< includeSelf, T >( partialScan, warpSum );
 
-	if( laneIdx == 0 )
+	if( 0 == laneIdx )
 		shared[ warpIdx ] = warpSum;
 	__syncthreads();
 
