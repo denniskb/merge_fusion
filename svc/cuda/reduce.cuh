@@ -26,7 +26,7 @@ inline __device__ T warp_reduce( T partialSum )
 {
 #pragma unroll
 	for( int mask = WARP_SZ / 2; mask > 0; mask /= 2 )
-		partialSum += shfl_xor( partialSum, mask );
+		partialSum += shfl_xor< T >( partialSum, mask );
 
 	return partialSum;
 }

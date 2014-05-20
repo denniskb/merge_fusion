@@ -22,8 +22,8 @@ static __global__ void _segmented_scan
 	unsigned const NW = NT / WARP_SZ;
 	unsigned const VT = SEG_SZ / WARP_SZ;
 
-	unsigned const warpIdx = threadIdx.x / 32;
-	unsigned const laneIdx = threadIdx.x % 32;
+	unsigned const warpIdx = threadIdx.x / WARP_SZ;
+	unsigned const laneIdx = threadIdx.x % WARP_SZ;
 
 	for
 	(
@@ -46,15 +46,13 @@ static __global__ void _segmented_scan
 		)
 		{
 			uint4 word = reinterpret_cast< uint4 const * >( data )[ tid ];
-			unsigned wordSum = horizontal_sum( word );
 
 			unsigned warpOffset, warpSum;
 			if( i < VT / 4 - 1 )
-				warpOffset = svcu::warp_inclusive_scan( wordSum, warpSum );
+				warpOffset = svcu::warp_exclusive_scan< WARP_SZ >( horizontal_sum( word ), warpSum );
 			else
-				warpOffset = svcu::warp_inclusive_scan( wordSum );
+				warpOffset = svcu::warp_exclusive_scan< WARP_SZ >( horizontal_sum( word ) );
 			
-			warpOffset -= wordSum;
 			warpOffset += segmentOffset;
 			segmentOffset += warpSum;
 
@@ -81,7 +79,7 @@ static __global__ void _segmented_scan
 			unsigned word = tid < size ? data[ tid ] : 0;
 
 			unsigned warpSum;
-			word = svcu::warp_scan< includeSelf >( word, warpSum );
+			word = svcu::warp_scan< WARP_SZ, includeSelf >( word, warpSum );
 
 			word += segmentOffset;
 			segmentOffset += warpSum;

@@ -68,7 +68,6 @@
     <CudaCompile>
       <Include>..;$(CUDA_PATH)\include;$(NVCUDASAMPLES_ROOT)\common\inc</Include>
       <PtxAsOptionV>true</PtxAsOptionV>
-      <Keep>true</Keep>
       <MaxRegCount>32</MaxRegCount>
     </CudaCompile>
     <Lib>
