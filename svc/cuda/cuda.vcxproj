@@ -69,7 +69,6 @@
       <Include>..;$(CUDA_PATH)\include;$(NVCUDASAMPLES_ROOT)\common\inc</Include>
       <PtxAsOptionV>true</PtxAsOptionV>
       <MaxRegCount>32</MaxRegCount>
-      <Keep>true</Keep>
     </CudaCompile>
     <Lib>
       <AdditionalDependencies>cudart.lib</AdditionalDependencies>

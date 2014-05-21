@@ -21,13 +21,12 @@ static __global__ void _radix_sort
 	for( int bid = blockIdx.x, end = size / (NT * 4); bid < end; bid += gridDim.x )
 	{
 		//int x = svcu::block_reduce< NT, false >( bid, shared );
-		int x = svcu::block_scan< NT, true >( bid, shared );
-		//int x = svcu::warp_scan< true >( bid, laneIdx );
+		//int x = svcu::block_scan< NT, true >( bid, shared );
+		int y;
+		svcu::warp_scan< true >( 1, y, laneIdx );
 		//int x = svcu::warp_reduce( bid );
 
-		//__syncthreads();
-		if( threadIdx.x == 0 )
-			tmp[ bid ] = x;
+		tmp[ threadIdx.x + bid * NT ] = y;
 	}
 }
 

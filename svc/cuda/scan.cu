@@ -4,7 +4,7 @@
 
 #include <vector_types.h>
 
-#include "constants.h"
+#include "constants.cuh"
 #include "cuda_device.h"
 #include "helper_math_ext.h"
 #include "scan.cuh"
@@ -14,7 +14,7 @@
 template< unsigned NT, unsigned SEG_SZ, bool includeSelf >
 static __global__ void _segmented_scan
 (
-	unsigned const * data, unsigned size, 
+	unsigned const * data, unsigned const size, 
 
 	unsigned * out
 )
@@ -49,9 +49,9 @@ static __global__ void _segmented_scan
 
 			unsigned warpOffset, warpSum;
 			if( i < VT / 4 - 1 )
-				warpOffset = svcu::warp_exclusive_scan( horizontal_sum( word ), warpSum );
+				warpOffset = svcu::warp_scan< false >( horizontal_sum( word ), warpSum, laneIdx );
 			else
-				warpOffset = svcu::warp_exclusive_scan( horizontal_sum( word ) );
+				warpOffset = svcu::warp_scan< false >( horizontal_sum( word ), laneIdx );
 			
 			warpOffset += segmentOffset;
 			segmentOffset += warpSum;
@@ -79,7 +79,7 @@ static __global__ void _segmented_scan
 			unsigned word = tid < size ? data[ tid ] : 0;
 
 			unsigned warpSum;
-			word = svcu::warp_scan< includeSelf >( word, warpSum );
+			word = svcu::warp_scan< includeSelf >( word, warpSum, laneIdx );
 
 			word += segmentOffset;
 			segmentOffset += warpSum;

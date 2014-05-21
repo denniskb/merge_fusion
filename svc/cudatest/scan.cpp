@@ -15,7 +15,7 @@ BOOST_AUTO_TEST_SUITE( scan )
 
 BOOST_AUTO_TEST_CASE( segmented_inclusive_scan )
 {
-	int const segmentSize = 128;
+	int const segmentSize = 256;
 
 	std::vector< unsigned > data( 182094 );
 	for( int i = 0; i < data.size(); i++ )
@@ -31,6 +31,10 @@ BOOST_AUTO_TEST_CASE( segmented_inclusive_scan )
 
 	std::vector< unsigned > testdata;
 	svcu::copy( testdata, ddata );
+
+	for( int i = 0; i < data.size(); i++ )
+		if( data[ i ] != testdata[ i ] )
+			printf( "%d: %d, %d\n", i, data[ i ], testdata[ i ] );
 
 	for( int i = 0; i < data.size(); i++ )
 		BOOST_REQUIRE( data[ i ] == testdata[ i ] );

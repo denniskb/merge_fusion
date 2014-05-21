@@ -21,14 +21,14 @@ svcu::DepthFrame::DepthFrame() :
 
 unsigned svcu::DepthFrame::Width() const
 {
-	assert( m_width <= std::numeric_limits< unsigned >::max );
+	assert( m_width <= std::numeric_limits< unsigned >::max() );
 
 	return (unsigned) m_width;
 }
 
 unsigned svcu::DepthFrame::Height() const
 {
-	assert( m_height <= std::numeric_limits< unsigned >::max );
+	assert( m_height <= std::numeric_limits< unsigned >::max() );
 
 	return (unsigned) m_height;
 }
