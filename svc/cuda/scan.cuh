@@ -79,49 +79,78 @@ template< int NT, bool includeSelf, typename T >
 inline __device__ T block_scan
 (
 	T partialScan, T * shared, 
-	unsigned const laneIdx, unsigned const warpIdx 
+	unsigned const laneIdx 
 )
 {
-	T warpSum;
-	partialScan = warp_scan< includeSelf, T >( partialScan, warpSum, laneIdx );
+	int const VT = NT / WARP_SZ;
 
-	if( 0 == laneIdx )
-		shared[ warpIdx ] = warpSum;
+	shared[ threadIdx.x ] = partialScan;
 	__syncthreads();
 
-	T offset = 0;
-#pragma unroll
-	for( int i = 0; i < NT / WARP_SZ; i++ )
-		offset += shared[ i ] * (i < warpIdx); // '<' means exclusive
+	if( threadIdx.x < WARP_SZ )
+	{
+		T data[ VT ];
 
-	return partialScan + offset;
+		T offset = T();
+#pragma unroll
+		for( int i = 0; i < VT; i++ )
+		{
+			if( includeSelf )
+				offset += shared[ VT * threadIdx.x + i ];
+
+			data[ i ] = offset;
+
+			if ( ! includeSelf )
+				offset += shared[ VT * threadIdx.x + i ];
+		}
+
+		offset = warp_scan< false >( offset, laneIdx );
+
+		for( int i = 0; i < VT; i++ )
+			shared[ VT * threadIdx.x + i ] = data[ i ] + offset;
+	}
+	__syncthreads();
 }
 
 template< int NT, bool includeSelf, typename T >
 inline __device__ T block_scan
 (
-	T partialScan, T & outSum, T * shared, 
-	unsigned const laneIdx, unsigned const warpIdx 
+	T partialScan, T & shOutSum, T * shared, 
+	unsigned const laneIdx 
 )
 {
-	T warpSum;
-	partialScan = warp_scan< includeSelf, T >( partialScan, warpSum, laneIdx );
+	int const VT = NT / WARP_SZ;
 
-	if( 0 == laneIdx )
-		shared[ warpIdx ] = warpSum;
+	shared[ threadIdx.x ] = partialScan;
 	__syncthreads();
 
-	outSum = 0;
-	T offset = 0;
-#pragma unroll
-	for( int i = 0; i < NT / WARP_SZ; i++ )
+	if( threadIdx.x < WARP_SZ )
 	{
-		T tmp = shared[ i ];
-		outSum += tmp;
-		offset += tmp * (i < warpIdx); // '<' means exclusive
-	}
+		T data[ VT ];
 
-	return partialScan + offset;
+		T offset = T();
+#pragma unroll
+		for( int i = 0; i < VT; i++ )
+		{
+			if( includeSelf )
+				offset += shared[ VT * threadIdx.x + i ];
+
+			data[ i ] = offset;
+
+			if ( ! includeSelf )
+				offset += shared[ VT * threadIdx.x + i ];
+		}
+
+		T sum;
+		offset = warp_scan< false >( offset, sum, laneIdx );
+
+		for( int i = 0; i < VT; i++ )
+			shared[ VT * threadIdx.x + i ] = data[ i ] + offset;
+
+		if( 0 == threadIdx.x )
+			shOutSum = sum;
+	}
+	__syncthreads();
 }
 
 
@@ -132,17 +161,17 @@ inline __device__ T block_scan( T partialScan, T * shared )
 	return block_scan< NT, includeSelf, T >
 	(
 		partialScan, shared, 
-		threadIdx.x % WARP_SZ, threadIdx.x / WARP_SZ
+		threadIdx.x % WARP_SZ
 	);
 }
 
 template< int NT, bool includeSelf, typename T >
-inline __device__ T block_scan( T partialScan, T & outSum, T * shared )
+inline __device__ T block_scan( T partialScan, T & shOutSum, T * shared )
 {
 	return block_scan< NT, includeSelf, T >
 	(
-		partialScan, outSum, shared, 
-		threadIdx.x % WARP_SZ, threadIdx.x / WARP_SZ
+		partialScan, shOutSum, shared, 
+		threadIdx.x % WARP_SZ
 	);
 }
 

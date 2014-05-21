@@ -28,7 +28,7 @@ inline __device__ T block_reduce
 	shared[ threadIdx.x ] = partialSum;
 	__syncthreads();
 
-	T totalSum = 0;
+	T totalSum = T();
 
 	if( threadIdx.x < WARP_SZ )
 	{
