@@ -10,7 +10,7 @@ BOOST_AUTO_TEST_SUITE( radix_sort )
 
 BOOST_AUTO_TEST_CASE( test )
 {
-	std::vector< unsigned > test( 1 * 100 * 1000 );
+	std::vector< unsigned > test( 20 * 1000 * 1000 );
 	svcu::vector< unsigned > data( test.size() );
 	svcu::vector< unsigned > tmp( data.capacity() );
 
@@ -20,11 +20,11 @@ BOOST_AUTO_TEST_CASE( test )
 	svcu::copy( data, test );
 	tmp.resize( data.capacity() );
 
-	//svcu::timer t;
+	svcu::timer t;
 	svcu::radix_sort( data.data(), (int) data.capacity(), tmp.data() );
 
-	//float time = t.record_time( "test" );
-	//printf( "%.2fms (%.1fGB/s)\n", time, data.capacity() / time * 4000 / 1024 / 1024 / 1024 );
+	float time = t.record_time( "test" );
+	printf( "%.2fms (%.1fGB/s)\n", time, data.capacity() / time * 4000 / 1024 / 1024 / 1024 );
 }
 
 BOOST_AUTO_TEST_SUITE_END()

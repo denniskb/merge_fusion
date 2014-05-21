@@ -78,7 +78,7 @@
     <ClInclude Include="radix_sort.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="constants.h">
+    <ClInclude Include="constants.cuh">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -142,6 +142,9 @@
       <Filter>Header Files</Filter>
     </None>
     <None Include="scan.cuh">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="intrinsics.cuh">
       <Filter>Header Files</Filter>
     </None>
   </ItemGroup>

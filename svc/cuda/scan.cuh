@@ -1,136 +1,76 @@
 #pragma once
 
-#include "constants.h"
+#include "constants.cuh"
+#include "intrinsics.cuh"
+
+
+
+#define _add_up( type, constr_letter, var, delta, laneIdx )\
+\
+asm\
+(\
+	"{\n\t"\
+	".reg ."#type" tmp;\n\t"\
+	".reg .pred validLane;\n\t"\
+	\
+	"shfl.up.b32 tmp, %0, %1, 0;\n\t"\
+	"setp.ge.u32 validLane, %2, %1;\n\t"\
+	"@validLane add."#type" %0, %0, tmp;\n\t"\
+	"}\n\t"\
+	:\
+	"+"#constr_letter( var ) : "r"( delta ), "r"( laneIdx )\
+);
 
 
 
 namespace svcu {
 
-template< typename T >
-inline __device__ T shfl( T var, int srcLane )
+inline __device__ int add_up( int var, unsigned const delta, unsigned const laneIdx )
 {
-	asm
-	(
-		"{\n\t"
-		"shfl.idx.b32 %0, %0, %1, 0x1f;\n\t"
-		"}"
-		:
-		"+r"( var ) : "r"( srcLane )
-	);
-
+	_add_up( s32, r, var, delta, laneIdx )
 	return var;
 }
 
-
-
-inline __device__ int add_up( int var, int delta )
+inline __device__ unsigned add_up( unsigned var, unsigned const delta, unsigned const laneIdx )
 {
-	asm
-	(
-		"{\n\t"
-		".reg .s32 tmp;\n\t"
-		".reg .pred validLane;\n\t"
-
-		"shfl.up.b32 tmp|validLane, %0,  %1, 0;\n\t"
-		"@validLane add.s32 %0, %0, tmp;\n\t"
-		"}"
-		:
-		"+r"( var ) : "r"( delta )
-	);
-
+	_add_up( u32, r, var, delta, laneIdx )
 	return var;
 }
 
-inline __device__ unsigned add_up( unsigned var, int delta )
+inline __device__ float add_up( float var, unsigned const delta, unsigned const laneIdx )
 {
-	asm
-	(
-		"{\n\t"
-		".reg .u32 tmp;\n\t"
-		".reg .pred validLane;\n\t"
-
-		"shfl.up.b32 tmp|validLane, %0,  %1, 0;\n\t"
-		"@validLane add.u32 %0, %0, tmp;\n\t"
-		"}"
-		:
-		"+r"( var ) : "r"( delta )
-	);
-
-	return var;
-}
-
-inline __device__ float add_up( float var, int delta )
-{
-	asm
-	(
-		"{\n\t"
-		".reg .f32 tmp;\n\t"
-		".reg .pred validLane;\n\t"
-
-		"shfl.up.b32 tmp|validLane, %0,  %1, 0;\n\t"
-		"@validLane add.f32 %0, %0, tmp;\n\t"
-		"}"
-		:
-		"+f"( var ) : "r"( delta )
-	);
-
+	_add_up( f32, f, var, delta, laneIdx )
 	return var;
 }
 
 
 
 template< typename T >
-inline __device__ T warp_inclusive_scan( T partialScan )
+inline __device__ T warp_inclusive_scan( T partialScan, unsigned const laneIdx )
 {
 #pragma unroll
 	for( int i = 1; i <= WARP_SZ / 2; i *= 2 )
-		partialScan = add_up( partialScan,  i );
+		partialScan = add_up( partialScan,  i, laneIdx );
 
 	return partialScan;
 }
 
-template< typename T >
-inline __device__ T warp_inclusive_scan( T partialScan, T & outSum )
-{
-	T result = warp_inclusive_scan< T >( partialScan );
-
-	outSum = shfl< T >( result, WARP_SZ - 1 );
-
-	return result;
-}
-
-
-
-template< typename T >
-inline __device__ T warp_exclusive_scan( T partialScan )
-{
-	return warp_inclusive_scan< T >( partialScan ) - partialScan;
-}
-
-template< typename T >
-inline __device__ T warp_exclusive_scan( T partialScan, T & outSum )
-{
-	return warp_inclusive_scan< T >( partialScan, outSum ) - partialScan;
-}
-
 
 
 template< bool includeSelf, typename T >
-inline __device__ T warp_scan( T partialScan )
+inline __device__ T warp_scan( T partialScan, unsigned const laneIdx )
 {
-	if( includeSelf )
-		return warp_inclusive_scan< T >( partialScan );
-	else
-		return warp_exclusive_scan< T >( partialScan );
+	return warp_inclusive_scan< T >( partialScan, laneIdx ) - !includeSelf * partialScan;
 }
 
 template< bool includeSelf, typename T >
-inline __device__ T warp_scan( T partialScan, T & outSum )
+inline __device__ T warp_scan( T partialScan, T & outSum, unsigned const laneIdx )
 {
-	if( includeSelf )
-		return warp_inclusive_scan< T >( partialScan, outSum );
-	else
-		return warp_exclusive_scan< T >( partialScan, outSum );
+	T result = warp_inclusive_scan< T >( partialScan, laneIdx );
+
+	outSum = __shfl( result, WARP_SZ - 1 );
+
+	return result - !includeSelf * partialScan;
 }
 
 
@@ -143,7 +83,7 @@ inline __device__ T block_scan
 )
 {
 	T warpSum;
-	partialScan = warp_scan< includeSelf, T >( partialScan, warpSum );
+	partialScan = warp_scan< includeSelf, T >( partialScan, warpSum, laneIdx );
 
 	if( 0 == laneIdx )
 		shared[ warpIdx ] = warpSum;
@@ -165,7 +105,7 @@ inline __device__ T block_scan
 )
 {
 	T warpSum;
-	partialScan = warp_scan< includeSelf, T >( partialScan, warpSum );
+	partialScan = warp_scan< includeSelf, T >( partialScan, warpSum, laneIdx );
 
 	if( 0 == laneIdx )
 		shared[ warpIdx ] = warpSum;

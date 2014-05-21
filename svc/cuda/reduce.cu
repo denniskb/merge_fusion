@@ -4,7 +4,7 @@
 
 #include <vector_types.h>
 
-#include "constants.h"
+#include "constants.cuh"
 #include "cuda_device.h"
 #include "helper_math_ext.h"
 #include "reduce.cuh"

@@ -15,7 +15,7 @@ BOOST_AUTO_TEST_SUITE( reduce )
 
 BOOST_AUTO_TEST_CASE( segmented_reduce )
 {
-	int const segmentSize = 512;
+	int const segmentSize = 256;
 
 	std::vector< unsigned > data( 182742 );
 	std::vector< unsigned > sums( ( data.size() + segmentSize - 1 ) / segmentSize );

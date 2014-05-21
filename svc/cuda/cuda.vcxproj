@@ -69,6 +69,7 @@
       <Include>..;$(CUDA_PATH)\include;$(NVCUDASAMPLES_ROOT)\common\inc</Include>
       <PtxAsOptionV>true</PtxAsOptionV>
       <MaxRegCount>32</MaxRegCount>
+      <Keep>true</Keep>
     </CudaCompile>
     <Lib>
       <AdditionalDependencies>cudart.lib</AdditionalDependencies>
@@ -79,7 +80,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="buffer.h" />
-    <ClInclude Include="constants.h" />
+    <ClInclude Include="constants.cuh" />
     <ClInclude Include="cuda_device.h" />
     <ClInclude Include="cuda_event.h" />
     <ClInclude Include="device_allocator.h" />
@@ -125,6 +126,7 @@
     <None Include="Brick.h" />
     <None Include="buffer.inl" />
     <None Include="device_allocator.inl" />
+    <None Include="intrinsics.cuh" />
     <None Include="page_locked_allocator.inl" />
     <None Include="reduce.cuh" />
     <None Include="scan.cuh" />

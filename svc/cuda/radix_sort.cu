@@ -2,24 +2,30 @@
 
 #include "helper_math_ext.h"
 #include "reduce.cuh"
+#include "scan.cuh"
 
 
 
+template< unsigned NT >
 static __global__ void _radix_sort
 (
 	unsigned * data, unsigned size,
 	unsigned * tmp
 )
 {
-	__shared__ int ping[ 256 ];
+	__shared__ int shared[ NT ];
 
-	unsigned const laneIdx = threadIdx.x % WARP_SZ;
-	unsigned const warpIdx = threadIdx.x / WARP_SZ;
+	unsigned const laneIdx = threadIdx.x % 32;
+	unsigned const warpIdx = threadIdx.x / 32;
 
-	for( int bid = blockIdx.x, end = size / 512; bid < end; bid += gridDim.x )
+	for( int bid = blockIdx.x, end = size / (NT * 4); bid < end; bid += gridDim.x )
 	{
-		int x = svcu::warp_reduce( bid );
+		//int x = svcu::block_reduce< NT, false >( bid, shared );
+		int x = svcu::block_scan< NT, true >( bid, shared );
+		//int x = svcu::warp_scan< true >( bid, laneIdx );
+		//int x = svcu::warp_reduce( bid );
 
+		//__syncthreads();
 		if( threadIdx.x == 0 )
 			tmp[ bid ] = x;
 	}
@@ -33,5 +39,7 @@ void svcu::radix_sort
 	unsigned * tmp 
 )
 {
-	_radix_sort<<< 96, 128 >>>( data, size, tmp );
+	unsigned const NT = 128;
+
+	_radix_sort< NT ><<< (96 / (NT / 128)), NT >>>( data, size, tmp );
 }
