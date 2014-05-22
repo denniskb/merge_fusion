@@ -2,6 +2,20 @@
 
 
 
+inline __device__ unsigned laneid()
+{
+	unsigned result;
+
+	asm( "{ mov.u32 %0, %laneid; }" : "=r"( result ) );
+
+	return result;
+}
+
+inline __device__ unsigned warpid()
+{
+	return threadIdx.x / WARP_SZ;
+}
+
 inline __device__ unsigned __shfl( unsigned var, int const srcLane )
 {
 	asm

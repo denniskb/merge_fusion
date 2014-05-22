@@ -17,8 +17,8 @@ static __global__ void _segmented_reduce( unsigned const * data, unsigned size, 
 	unsigned const NW = NT / WARP_SZ;
 	unsigned const VT = SEG_SZ / WARP_SZ;
 
-	unsigned const warpIdx = threadIdx.x / WARP_SZ;
-	unsigned const laneIdx = threadIdx.x % WARP_SZ;
+	unsigned const warpIdx = warpid();
+	unsigned const laneIdx = laneid();
 
 	for
 	(

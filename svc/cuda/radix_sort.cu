@@ -15,16 +15,14 @@ static __global__ void _radix_sort
 {
 	__shared__ unsigned shared[ NT ];
 
-	unsigned const laneIdx = threadIdx.x % WARP_SZ;
-
-	for( int bid = blockIdx.x, end = size / NT; bid < end; bid += gridDim.x )
+	for( unsigned bid = blockIdx.x, end = size / NT; bid < end; bid += gridDim.x )
 	{
-		int x = svcu::block_reduce< NT, false >( (unsigned)bid, shared );
-		//int x = svcu::block_scan< NT, true >( bid, shared );
-		//int x = svcu::warp_scan< true >( bid, laneIdx );
-		//int x = svcu::warp_reduce( bid );
+		//int x = svcu::block_reduce< NT, false >( bid, shared );
+		//int x = svcu::block_reduce( (bool)bid );
+		unsigned x = svcu::warp_scan< false >( (bool)bid );
+		//int x = svcu::warp_reduce( (bool)bid );
 
-		//int x = svcu::block_scan< NT, true >( (unsigned)bid, shared, laneIdx );
+		//svcu::block_scan< NT, true >( (unsigned)bid, shared );
 
 		if( threadIdx.x == 0 )
 			tmp[ bid ] = x;

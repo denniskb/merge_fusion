@@ -25,6 +25,8 @@ BOOST_AUTO_TEST_CASE( test )
 
 	float time = t.record_time( "test" );
  	printf( "%.2fms (%.1fGB/s)\n", time, data.capacity() / time * 4000 / 1024 / 1024 / 1024 );
+
+	svcu::copy( test, tmp );
 }
 
 BOOST_AUTO_TEST_SUITE_END()
