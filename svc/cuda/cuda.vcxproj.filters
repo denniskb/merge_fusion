@@ -138,14 +138,20 @@
     <None Include="page_locked_allocator.inl">
       <Filter>Inline Files</Filter>
     </None>
-    <None Include="reduce.cuh">
-      <Filter>Header Files</Filter>
-    </None>
-    <None Include="scan.cuh">
-      <Filter>Header Files</Filter>
-    </None>
     <None Include="intrinsics.cuh">
       <Filter>Header Files</Filter>
+    </None>
+    <None Include="warp.cuh">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="warp.inl">
+      <Filter>Inline Files</Filter>
+    </None>
+    <None Include="block.cuh">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="block.inl">
+      <Filter>Inline Files</Filter>
     </None>
   </ItemGroup>
 </Project>

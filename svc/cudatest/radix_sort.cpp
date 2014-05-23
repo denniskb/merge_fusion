@@ -10,7 +10,7 @@ BOOST_AUTO_TEST_SUITE( radix_sort )
 
 BOOST_AUTO_TEST_CASE( test )
 {
-	std::vector< unsigned > test( 20 * 1000 * 1000 );
+	std::vector< unsigned > test( 200 * 100 * 1000 );
 	svcu::vector< unsigned > data( test.size() );
 	svcu::vector< unsigned > tmp( data.capacity() );
 

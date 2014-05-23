@@ -7,7 +7,7 @@
 #include "constants.cuh"
 #include "cuda_device.h"
 #include "helper_math_ext.h"
-#include "reduce.cuh"
+#include "warp.cuh"
 
 
 
@@ -41,7 +41,7 @@ static __global__ void _segmented_reduce( unsigned const * data, unsigned size, 
 		)
 			sum += horizontal_sum( reinterpret_cast< uint4 const * >( data )[ src ] );
 
-		sum = svcu::warp_reduce( sum );
+		sum = svcu::warp<>::reduce( sum );
 
 		__syncthreads();
 		if( 0 == laneIdx )
@@ -54,7 +54,7 @@ static __global__ void _segmented_reduce( unsigned const * data, unsigned size, 
 		for( int tid = laneIdx + size / SEG_SZ * SEG_SZ; tid < size; tid += WARP_SZ )
 			sum += data[ tid ];
 
-		sum = svcu::warp_reduce( sum );
+		sum = svcu::warp<>::reduce( sum );
 
 		if( 0 == laneIdx )
 			outSums[ size / SEG_SZ ] = sum;

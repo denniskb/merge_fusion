@@ -122,15 +122,17 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="block.cuh" />
+    <None Include="block.inl" />
     <None Include="Brick.h" />
     <None Include="buffer.inl" />
     <None Include="device_allocator.inl" />
     <None Include="intrinsics.cuh" />
     <None Include="page_locked_allocator.inl" />
-    <None Include="reduce.cuh" />
-    <None Include="scan.cuh" />
     <None Include="vector.inl" />
     <None Include="Voxel.h" />
+    <None Include="warp.cuh" />
+    <None Include="warp.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
