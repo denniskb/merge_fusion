@@ -15,6 +15,8 @@ public:
 	void signal( int n = 1 );
 	void wait();
 
+	void reset( int count );
+
 private:
 	int m_count;
 	std::mutex m_mutex;
