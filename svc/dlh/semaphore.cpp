@@ -31,9 +31,10 @@ void dlh::semaphore::wait()
 {
 	m_mutex.lock();
 
-	--m_count;
-	while( m_count < 0 )
+	while( m_count <= 0 )
 		m_cv.wait( m_mutex );
+
+	--m_count;
 
 	m_mutex.unlock();
 }

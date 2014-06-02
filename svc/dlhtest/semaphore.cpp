@@ -63,6 +63,40 @@ BOOST_AUTO_TEST_CASE( multi_signal )
 	BOOST_CHECK( 2 == critical );
 }
 
+BOOST_AUTO_TEST_CASE( multi_wait )
+{
+	dlh::semaphore sem( 0 );
+	dlh::semaphore any( 0 );
+	std::atomic< int > critical( 0 );
+
+	std::thread worker1( [&]()
+	{
+		sem.wait();
+		critical++;
+		any.signal();
+	});
+
+	std::thread worker2( [&]()
+	{
+		sem.wait();
+		critical++;
+		any.signal();
+	});
+
+	sleep_for( 50 );
+	BOOST_CHECK( 0 == critical );
+	
+	sem.signal();
+	any.wait();
+
+	BOOST_CHECK( 1 == critical );
+
+	sem.signal();
+	worker1.join();
+	worker2.join();
+	BOOST_CHECK( 2 == critical );
+}
+
 BOOST_AUTO_TEST_CASE( preload )
 {
 	dlh::semaphore sem( 1 );
