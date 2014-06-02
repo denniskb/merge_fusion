@@ -1,12 +1,11 @@
-#include "Mesher.h"
+#include <dlh/algorithm.h>
+#include <dlh/array3d.h>
+#include <dlh/DirectXMathExt.h>
+#include <dlh/stop_watch.h>
 
-#include "algorithm.h"
-#include "array3d.h"
-#include "dxmath.h"
+#include "Mesher.h"
 #include "Volume.h"
 #include "Voxel.h"
-
-#include "timer.h"
 
 
 
@@ -14,7 +13,7 @@ void svc::Mesher::Triangulate
 (
 	Volume const & volume,
 
-	std::vector< float4 > & outVertices,
+	std::vector< dlh::float4 > & outVertices,
 	std::vector< unsigned > & outIndices
 )
 {
@@ -22,16 +21,16 @@ void svc::Mesher::Triangulate
 	m_vertexIDs.reserve( 1 << 16 );
 	outIndices.reserve( 1 << 18 );
 
-	timer t;
+	dlh::chrono::stop_watch t;
 	
 	Generate( volume, outVertices, m_vertexIDs, outIndices );	
-	t.record_time( "tgen" );
+	t.take_time( "tgen" );
 
-	radix_sort( m_vertexIDs.begin(), m_vertexIDs.end(), outVertices.begin(), m_scratchPad );
-	t.record_time( "tsort" );
+	dlh::radix_sort( m_vertexIDs.begin(), m_vertexIDs.end(), outVertices.begin(), m_scratchPad );
+	t.take_time( "tsort" );
 	
 	VertexIDsToIndices( m_vertexIDs, outIndices, m_indexIDs, m_scratchPad );
-	t.record_time( "tidx" );
+	t.take_time( "tidx" );
 
 	//t.print();
 }
@@ -41,7 +40,7 @@ void svc::Mesher::Triangulate
 // static 
 void svc::Mesher::Mesh2Obj
 (
-	std::vector< float4 > const & vertices,
+	std::vector< dlh::float4 > const & vertices,
 	std::vector< unsigned > const & indices,
 
 	char const * outObjFileName
@@ -97,7 +96,7 @@ int const * svc::Mesher::TriOffsets()
 }
 
 // static
-svc::uint4 const * svc::Mesher::TriTable()
+dlh::uint4 const * svc::Mesher::TriTable()
 {
 	static unsigned const triTable[] = {
 		 0,  8,  3, 0,  0,  1,  9, 0,  1,  8,  3, 0,  9,  8,  1, 0,
@@ -307,7 +306,7 @@ svc::uint4 const * svc::Mesher::TriTable()
 		 1,  3,  8, 0,  9,  1,  8, 0,  0,  9,  1, 0,  0,  3,  8, 0
 	};
 
-	return reinterpret_cast< uint4 const * >( triTable );
+	return reinterpret_cast< dlh::uint4 const * >( triTable );
 }
 
 
@@ -317,7 +316,7 @@ void svc::Mesher::Generate
 (
 	Volume const & volume,
 
-	std::vector< float4 > & outVertices,
+	std::vector< dlh::float4 > & outVertices,
 	std::vector< unsigned > & outVertexIDs,
 	std::vector< unsigned > & outIndices
 )
@@ -326,9 +325,9 @@ void svc::Mesher::Generate
 	outVertexIDs.clear();
 	outIndices.clear();
 
-	array3d< Voxel, 4, 4, 4 > cache;
+	dlh::array3d< Voxel, 4, 4, 4 > cache;
 
-	flat_map< unsigned, Brick >::const_key_iterator bricks[ 8 ];
+	dlh::flat_map< unsigned, Brick >::const_key_iterator bricks[ 8 ];
 	std::fill( bricks, bricks + 8, volume.Data().keys_cbegin() );
 
 	unsigned deltas[ 8 ];
@@ -336,7 +335,7 @@ void svc::Mesher::Generate
 	{
 		unsigned x, y, z;
 		Brick::Index1Dto3D( i, x, y, z );
-		deltas[ i ] = packInts( x, y, z );
+		deltas[ i ] = dlh::packInts( x, y, z );
 	}
 
 	auto values = volume.Data().values_cbegin();
@@ -393,7 +392,7 @@ void svc::Mesher::Generate
 			}
 
 		unsigned bx, by, bz;
-		unpackInts( * self, bx, by, bz );
+		dlh::unpackInts( * self, bx, by, bz );
 
 		bx *= 2;
 		by *= 2;
@@ -436,14 +435,14 @@ void svc::Mesher::Generate
 			for( int j = 0; j < 8; j++ )
 				d[ j ] = v[ j ].Distance( volume.TruncationMargin() );
 
-			float4 vert000 = volume.VoxelCenter( x0, y0, z0 );
-			unsigned i000 = packInts( x0, y0, z0 );
+			dlh::float4 vert000 = volume.VoxelCenter( x0, y0, z0 );
+			unsigned i000 = dlh::packInts( x0, y0, z0 );
 
 			// TODO: Re-evaluate interpolation (esp. use of weights in lerp)
 			if( v[ 3 ].Weight() > 0 && d[ 2 ] * d[ 3 ] < 0.0f )
 			{
-				float4 vert = vert000;
-				vert.x += lerp( 0.0f, volume.VoxelLength(), abs( d[ 3 ] ), abs( d[ 2 ] ) );
+				dlh::float4 vert = vert000;
+				vert.x += dlh::lerp( 0.0f, volume.VoxelLength(), abs( d[ 3 ] ), abs( d[ 2 ] ) );
 
 				outVertexIDs.push_back( 3 * i000 );
 				outVertices.push_back( vert );
@@ -451,8 +450,8 @@ void svc::Mesher::Generate
 				
 			if( v[ 6 ].Weight() > 0 && d[ 2 ] * d[ 6 ] < 0.0f )
 			{
-				float4 vert = vert000;
-				vert.y += lerp( 0.0f, volume.VoxelLength(), abs( d[ 6 ] ), abs( d[ 2 ] ) );
+				dlh::float4 vert = vert000;
+				vert.y += dlh::lerp( 0.0f, volume.VoxelLength(), abs( d[ 6 ] ), abs( d[ 2 ] ) );
 
 				outVertexIDs.push_back( 3 * i000 + 1 );
 				outVertices.push_back( vert );
@@ -460,8 +459,8 @@ void svc::Mesher::Generate
 				
 			if( v[ 1 ].Weight() > 0 && d[ 2 ] * d[ 1 ] < 0.0f )
 			{
-				float4 vert = vert000;
-				vert.z += lerp( 0.0f, volume.VoxelLength(), abs( d[ 1 ] ), abs( d[ 2 ] ) );
+				dlh::float4 vert = vert000;
+				vert.z += dlh::lerp( 0.0f, volume.VoxelLength(), abs( d[ 1 ] ), abs( d[ 2 ] ) );
 
 				outVertexIDs.push_back( 3 * i000 + 2 );
 				outVertices.push_back( vert );
@@ -482,18 +481,18 @@ void svc::Mesher::Generate
 
 			// Maps local edge indices to global vertex indices
 			unsigned localToGlobal[ 12 ];
-			localToGlobal[  0 ] = packInts( x0, y0, z1 ) * 3;
-			localToGlobal[  1 ] = packInts( x0, y0, z0 ) * 3 + 2;
-			localToGlobal[  2 ] = packInts( x0, y0, z0 ) * 3;
-			localToGlobal[  3 ] = packInts( x1, y0, z0 ) * 3 + 2;
-			localToGlobal[  4 ] = packInts( x0, y1, z1 ) * 3;
-			localToGlobal[  5 ] = packInts( x0, y1, z0 ) * 3 + 2;
-			localToGlobal[  6 ] = packInts( x0, y1, z0 ) * 3;
-			localToGlobal[  7 ] = packInts( x1, y1, z0 ) * 3 + 2;
-			localToGlobal[  8 ] = packInts( x1, y0, z1 ) * 3 + 1;
-			localToGlobal[  9 ] = packInts( x0, y0, z1 ) * 3 + 1;
-			localToGlobal[ 10 ] = packInts( x0, y0, z0 ) * 3 + 1;
-			localToGlobal[ 11 ] = packInts( x1, y0, z0 ) * 3 + 1;
+			localToGlobal[  0 ] = dlh::packInts( x0, y0, z1 ) * 3;
+			localToGlobal[  1 ] = dlh::packInts( x0, y0, z0 ) * 3 + 2;
+			localToGlobal[  2 ] = dlh::packInts( x0, y0, z0 ) * 3;
+			localToGlobal[  3 ] = dlh::packInts( x1, y0, z0 ) * 3 + 2;
+			localToGlobal[  4 ] = dlh::packInts( x0, y1, z1 ) * 3;
+			localToGlobal[  5 ] = dlh::packInts( x0, y1, z0 ) * 3 + 2;
+			localToGlobal[  6 ] = dlh::packInts( x0, y1, z0 ) * 3;
+			localToGlobal[  7 ] = dlh::packInts( x1, y1, z0 ) * 3 + 2;
+			localToGlobal[  8 ] = dlh::packInts( x1, y0, z1 ) * 3 + 1;
+			localToGlobal[  9 ] = dlh::packInts( x0, y0, z1 ) * 3 + 1;
+			localToGlobal[ 10 ] = dlh::packInts( x0, y0, z0 ) * 3 + 1;
+			localToGlobal[ 11 ] = dlh::packInts( x1, y0, z0 ) * 3 + 1;
 
 			for (
 				int i = TriOffsets()[ lutIdx ],
@@ -502,7 +501,7 @@ void svc::Mesher::Generate
 				i++
 			)
 			{
-				uint4 tri = TriTable()[ i ];
+				dlh::uint4 tri = TriTable()[ i ];
 				outIndices.push_back( localToGlobal[ tri.x ] );
 				outIndices.push_back( localToGlobal[ tri.y ] );
 				outIndices.push_back( localToGlobal[ tri.z ] );
@@ -525,7 +524,7 @@ void svc::Mesher::VertexIDsToIndices
 	for( int i = 0; i < inOutIndices.size(); i++ )
 		tmpIndexIDs[ i ] = i;
 
-	radix_sort( inOutIndices.begin(), inOutIndices.end(), tmpIndexIDs.begin(), tmpScratchPad );
+	dlh::radix_sort( inOutIndices.begin(), inOutIndices.end(), tmpIndexIDs.begin(), tmpScratchPad );
 
 	tmpScratchPad.resize( inOutIndices.size() * sizeof( unsigned ) );
 	unsigned * tmp = reinterpret_cast< unsigned * >( tmpScratchPad.data() );

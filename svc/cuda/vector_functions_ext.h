@@ -1,13 +1,13 @@
 #pragma once
 
-#include <reference/dxmath.h>
+#include <dlh/DirectXMathExt.h>
 
 #include "vector_functions.h"
 #include "vector_types_ext.h"
 
 
 
-inline float4x4 make_float4x4( svc::float4x4 const & m )
+inline float4x4 make_float4x4( dlh::float4x4 const & m )
 {
 	float4x4 result;
 

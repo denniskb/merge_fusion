@@ -1,16 +1,15 @@
-#include "Integrator.h"
-
 #include <utility>
 #include <vector>
 
-#include "algorithm.h"
+#include <dlh/algorithm.h>
+#include <dlh/DirectXMathExt.h>
+#include <dlh/stop_watch.h>
+#include <dlh/vector2d.h>
+
 #include "Brick.h"
-#include "dxmath.h"
-#include "vector2d.h"
+#include "Integrator.h"
 #include "Volume.h"
 #include "Voxel.h"
-
-#include "timer.h"
 
 
 
@@ -18,14 +17,14 @@
 void svc::Integrator::Integrate
 ( 
 	Volume & volume,
-	vector2d< float > const & frame,
+	dlh::vector2d< float > const & frame,
 	int footPrint,
 
-	float4 const & eye,
-	float4 const & forward,
+	dlh::float4 const & eye,
+	dlh::float4 const & forward,
 
-	float4x4 const & viewProjection,
-	float4x4 const & viewToWorld
+	dlh::float4x4 const & viewProjection,
+	dlh::float4x4 const & viewToWorld
 )
 {
 	assert( footPrint == 2 || footPrint == 4 );
@@ -33,30 +32,30 @@ void svc::Integrator::Integrate
 	m_splattedChunks.reserve( frame.size() );
 	m_scratchPad.reserve( 4 * frame.size() );
 
-	timer t;
+	dlh::chrono::stop_watch t;
 	
 	SplatChunks( volume, frame, viewToWorld, footPrint, m_splattedChunks );
-	t.record_time( "tsplat" );
+	t.take_time( "tsplat" );
 
-	radix_sort( m_splattedChunks.begin(), m_splattedChunks.end(), m_scratchPad );
-	t.record_time( "tsort" );
+	dlh::radix_sort( m_splattedChunks.begin(), m_splattedChunks.end(), m_scratchPad );
+	t.take_time( "tsort" );
 	
-	m_splattedChunks.resize( svc::unique( m_splattedChunks.begin(), m_splattedChunks.end() ) );
-	t.record_time( "tdups" );
+	m_splattedChunks.resize( dlh::unique( m_splattedChunks.begin(), m_splattedChunks.end() ) );
+	t.take_time( "tdups" );
 
 	ExpandChunks( m_splattedChunks, m_scratchPad );
-	t.record_time( "texpand" );
+	t.take_time( "texpand" );
 
 	ChunksToBricks( m_splattedChunks, footPrint, m_scratchPad );
-	t.record_time( "tchunk2brick" );
+	t.take_time( "tchunk2brick" );
 
 	volume.Data().merge_unique(
 		m_splattedChunks.data(), m_splattedChunks.data() + m_splattedChunks.size(), Brick() 
 	);
-	t.record_time( "tmerge" );
+	t.take_time( "tmerge" );
 
 	UpdateVoxels( volume, frame, eye, forward, viewProjection );
-	t.record_time( "tupdate" );
+	t.take_time( "tupdate" );
 
 	//t.print();
 }
@@ -67,8 +66,8 @@ void svc::Integrator::Integrate
 void svc::Integrator::SplatChunks
 (
 	Volume const & volume,
-	vector2d< float > const & frame,
-	float4x4 const & viewToWorld,
+	dlh::vector2d< float > const & frame,
+	dlh::float4x4 const & viewToWorld,
 	int footPrint,
 
 	std::vector< unsigned > & outChunkIndices
@@ -76,7 +75,7 @@ void svc::Integrator::SplatChunks
 {
 	outChunkIndices.clear();
 
-	mat _viewToWorld = load( viewToWorld );
+	dlh::mat _viewToWorld = dlh::load( viewToWorld );
 
 	float const halfFrameWidth = (float) ( frame.width() / 2 );
 	float const halfFrameHeight = (float) ( frame.height() / 2 );
@@ -99,7 +98,7 @@ void svc::Integrator::SplatChunks
 		float xNdc = ( x - ppX ) / halfFrameWidth;
 		float yNdc = ( ppY - y ) / halfFrameHeight;
 
-		float4 pxView
+		dlh::float4 pxView
 		(
 			xNdc * ( halfFrameWidth / fl ) * depth,
 			yNdc * ( halfFrameHeight / fl ) * depth,
@@ -107,11 +106,11 @@ void svc::Integrator::SplatChunks
 			1.0f
 		);
 
-		vec _pxView = load( pxView );
-		vec _pxWorld = _pxView * _viewToWorld;
+		dlh::vec _pxView = dlh::load( pxView );
+		dlh::vec _pxWorld = _pxView * _viewToWorld;
 
-		float4 pxWorld = store( _pxWorld );
-		float4 pxVol = volume.ChunkIndex( pxWorld, footPrint );
+		dlh::float4 pxWorld = dlh::store( _pxWorld );
+		dlh::float4 pxVol = volume.ChunkIndex( pxWorld, footPrint );
 
 		if( pxVol.x < 0.5f ||
 			pxVol.y < 0.5f ||
@@ -122,7 +121,7 @@ void svc::Integrator::SplatChunks
 			pxVol.z >= volume.NumChunksInVolume( footPrint ) - 0.5f )
 			continue;
 
-		outChunkIndices.push_back( packInts
+		outChunkIndices.push_back( dlh::packInts
 		(
 			(unsigned) ( pxVol.x - 0.5f ),
 			(unsigned) ( pxVol.y - 0.5f ),
@@ -138,9 +137,9 @@ void svc::Integrator::ExpandChunks
 	std::vector< char > & tmpScratchPad
 )
 {
-	ExpandChunksHelper( inOutChunkIndices, packZ( 1 ), false, tmpScratchPad);
-	ExpandChunksHelper( inOutChunkIndices, packY( 1 ), false, tmpScratchPad);
-	ExpandChunksHelper( inOutChunkIndices, packX( 1 ), false, tmpScratchPad);
+	ExpandChunksHelper( inOutChunkIndices, dlh::packZ( 1 ), false, tmpScratchPad);
+	ExpandChunksHelper( inOutChunkIndices, dlh::packY( 1 ), false, tmpScratchPad);
+	ExpandChunksHelper( inOutChunkIndices, dlh::packX( 1 ), false, tmpScratchPad);
 }
 
 // static 
@@ -158,13 +157,13 @@ void svc::Integrator::ChunksToBricks
 	for( auto it = inOutChunkIndices.begin(); it != inOutChunkIndices.end(); ++it )
 	{
 		unsigned x, y, z;
-		unpackInts( * it, x, y, z );
-		* it = packInts( 2 * x, 2 * y, 2 * z );
+		dlh::unpackInts( * it, x, y, z );
+		* it = dlh::packInts( 2 * x, 2 * y, 2 * z );
 	}
 
-	ExpandChunksHelper( inOutChunkIndices, packZ( 1 ), true, tmpScratchPad);
-	ExpandChunksHelper( inOutChunkIndices, packY( 1 ), true, tmpScratchPad);
-	ExpandChunksHelper( inOutChunkIndices, packX( 1 ), true, tmpScratchPad);
+	ExpandChunksHelper( inOutChunkIndices, dlh::packZ( 1 ), true, tmpScratchPad);
+	ExpandChunksHelper( inOutChunkIndices, dlh::packY( 1 ), true, tmpScratchPad);
+	ExpandChunksHelper( inOutChunkIndices, dlh::packX( 1 ), true, tmpScratchPad);
 }
 
 // static
@@ -191,7 +190,7 @@ void svc::Integrator::ExpandChunksHelper
 	
 			size_t newSize = 2 * inOutChunkIndices.size();
 			if( ! disjunct )
-				newSize -= intersection_size
+				newSize -= dlh::intersection_size
 				(
 					inOutChunkIndices.cbegin(), inOutChunkIndices.cend(),
 					tmp, tmp + inOutChunkIndices.size()
@@ -200,7 +199,7 @@ void svc::Integrator::ExpandChunksHelper
 			size_t oldSize = inOutChunkIndices.size();
 			inOutChunkIndices.resize( newSize );
 	
-			set_union_backward
+			dlh::set_union_backward
 			(
 				inOutChunkIndices.cbegin(), inOutChunkIndices.cbegin() + oldSize,
 				tmp, tmp + oldSize,
@@ -227,7 +226,7 @@ void svc::Integrator::ExpandChunksHelper
 
 			if( ! disjunct )
 				inOutChunkIndices.resize( 
-					svc::unique( inOutChunkIndices.begin(), inOutChunkIndices.end() )
+					dlh::unique( inOutChunkIndices.begin(), inOutChunkIndices.end() )
 				);
 		}
 		break;
@@ -238,15 +237,15 @@ void svc::Integrator::ExpandChunksHelper
 void svc::Integrator::UpdateVoxels
 (
 	Volume & volume,
-	vector2d< float > const & frame,
+	dlh::vector2d< float > const & frame,
 
-	float4 const & eye,
-	float4 const & forward,
-	float4x4 const & viewProjection
+	dlh::float4 const & eye,
+	dlh::float4 const & forward,
+	dlh::float4x4 const & viewProjection
 )
 {
-	mat _viewProj = load( viewProjection );
-	vec _ndcToUV = set( frame.width() / 2.0f, frame.height() / 2.0f, 0, 0 );
+	dlh::mat _viewProj = dlh::load( viewProjection );
+	dlh::vec _ndcToUV = dlh::set( frame.width() / 2.0f, frame.height() / 2.0f, 0, 0 );
 
 	auto end = volume.Data().keys_cend();
 	for
@@ -257,7 +256,7 @@ void svc::Integrator::UpdateVoxels
 	)
 	{
 		unsigned brickX, brickY, brickZ;
-		unpackInts( * it.first, brickX, brickY, brickZ );
+		dlh::unpackInts( * it.first, brickX, brickY, brickZ );
 
 		brickX *= 2;
 		brickY *= 2;
@@ -274,13 +273,14 @@ void svc::Integrator::UpdateVoxels
 			y += brickY;
 			z += brickZ;
 
-			float4 centerWorld = volume.VoxelCenter( x, y, z );
-			vec _centerWorld = load( centerWorld );
+			dlh::float4 centerWorld = volume.VoxelCenter( x, y, z );
+			dlh::vec _centerWorld = dlh::load( centerWorld );
 		
-			vec _centerNDC = homogenize( _centerWorld * _viewProj );
+			dlh::vec _centerNDC = dlh::homogenize( _centerWorld * _viewProj );
 		
-			vec _centerScreen = _mm_macc_ps( _centerNDC, _ndcToUV, _ndcToUV );
-			float4 centerScreen = store( _centerScreen );
+			// TODO: Remove SSE4 dependency
+			dlh::vec _centerScreen = _mm_macc_ps( _centerNDC, _ndcToUV, _ndcToUV );
+			dlh::float4 centerScreen = dlh::store( _centerScreen );
 
 			int u = (int) centerScreen.x;
 			int v = (int) centerScreen.y;
@@ -292,7 +292,7 @@ void svc::Integrator::UpdateVoxels
 
 			bool update = ( depth != 0.0f );
 
-			float dist = dot( centerWorld - eye, forward );
+			float dist = dlh::dot( centerWorld - eye, forward );
 			float signedDist = depth - dist;
 				
 			update = update && dist >= 0.8f && signedDist >= -volume.TruncationMargin();

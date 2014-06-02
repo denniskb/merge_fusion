@@ -47,16 +47,18 @@
       <AdditionalIncludeDirectories>$(BOOST_ROOT);..</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(BOOST_LIB_PATH_X64);$(KINECTSDK10_DIR)lib\amd64</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Kinect10.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(BOOST_LIB_PATH_X64)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile />
     <Link />
     <Link>
-      <AdditionalLibraryDirectories>$(BOOST_LIB_PATH_X64);$(KINECTSDK10_DIR)lib\amd64</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Kinect10.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(BOOST_LIB_PATH_X64)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
     </Link>
     <ClCompile>
       <AdditionalIncludeDirectories>$(BOOST_ROOT);..</AdditionalIncludeDirectories>
@@ -69,14 +71,9 @@
     <ClCompile Include="DeviceVolume.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>-->
-    <ClCompile Include="algorithm.cpp" />
-    <ClCompile Include="vector2d.cpp" />
     <ClCompile Include="DepthStream.cpp" />
-    <ClCompile Include="flat_map.cpp" />
-    <ClCompile Include="fstream.cpp" />
     <ClCompile Include="Integrator.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="dxmath.cpp" />
     <ClCompile Include="Mesher.cpp" />
     <ClCompile Include="Splatter.cpp" />
     <ClCompile Include="Volume.cpp" />
@@ -86,6 +83,9 @@
     <ClInclude Include="util.h" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\dlh\dlh.vcxproj">
+      <Project>{24e5dbad-16ed-4aef-b033-810b36d63e39}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\reference\reference.vcxproj">
       <Project>{6372d9a0-c97e-4758-8039-31c3b26f0963}</Project>
     </ProjectReference>

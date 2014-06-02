@@ -1,11 +1,12 @@
-#include <boost/test/auto_unit_test.hpp>
-
 #include <cstdio>
 #include <vector>
 
-#include <reference/dxmath.h>
+#include <boost/test/auto_unit_test.hpp>
+
+#include <dlh/DirectXMathExt.h>
+#include <dlh/vector2d.h>
+
 #include <reference/DepthStream.h>
-#include <reference/vector2d.h>
 
 
 
@@ -59,8 +60,8 @@ BOOST_AUTO_TEST_CASE( NextFrame_v1 )
 
 	fclose( file );
 
-	svc::float4x4 view;
-	svc::vector2d< float > depth;
+	dlh::float4x4 view;
+	dlh::vector2d< float > depth;
 
 	svc::DepthStream ds( fileName );
 	BOOST_CHECK( ds.NextFrame( depth, view ) );
@@ -98,8 +99,8 @@ BOOST_AUTO_TEST_CASE( NextFrame_v2_short )
 
 	fclose( file );
 
-	svc::float4x4 view;
-	svc::vector2d< float > depth;
+	dlh::float4x4 view;
+	dlh::vector2d< float > depth;
 
 	svc::DepthStream ds( fileName );
 	BOOST_CHECK( ds.NextFrame( depth, view ) );
@@ -137,8 +138,8 @@ BOOST_AUTO_TEST_CASE( NextFrame_v2_float )
 
 	fclose( file );
 
-	svc::float4x4 view;
-	svc::vector2d< float > depth;
+	dlh::float4x4 view;
+	dlh::vector2d< float > depth;
 
 	svc::DepthStream ds( fileName );
 	BOOST_CHECK( ds.NextFrame( depth, view ) );

@@ -2,7 +2,7 @@
 
 #include <cuda/DepthFrame.h>
 
-#include <reference/vector2d.h>
+#include <dlh/vector2d.h>
 
 
 
@@ -10,7 +10,7 @@ BOOST_AUTO_TEST_SUITE( DepthFrame )
 
 BOOST_AUTO_TEST_CASE( load_and_store )
 {
-	svc::vector2d< float > hf( 4, 3 );
+	dlh::vector2d< float > hf( 4, 3 );
 	svcu::DepthFrame df;
 
 	hf( 0, 0 ) = 7.0f;

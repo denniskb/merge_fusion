@@ -1,12 +1,12 @@
+#include <boost/filesystem/operations.hpp>
 #include <boost/test/auto_unit_test.hpp>
 
-#include <boost/filesystem/operations.hpp>
+#include <dlh/DirectXMathExt.h>
+#include <dlh/vector2d.h>
 
 #include <reference/DepthStream.h>
-#include <reference/dxmath.h>
 #include <reference/Integrator.h>
 #include <reference/Mesher.h>
-#include <reference/vector2d.h>
 #include <reference/Volume.h>
 
 #include "util.h"
@@ -29,16 +29,16 @@ BOOST_AUTO_TEST_CASE( Triangulate )
 
 	svc::DepthStream ds( ( boost::filesystem::current_path() / "../content/imrod_v2.depth" ).string().c_str() );
 
-	svc::vector2d< float > depth;
-	svc::float4x4 view, viewProj, viewToWorld;
-	svc::float4 eye, forward;
+	dlh::vector2d< float > depth;
+	dlh::float4x4 view, viewProj, viewToWorld;
+	dlh::float4 eye, forward;
 
 	ds.NextFrame( depth, view );
 	ComputeMatrices( view, eye, forward, viewProj, viewToWorld );
 
 	i.Integrate( v, depth, 2, eye, forward, viewProj, viewToWorld );
 
-	std::vector< svc::float4 > VB;
+	std::vector< dlh::float4 > VB;
 	std::vector< unsigned > IB;
 	m.Triangulate( v, VB, IB );
 	svc::Mesher::Mesh2Obj( VB, IB, "C:/TEMP/volume_triangulate.obj" );

@@ -6,9 +6,7 @@
 #include "IntegratorKernels.h"
 #include "Volume.h"
 
-
-
-// HACK: During development
+// HACK: 'unreferenced formal parameter' during development
 #pragma warning( disable : 4100 )
 
 
@@ -19,11 +17,11 @@ void svcu::Integrator::Integrate
 	DepthFrame const & frame,
 	unsigned chunkFootPrint,
 
-	svc::float4 const & eye,
-	svc::float4 const & forward,
+	dlh::float4 const & eye,
+	dlh::float4 const & forward,
 
-	svc::float4x4 const & viewProjection,
-	svc::float4x4 const & viewToWorld
+	dlh::float4x4 const & viewProjection,
+	dlh::float4x4 const & viewToWorld
 )
 {
 	SplatChunks
@@ -44,7 +42,7 @@ void svcu::Integrator::SplatChunks
 (
 	Volume const & volume,
 	DepthFrame const & frame,
-	svc::float4x4 const & viewToWorld,
+	dlh::float4x4 const & viewToWorld,
 	unsigned chunkFootPrint,
 
 	svcu::vector< unsigned > & outChunkIndices

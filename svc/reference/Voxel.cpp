@@ -2,7 +2,7 @@
 
 #include <cassert>
 
-#include "dxmath.h"
+#include <dlh/DirectXMathExt.h>
 
 
 
@@ -38,7 +38,11 @@ void svc::Voxel::Update( float newDistance, float truncationMargin, int newWeigh
 	unsigned w = Weight();
 	unsigned w1 = w + newWeight;
 
-	float d = ( w * Distance( truncationMargin ) + newWeight * clamp( newDistance, -truncationMargin, truncationMargin ) ) / w1;
+	float d = 
+	(
+		w * Distance( truncationMargin ) + 
+		newWeight * dlh::clamp( newDistance, -truncationMargin, truncationMargin ) 
+	) / w1;
 
 	m_data = PackDistance( d, truncationMargin ) << 16 | w1;
 }
@@ -62,7 +66,7 @@ unsigned svc::Voxel::PackDistance( float distance, float truncationMargin )
 {
 	int d = (int) ( distance / truncationMargin * 32767.5f + 32768.0f );
 
-	return clamp( d, 0, 65535 );
+	return dlh::clamp( d, 0, 65535 );
 }
 	
 // static 

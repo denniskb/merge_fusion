@@ -1,29 +1,27 @@
 #pragma once
 
-#include <DirectXmath.h>
-
-#include <reference/dxmath.h>
+#include <dlh/DirectXMathExt.h>
 
 
 
 inline void ComputeMatrices
 (
-	svc::float4x4 const & view,
-	svc::float4 & outEye,
-	svc::float4 & outForward,
-	svc::float4x4 & outViewProj,
-	svc::float4x4 & outViewToWorld
+	dlh::float4x4 const & view,
+	dlh::float4 & outEye,
+	dlh::float4 & outForward,
+	dlh::float4x4 & outViewProj,
+	dlh::float4x4 & outViewToWorld
 )
 {
-	svc::mat _view = svc::load( view );
-	svc::mat _viewInv = XMMatrixInverse( nullptr, _view );
-	svc::vec _eye = svc::set( 0.0f, 0.0f, 0.0f, 1.0f ) * _viewInv;
-	svc::vec _forward = svc::set( 0.0f, 0.0f, -1.0f, 0.0f ) * _viewInv;
+	dlh::mat _view = dlh::load( view );
+	dlh::mat _viewInv = XMMatrixInverse( nullptr, _view );
+	dlh::vec _eye = dlh::set( 0.0f, 0.0f, 0.0f, 1.0f ) * _viewInv;
+	dlh::vec _forward = dlh::set( 0.0f, 0.0f, -1.0f, 0.0f ) * _viewInv;
 
-	svc::mat _viewProj = _view * DirectX::XMMatrixPerspectiveFovRH( 0.778633444f, 4.0f / 3.0f, 0.8f, 4.0f );
+	dlh::mat _viewProj = _view * DirectX::XMMatrixPerspectiveFovRH( 0.778633444f, 4.0f / 3.0f, 0.8f, 4.0f );
 
-	outEye = svc::store( _eye );
-	outForward = svc::store( _forward );
-	outViewProj = svc::store( _viewProj );
-	outViewToWorld = svc::store( _viewInv );
+	outEye = dlh::store( _eye );
+	outForward = dlh::store( _forward );
+	outViewProj = dlh::store( _viewProj );
+	outViewToWorld = dlh::store( _viewInv );
 }

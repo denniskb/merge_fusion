@@ -157,7 +157,7 @@ __device__ unsigned svcu::block< NT >::scan_bit( unsigned pred, unsigned & outSu
 	unsigned const warpIdx = warpid();
 
 	unsigned warpSum;
-	pred = warp<>::scan_bit< includeSelf >( pred, warpSum );
+	unsigned warpOffset = warp<>::scan_bit< includeSelf >( pred, warpSum );
 
 	if( 0 == laneid() )
 		shared[ warpIdx ] = warpSum;
@@ -165,13 +165,13 @@ __device__ unsigned svcu::block< NT >::scan_bit( unsigned pred, unsigned & outSu
 
 	if( threadIdx.x < WARP_SZ )
 	{
-		unsigned offset = shared[ threadIdx.x ] ;		
-		offset = warp< NT / WARP_SZ >::scan< false >( offset );		
-		shared[ threadIdx.x ] = offset;
+		unsigned blockOffset = shared[ threadIdx.x ] ;		
+		blockOffset = warp< NT / WARP_SZ >::scan< false >( blockOffset );		
+		shared[ threadIdx.x ] = blockOffset;
 	}
 	__syncthreads();
 
-	return pred + shared[ warpIdx ];
+	return warpOffset + shared[ warpIdx ];
 }
 
 template<>
@@ -181,19 +181,19 @@ __device__ unsigned svcu::block< 128 >::scan_bit( unsigned pred, unsigned & outS
 	unsigned const warpIdx = warpid();
 
 	unsigned warpSum;
-	pred = warp<>::scan_bit< includeSelf >( pred, warpSum );
+	unsigned warpOffset = warp<>::scan_bit< includeSelf >( pred, warpSum );
 
 	if( 0 == laneid() )
 		shared[ warpIdx ] = warpSum;
 	outSum = __syncthreads_count( pred );
 
-	unsigned offset = 0;
+	unsigned blockOffset = 0;
 
 #pragma unroll
 	for( int i = 0; i < NT / WARP_SZ; i++ )
-		offset += shared[ i ] * (i < warpIdx);
+		blockOffset += shared[ i ] * (i < warpIdx);
 
-	return pred + offset;
+	return warpOffset + blockOffset;
 }
 
 #pragma endregion

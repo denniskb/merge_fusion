@@ -1,6 +1,5 @@
-#include <algorithm>
-#include <cassert>
 #include <cstddef>
+#include <cstring>
 #include <iterator>
 #include <utility>
 #include <vector>
@@ -8,7 +7,7 @@
 
 
 template< class OutputIterator >
-void svc::exclusive_scan( OutputIterator first, OutputIterator last )
+void dlh::exclusive_scan( OutputIterator first, OutputIterator last )
 {
 	typedef std::iterator_traits< OutputIterator >::value_type T;
 
@@ -22,7 +21,7 @@ void svc::exclusive_scan( OutputIterator first, OutputIterator last )
 }
 
 template< class OutputIterator >
-void svc::inclusive_scan( OutputIterator first, OutputIterator last )
+void dlh::inclusive_scan( OutputIterator first, OutputIterator last )
 {
 	typedef std::iterator_traits< OutputIterator >::value_type T;
 
@@ -37,7 +36,7 @@ void svc::inclusive_scan( OutputIterator first, OutputIterator last )
 
 
 template< class InputIterator1, class InputIterator2 >
-size_t svc::intersection_size
+size_t dlh::intersection_size
 (
 	InputIterator1 first1, InputIterator1 last1,
 	InputIterator2 first2, InputIterator2 last2
@@ -63,7 +62,7 @@ size_t svc::intersection_size
 
 template< class InputIterator >
 typename std::iterator_traits< InputIterator >::value_type
-svc::reduce( InputIterator first, InputIterator last )
+dlh::reduce( InputIterator first, InputIterator last )
 {
 	typedef std::iterator_traits< InputIterator >::value_type T;
 
@@ -77,7 +76,7 @@ svc::reduce( InputIterator first, InputIterator last )
 
 
 template< class BidirectionalIterator1, class BidirectionalIterator2, class BidirectionalIterator3 >
-void svc::set_union_backward
+void dlh::set_union_backward
 (
 	BidirectionalIterator1 first1, BidirectionalIterator1 last1,
 	BidirectionalIterator2 first2, BidirectionalIterator2 last2,
@@ -120,7 +119,7 @@ template
 	class BidirectionalIterator3, 
 	class BidirectionalIterator4, class BidirectionalIterator5
 >
-void svc::set_union_backward
+void dlh::set_union_backward
 (
 	BidirectionalIterator1 keys_first1, BidirectionalIterator1 keys_last1,
 	BidirectionalIterator2 values_last1,
@@ -172,7 +171,7 @@ void svc::set_union_backward
 
 
 template< class RandomAccessIterator >
-void svc::radix_sort
+void dlh::radix_sort
 (
 	RandomAccessIterator first, RandomAccessIterator last,
 	std::vector< char > & scratchPad
@@ -197,7 +196,7 @@ void svc::radix_sort
 
 
 template< class RandomAccessIterator1, class RandomAccessIterator2 >
-void svc::radix_sort
+void dlh::radix_sort
 (
 	RandomAccessIterator1 first, RandomAccessIterator1 last,
 	RandomAccessIterator2 tmp
@@ -227,7 +226,7 @@ void svc::radix_sort
 
 
 template< class RandomAccessIterator1, class RandomAccessIterator2 >
-void svc::radix_sort
+void dlh::radix_sort
 (
 	RandomAccessIterator1 keys_first, RandomAccessIterator1 keys_last,
 	RandomAccessIterator2 values_first,
@@ -256,13 +255,13 @@ void svc::radix_sort
 }
 
 
-
+// TODO: Make sure we operate on ints
 template
 < 
 	class RandomAccessIterator1, class RandomAccessIterator2,
 	class RandomAccessIterator3, class RandomAccessIterator4
 >
-void svc::radix_sort
+void dlh::radix_sort
 (
 	RandomAccessIterator1 keys_first, RandomAccessIterator1 keys_last,
 	RandomAccessIterator2 keys_tmp,
@@ -305,7 +304,7 @@ void svc::radix_sort
 
 
 template< class OutputIterator >
-size_t svc::unique( OutputIterator first, OutputIterator last )
+size_t dlh::unique( OutputIterator first, OutputIterator last )
 {
 	auto dst = first;
 	for( auto it = first; it != last; ++it )

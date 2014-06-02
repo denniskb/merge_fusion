@@ -2,8 +2,8 @@
 
 #include <vector>
 
-#include "dxmath.h"
-#include "vector2d.h"
+#include <dlh/DirectXMathExt.h>
+#include <dlh/vector2d.h>
 
 
 
@@ -17,14 +17,14 @@ public:
 	void Integrate
 	( 
 		Volume & volume,
-		vector2d< float > const & frame,
+		dlh::vector2d< float > const & frame,
 		int chunkFootPrint,
 
-		float4 const & eye,
-		float4 const & forward,
+		dlh::float4 const & eye,
+		dlh::float4 const & forward,
 
-		float4x4 const & viewProjection,
-		float4x4 const & viewToWorld
+		dlh::float4x4 const & viewProjection,
+		dlh::float4x4 const & viewToWorld
 	);
 
 private:
@@ -34,8 +34,8 @@ private:
 	static void SplatChunks
 	(
 		Volume const & volume,
-		vector2d< float > const & frame,
-		float4x4 const & viewToWorld,
+		dlh::vector2d< float > const & frame,
+		dlh::float4x4 const & viewToWorld,
 		int chunkFootPrint,
 
 		std::vector< unsigned > & outChunkIndices
@@ -67,11 +67,11 @@ private:
 	static void UpdateVoxels
 	(
 		Volume & volume,
-		vector2d< float > const & frame,
+		dlh::vector2d< float > const & frame,
 
-		float4 const & eye,
-		float4 const & forward,
-		float4x4 const & viewProjection
+		dlh::float4 const & eye,
+		dlh::float4 const & forward,
+		dlh::float4x4 const & viewProjection
 	);
 };
 

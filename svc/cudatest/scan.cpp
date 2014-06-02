@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <vector>
 
-#include <reference/algorithm.h>
+#include <dlh/algorithm.h>
 
 #include <cuda/scan.h>
 #include <cuda/timer.h>
@@ -25,7 +25,7 @@ BOOST_AUTO_TEST_CASE( segmented_inclusive_scan )
 	svcu::copy( ddata, data );
 
 	for( int i = 0; i < data.size(); i += segmentSize )
-		svc::inclusive_scan( data.data() + i, data.data() + std::min< size_t >( data.size(), i + segmentSize ) );
+		dlh::inclusive_scan( data.data() + i, data.data() + std::min< size_t >( data.size(), i + segmentSize ) );
 
 	svcu::segmented_inclusive_scan( ddata.data(), (int) data.size(), segmentSize, ddata.data() );
 
@@ -52,7 +52,7 @@ BOOST_AUTO_TEST_CASE( segmented_exclusive_scan )
 	svcu::copy( ddata, data );
 
 	for( int i = 0; i < data.size(); i += segmentSize )
-		svc::exclusive_scan( data.data() + i, data.data() + std::min< size_t >( data.size(), i + segmentSize ) );
+		dlh::exclusive_scan( data.data() + i, data.data() + std::min< size_t >( data.size(), i + segmentSize ) );
 
 	//svcu::timer t;
 	svcu::segmented_exclusive_scan( ddata.data(), (int) data.size(), segmentSize, ddata.data() );

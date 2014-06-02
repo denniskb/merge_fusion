@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <vector>
 
-#include <reference/algorithm.h>
+#include <dlh/algorithm.h>
 
 #include <cuda/reduce.h>
 #include <cuda/timer.h>
@@ -26,7 +26,7 @@ BOOST_AUTO_TEST_CASE( segmented_reduce )
 
 	for( int i = 0; i < data.size(); i += segmentSize )
 		sums[ i / segmentSize ] = 
-			svc::reduce( data.data() + i, data.data() + std::min< size_t >( data.size(), i + segmentSize ) );
+			dlh::reduce( data.data() + i, data.data() + std::min< size_t >( data.size(), i + segmentSize ) );
 
 	svcu::vector< unsigned > ddata;
 	svcu::vector< unsigned > dsums;

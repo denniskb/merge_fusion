@@ -75,7 +75,7 @@ void svcu::SplatChunksKernel
 (
 	Volume const & volume,
 	DepthFrame const & frame,
-	svc::float4x4 const & viewToWorld,
+	dlh::float4x4 const & viewToWorld,
 	unsigned footPrint,
 
 	vector< unsigned > & outChunkIndices

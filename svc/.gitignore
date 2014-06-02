@@ -10,6 +10,12 @@
 /cudatest/bin
 /cudatest/obj
 
+/dlh/bin
+/dlh/obj
+
+/dlhtest/bin
+/dlhtest/obj
+
 /reference/bin
 /reference/obj
 

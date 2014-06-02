@@ -1,5 +1,9 @@
 #include "radix_sort.h"
 
+#include <cstdio>
+
+#include <vector_types.h>
+
 #include "block.cuh"
 #include "helper_math_ext.h"
 #include "warp.cuh"
@@ -16,30 +20,36 @@ static __global__ void _radix_sort
 )
 {
 	__shared__ unsigned shared[ NT ];
+	__shared__ unsigned stage[ NT ];
 
 	unsigned const laneIdx = laneid();
 	unsigned const warpIdx = warpid();
 
-	for( unsigned bid = blockIdx.x, end = size / NT; bid < end; bid += gridDim.x )
+	for( int i = blockIdx.x, end = size / NT; i < end; i += gridDim.x )
 	{
-		//unsigned x = warp<>::reduce( bid );
-		//unsigned x = warp<>::reduce_bit( bid );
-		//unsigned x = warp<>::scan< true >( bid );
-		//unsigned x = warp<>::scan_bit< true >( bid );
-		//unsigned x; unsigned y = warp<>::scan< true >( bid, x );
-		//unsigned x; unsigned y = warp<>::scan_bit< true >( bid, x );
+		unsigned tid = threadIdx.x + i * NT;
 
-		//unsigned x = block< NT >::reduce( bid, shared );
-		//unsigned x = block< NT >::reduce_bit( bid );
+		unsigned word = data[ tid ];
 
-		//block< NT >::scan< true >( bid, shared ); unsigned x = shared[ threadIdx.x ];
-		unsigned x = block< NT >::scan_bit< true >( bid, shared );
-		
-		//unsigned x; block< NT >::scan< true >( bid, x, shared );
-		//unsigned x; block< NT >::scan_bit< true >( bid, x, shared );
-		
-		if( threadIdx.x == 0 )
-			tmp[ bid ] = x;
+		for( int j = 0; j < 4; j++ )
+		{
+			unsigned bits = ( word >> j ) & 0x1;
+
+			unsigned no1sTotal;
+			unsigned no1sBeforeMe = block< NT >::scan_bit< false >( bits, no1sTotal, shared );
+
+			unsigned no0sTotal = NT - no1sTotal;
+			unsigned no0sBeforeMe = threadIdx.x - no1sBeforeMe;
+
+			unsigned offset = bits * (no0sTotal + no1sBeforeMe) + (1 - bits) * no0sBeforeMe;
+
+			stage[ offset ] = word;
+			__syncthreads();
+
+			word = stage[ threadIdx.x ];
+		}
+
+		tmp[ tid ] = word;
 	}
 }
 
@@ -53,5 +63,6 @@ void svcu::radix_sort
 {
 	unsigned const NT = 128;
 
-	_radix_sort< NT ><<< (96 / (NT / 128)), NT >>>( data, size, tmp );
+	//_radix_sort< NT ><<< (96 / (NT / 128)), NT >>>( data, size, tmp );
+	_radix_sort< 256 ><<< 48, 256 >>>( data, size, tmp );
 }

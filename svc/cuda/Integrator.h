@@ -1,6 +1,6 @@
 #pragma once
 
-#include <reference/dxmath.h>
+#include <dlh/DirectXMathExt.h>
 
 #include "vector.h"
 
@@ -20,11 +20,11 @@ public:
 		DepthFrame const & frame,
 		unsigned chunkFootPrint,
 
-		svc::float4 const & eye,
-		svc::float4 const & forward,
+		dlh::float4 const & eye,
+		dlh::float4 const & forward,
 
-		svc::float4x4 const & viewProjection,
-		svc::float4x4 const & viewToWorld
+		dlh::float4x4 const & viewProjection,
+		dlh::float4x4 const & viewToWorld
 	);
 
 private:
@@ -34,7 +34,7 @@ private:
 	(
 		Volume const & volume,
 		DepthFrame const & frame,
-		svc::float4x4 const & viewToWorld,
+		dlh::float4x4 const & viewToWorld,
 		unsigned chunkFootPrint,
 
 		vector< unsigned > & outChunkIndices

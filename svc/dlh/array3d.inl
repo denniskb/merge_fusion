@@ -3,7 +3,7 @@
 
 
 template< typename T, size_t width, size_t height, size_t depth >
-T & svc::array3d< T, width, height, depth >::operator()
+T & dlh::array3d< T, width, height, depth >::operator()
 ( 
 	size_t x, 
 	size_t y, 
@@ -18,7 +18,7 @@ T & svc::array3d< T, width, height, depth >::operator()
 }
 
 template< typename T, size_t width, size_t height, size_t depth >
-T const & svc::array3d< T, width, height, depth >::operator()
+T const & dlh::array3d< T, width, height, depth >::operator()
 ( 
 	size_t x, 
 	size_t y, 

@@ -1,12 +1,12 @@
-#include "DepthStream.h"
-
 #include <cassert>
 #include <fstream>
 #include <string>
 
-#include "dxmath.h"
-#include "fstream.h"
-#include "vector2d.h"
+#include <dlh/DirectXMathExt.h>
+#include <dlh/fstream.h>
+#include <dlh/vector2d.h>
+
+#include "DepthStream.h"
 
 
 
@@ -17,7 +17,7 @@ svc::DepthStream::DepthStream( std::string const & fileName ) :
 	assert( 4 == sizeof( int ) );
 	assert( 4 == sizeof( DepthStream::TexelType ) );
 
-	assert( fsize( fileName.c_str() ) >= 19 );
+	assert( dlh::fsize( fileName.c_str() ) >= 19 );
 
 	m_file.open( fileName.c_str(), std::ifstream::binary );
 	m_file.seekg( 15 ); // skip magic
@@ -53,8 +53,8 @@ svc::DepthStream::DepthStream( std::string const & fileName ) :
 
 bool svc::DepthStream::NextFrame
 (
-	svc::vector2d< float > & outFrame,
-	float4x4 & outView
+	dlh::vector2d< float > & outFrame,
+	dlh::float4x4 & outView
 )
 {
 	assert( 2 == sizeof( short ) );

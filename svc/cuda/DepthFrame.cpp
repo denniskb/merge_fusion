@@ -1,11 +1,10 @@
-#include "DepthFrame.h"
-
 #include <cstddef>
 
 #include <driver_types.h>
 
-#include <reference/vector2d.h>
+#include <dlh/vector2d.h>
 
+#include "DepthFrame.h"
 #include "kernel_vector2d.h"
 #include "vector.h"
 
@@ -47,14 +46,14 @@ svcu::kernel_vector2d< const float > svcu::DepthFrame::KernelFrame() const
 
 
 
-void svcu::DepthFrame::CopyFrom( svc::vector2d< float > const & frame, cudaStream_t stream )
+void svcu::DepthFrame::CopyFrom( dlh::vector2d< float > const & frame, cudaStream_t stream )
 {
 	copy( m_data, frame, stream );
 	m_width = frame.width();
 	m_height = frame.height();
 }
 
-void svcu::DepthFrame::CopyTo( svc::vector2d< float > & frame, cudaStream_t stream ) const
+void svcu::DepthFrame::CopyTo( dlh::vector2d< float > & frame, cudaStream_t stream ) const
 {
 	frame.resize( Width(), Height() );
 	copy( frame, m_data, stream );

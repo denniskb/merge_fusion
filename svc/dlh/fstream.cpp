@@ -1,11 +1,11 @@
-#include "fstream.h"
-
 #include <fstream>
 #include <string>
 
+#include "fstream.h"
 
 
-long long svc::fsize( std::string const & fileName )
+
+std::uint_least64_t dlh::fsize( std::string const & fileName )
 {
 	std::ifstream file;
 	file.open( fileName.c_str(), std::ifstream::binary );

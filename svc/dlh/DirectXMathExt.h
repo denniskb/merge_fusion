@@ -1,14 +1,10 @@
-/*
-Extends DirectXMath with helpers, shortcuts and convenience functions.
-*/
-
 #pragma once
 
-#include <DirectXmath.h>
+#include <DirectXMath.h>
 
 
 
-namespace svc {
+namespace dlh {
 
 typedef DirectX::XMFLOAT4A float4;
 typedef DirectX::XMFLOAT4X4A float4x4;
@@ -44,18 +40,18 @@ inline void unpackInts( unsigned packedInt, unsigned & outX, unsigned & outY, un
 
 }
 
-inline svc::float4 operator+( svc::float4 const & a, svc::float4 const & b );
-inline svc::float4 operator-( svc::float4 const & a, svc::float4 const & b );
-inline svc::float4 operator*( svc::float4 const & a, svc::float4 const & b );
-inline svc::float4 operator/( svc::float4 const & a, svc::float4 const & b );
+inline dlh::float4 operator+( dlh::float4 const & a, dlh::float4 const & b );
+inline dlh::float4 operator-( dlh::float4 const & a, dlh::float4 const & b );
+inline dlh::float4 operator*( dlh::float4 const & a, dlh::float4 const & b );
+inline dlh::float4 operator/( dlh::float4 const & a, dlh::float4 const & b );
 
-inline svc::vec operator+( svc::vec a, svc::vec b );
-inline svc::vec operator-( svc::vec a, svc::vec b );
-inline svc::vec operator*( svc::vec a, svc::vec b );
-inline svc::vec operator/( svc::vec a, svc::vec b );
+inline dlh::vec operator+( dlh::vec a, dlh::vec b );
+inline dlh::vec operator-( dlh::vec a, dlh::vec b );
+inline dlh::vec operator*( dlh::vec a, dlh::vec b );
+inline dlh::vec operator/( dlh::vec a, dlh::vec b );
 
-inline svc::vec operator*( svc::vec v, svc::mat m );
+inline dlh::vec operator*( dlh::vec v, dlh::mat m );
 
 
 
-#include "dxmath.inl"
+#include "DirectXmathExt.inl"

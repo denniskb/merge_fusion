@@ -2,24 +2,24 @@
 
 
 
-svc::vec svc::load( float4 const & v )
+dlh::vec dlh::load( float4 const & v )
 {
 	return DirectX::XMLoadFloat4A( & v );
 }
 
-svc::mat svc::load( float4x4 const & m )
+dlh::mat dlh::load( float4x4 const & m )
 {
 	return DirectX::XMLoadFloat4x4A( & m );
 }
 
-svc::float4 svc::store( vec v )
+dlh::float4 dlh::store( vec v )
 {
 	float4 result;
 	DirectX::XMStoreFloat4A( & result, v );
 	return result;
 }
 
-svc::float4x4 svc::store( mat m )
+dlh::float4x4 dlh::store( mat m )
 {
 	float4x4 result;
 	DirectX::XMStoreFloat4x4A( & result, m );
@@ -28,12 +28,12 @@ svc::float4x4 svc::store( mat m )
 
 
 
-svc::float4 svc::make_float4( float s )
+dlh::float4 dlh::make_float4( float s )
 {
 	return DirectX::XMFLOAT4A( s, s, s, s );
 }
 
-svc::vec svc::set( float x, float y, float z, float w )
+dlh::vec dlh::set( float x, float y, float z, float w )
 {
 	return DirectX::XMVectorSet( x, y, z, w );
 }
@@ -41,12 +41,12 @@ svc::vec svc::set( float x, float y, float z, float w )
 
 
 template< typename T >
-T svc::clamp( T x, T a, T b )
+T dlh::clamp( T x, T a, T b )
 {
 	return std::max( a, std::min( x, b ) );
 }
 
-float svc::dot( float4 const & a, float4 const & b )
+float dlh::dot( float4 const & a, float4 const & b )
 {
 	return
 		a.x * b.x +
@@ -55,61 +55,61 @@ float svc::dot( float4 const & a, float4 const & b )
 		a.w * b.w;
 }
 
-svc::vec svc::homogenize( vec v )
+dlh::vec dlh::homogenize( vec v )
 {
 	return DirectX::XMVectorDivide( v, DirectX::XMVectorPermute< 3, 3, 3, 3 >( v, v ) );
 }
 
-float svc::lerp( float a, float b, float weightA, float weightB )
+float dlh::lerp( float a, float b, float weightA, float weightB )
 {
 	return a * weightA + b * weightB / ( weightA + weightB );
 }
 
-bool svc::powerOf2( int x )
+bool dlh::powerOf2( int x )
 {
 	return x > 0 && ! ( x & ( x - 1 ) );
 }
 
 
 
-unsigned svc::packX( unsigned x )
+unsigned dlh::packX( unsigned x )
 {
 	return x;
 }
 
-unsigned svc::packY( unsigned y )
+unsigned dlh::packY( unsigned y )
 {
 	return y << 10;
 }
 
-unsigned svc::packZ( unsigned z )
+unsigned dlh::packZ( unsigned z )
 {
 	return z << 20;
 }
 
-unsigned svc::packInts( unsigned x, unsigned y, unsigned z )
+unsigned dlh::packInts( unsigned x, unsigned y, unsigned z )
 {
 	return packX( x ) | packY( y ) | packZ( z );
 }
 
 
 
-unsigned svc::unpackX( unsigned packedInt )
+unsigned dlh::unpackX( unsigned packedInt )
 {
 	return packedInt & 0x3ff;
 }
 
-unsigned svc::unpackY( unsigned packedInt )
+unsigned dlh::unpackY( unsigned packedInt )
 {
 	return ( packedInt >> 10 ) & 0x3ff;
 }
 
-unsigned svc::unpackZ( unsigned packedInt )
+unsigned dlh::unpackZ( unsigned packedInt )
 {
 	return packedInt >> 20;
 }
 
-void svc::unpackInts( unsigned packedInt, unsigned & outX, unsigned & outY, unsigned & outZ )
+void dlh::unpackInts( unsigned packedInt, unsigned & outX, unsigned & outY, unsigned & outZ )
 {
 	outX = unpackX( packedInt );
 	outY = unpackY( packedInt );
@@ -118,9 +118,9 @@ void svc::unpackInts( unsigned packedInt, unsigned & outX, unsigned & outY, unsi
 
 
 
-svc::float4 operator+( svc::float4 const & a, svc::float4 const & b )
+dlh::float4 operator+( dlh::float4 const & a, dlh::float4 const & b )
 {
-	return svc::float4
+	return dlh::float4
 	(
 		a.x + b.x,
 		a.y + b.y,
@@ -129,9 +129,9 @@ svc::float4 operator+( svc::float4 const & a, svc::float4 const & b )
 	);
 }
 
-svc::float4 operator-( svc::float4 const & a, svc::float4 const & b )
+dlh::float4 operator-( dlh::float4 const & a, dlh::float4 const & b )
 {
-	return svc::float4
+	return dlh::float4
 	(
 		a.x - b.x,
 		a.y - b.y,
@@ -140,9 +140,9 @@ svc::float4 operator-( svc::float4 const & a, svc::float4 const & b )
 	);
 }
 
-svc::float4 operator*( svc::float4 const & a, svc::float4 const & b )
+dlh::float4 operator*( dlh::float4 const & a, dlh::float4 const & b )
 {
-	return svc::float4
+	return dlh::float4
 	(
 		a.x * b.x,
 		a.y * b.y,
@@ -151,9 +151,9 @@ svc::float4 operator*( svc::float4 const & a, svc::float4 const & b )
 	);
 }
 
-svc::float4 operator/( svc::float4 const & a, svc::float4 const & b )
+dlh::float4 operator/( dlh::float4 const & a, dlh::float4 const & b )
 {
-	return svc::float4
+	return dlh::float4
 	(
 		a.x / b.x,
 		a.y / b.y,
@@ -164,29 +164,29 @@ svc::float4 operator/( svc::float4 const & a, svc::float4 const & b )
 
 
 
-svc::vec operator+( svc::vec a, svc::vec b )
+dlh::vec operator+( dlh::vec a, dlh::vec b )
 {
 	return DirectX::XMVectorAdd( a, b );
 }
 
-svc::vec operator-( svc::vec a, svc::vec b )
+dlh::vec operator-( dlh::vec a, dlh::vec b )
 {
 	return DirectX::XMVectorSubtract( a, b );
 }
 
-svc::vec operator*( svc::vec a, svc::vec b )
+dlh::vec operator*( dlh::vec a, dlh::vec b )
 {
 	return DirectX::XMVectorMultiply( a, b );
 }
 
-svc::vec operator/( svc::vec a, svc::vec b )
+dlh::vec operator/( dlh::vec a, dlh::vec b )
 {
 	return DirectX::XMVectorDivide( a, b );
 }
 
 
 
-svc::vec operator*( svc::vec v, svc::mat m )
+dlh::vec operator*( dlh::vec v, dlh::mat m )
 {
 	return DirectX::XMVector4Transform( v, m );
 }

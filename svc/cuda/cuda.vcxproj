@@ -53,10 +53,12 @@
       <PtxAsOptionV>true</PtxAsOptionV>
     </CudaCompile>
     <Lib>
-      <AdditionalDependencies>cudart.lib</AdditionalDependencies>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
     </Lib>
     <Lib>
-      <AdditionalLibraryDirectories>$(CUDA_PATH)\lib\x64</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -71,10 +73,12 @@
       <MaxRegCount>32</MaxRegCount>
     </CudaCompile>
     <Lib>
-      <AdditionalDependencies>cudart.lib</AdditionalDependencies>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
     </Lib>
     <Lib>
-      <AdditionalLibraryDirectories>$(CUDA_PATH)\lib\x64</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -115,11 +119,6 @@
     <ClCompile Include="dummy.cpp" />
     <ClCompile Include="Volume.cpp" />
     <ClCompile Include="Integrator.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\reference\reference.vcxproj">
-      <Project>{6372d9a0-c97e-4758-8039-31c3b26f0963}</Project>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="block.cuh" />

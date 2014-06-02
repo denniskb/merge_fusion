@@ -1,13 +1,13 @@
-#include <boost/test/auto_unit_test.hpp>
-
 #include <cstdio>
 
 #include <boost/filesystem/operations.hpp>
+#include <boost/test/auto_unit_test.hpp>
+
+#include <dlh/DirectXMathExt.h>
+#include <dlh/vector2d.h>
 
 #include <reference/DepthStream.h>
-#include <reference/dxmath.h>
 #include <reference/Integrator.h>
-#include <reference/vector2d.h>
 #include <reference/Volume.h>
 
 #include "util.h"
@@ -29,15 +29,14 @@ BOOST_AUTO_TEST_CASE( Integrate )
 
 	svc::DepthStream ds( ( boost::filesystem::current_path() / "../content/imrod_v2.depth" ).string().c_str() );
 
-	svc::vector2d< float > depth;
-	svc::float4x4 view, viewProj, viewToWorld;
-	svc::float4 eye, forward;
+	dlh::vector2d< float > depth;
+	dlh::float4x4 view, viewProj, viewToWorld;
+	dlh::float4 eye, forward;
 
 	ds.NextFrame( depth, view );
 	ComputeMatrices( view, eye, forward, viewProj, viewToWorld );
 
 	i.Integrate( v, depth, 2, eye, forward, viewProj, viewToWorld );
-	//i.Integrate( v, depth, 2, eye, forward, viewProj, viewToWorld );
 
 	FILE * debug;
 	fopen_s( & debug, "C:/TEMP/volume_integrate.obj", "w" );
@@ -46,9 +45,9 @@ BOOST_AUTO_TEST_CASE( Integrate )
 	for( auto it = v.Data().keys_cbegin(), end = v.Data().keys_cend(); it != end; ++it )
 	{
 		unsigned x, y, z;
-		svc::unpackInts( * it, x, y, z );
+		dlh::unpackInts( * it, x, y, z );
 		
-		svc::float4 pos = v.VoxelCenter( x, y, z );
+		dlh::float4 pos = v.VoxelCenter( x, y, z );
 		
 		fprintf_s( debug, "v %f %f %f\n", pos.x, pos.y, pos.z );
 	}

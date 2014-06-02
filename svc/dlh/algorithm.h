@@ -6,18 +6,18 @@
 
 
 
-namespace svc {
+namespace dlh {
 
 template< class OutputIterator >
-inline void 
+void 
 exclusive_scan( OutputIterator first, OutputIterator last );
 
 template< class OutputIterator >
-inline void
+void
 inclusive_scan( OutputIterator first, OutputIterator last );
 
 template< class InputIterator1, class InputIterator2 >
-inline size_t 
+size_t 
 intersection_size
 (
 	InputIterator1 first1, InputIterator1 last1,
@@ -25,11 +25,11 @@ intersection_size
 );
 
 template< class InputIterator >
-inline typename std::iterator_traits< InputIterator >::value_type
+typename std::iterator_traits< InputIterator >::value_type
 reduce( InputIterator first, InputIterator last );
 
 template< class BidirectionalIterator1, class BidirectionalIterator2, class BidirectionalIterator3 >
-inline void 
+void 
 set_union_backward
 (
 	BidirectionalIterator1 first1, BidirectionalIterator1 last1,
@@ -44,7 +44,7 @@ template
 	class BidirectionalIterator3, 
 	class BidirectionalIterator4, class BidirectionalIterator5
 >
-inline void 
+void 
 set_union_backward
 (
 	BidirectionalIterator1 keys_first1, BidirectionalIterator1 keys_last1,
@@ -58,7 +58,7 @@ set_union_backward
 );
 
 template< class RandomAccessIterator >
-inline void 
+void 
 radix_sort
 (
 	RandomAccessIterator first, RandomAccessIterator last,
@@ -66,7 +66,7 @@ radix_sort
 );
 
 template< class RandomAccessIterator1, class RandomAccessIterator2 >
-inline void 
+void 
 radix_sort
 (
 	RandomAccessIterator1 first, RandomAccessIterator1 last,
@@ -74,7 +74,7 @@ radix_sort
 );
 
 template< class RandomAccessIterator1, class RandomAccessIterator2 >
-inline void
+void
 radix_sort
 (
 	RandomAccessIterator1 keys_first, RandomAccessIterator1 keys_last,
@@ -88,7 +88,7 @@ template
 	class RandomAccessIterator1, class RandomAccessIterator2,
 	class RandomAccessIterator3, class RandomAccessIterator4
 >
-inline void
+void
 radix_sort
 (
 	RandomAccessIterator1 keys_first, RandomAccessIterator1 keys_last,
@@ -99,7 +99,7 @@ radix_sort
 );
 
 template< class OutputIterator >
-inline size_t 
+size_t 
 unique( OutputIterator first, OutputIterator last );
 
 }

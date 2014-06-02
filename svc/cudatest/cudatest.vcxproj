@@ -48,7 +48,8 @@
       <AdditionalIncludeDirectories>$(BOOST_ROOT);..;$(CUDA_PATH)\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(BOOST_LIB_PATH_X64)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(BOOST_LIB_PATH_X64);$(CUDA_PATH)\lib\x64</AdditionalLibraryDirectories>
+      <AdditionalDependencies>cudart.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -58,7 +59,8 @@
       <AdditionalIncludeDirectories>$(BOOST_ROOT);..;$(CUDA_PATH)\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(BOOST_LIB_PATH_X64)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(BOOST_LIB_PATH_X64);$(CUDA_PATH)\lib\x64</AdditionalLibraryDirectories>
+      <AdditionalDependencies>cudart.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -72,6 +74,12 @@
   <ItemGroup>
     <ProjectReference Include="..\cuda\cuda.vcxproj">
       <Project>{7117d29b-7486-4172-badb-cb28bf71093f}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\dlh\dlh.vcxproj">
+      <Project>{24e5dbad-16ed-4aef-b033-810b36d63e39}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\reference\reference.vcxproj">
+      <Project>{6372d9a0-c97e-4758-8039-31c3b26f0963}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

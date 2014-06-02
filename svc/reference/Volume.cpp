@@ -2,9 +2,10 @@
 
 #include <cassert>
 
+#include <dlh/DirectXMathExt.h>
+#include <dlh/flat_map.h>
+
 #include "Brick.h"
-#include "dxmath.h"
-#include "flat_map.h"
 
 
 
@@ -22,7 +23,7 @@ svc::Volume::Volume
 	assert( sideLength > 0.0f );
 	assert( truncMargin > 0.0f );
 
-	assert( powerOf2( resolution ) );
+	assert( dlh::powerOf2( resolution ) );
 }
 
 
@@ -54,11 +55,11 @@ int svc::Volume::NumChunksInVolume( int chunkRes ) const
 	return m_res / chunkRes;
 }
 
-svc::float4 svc::Volume::Minimum() const
+dlh::float4 svc::Volume::Minimum() const
 {
 	float minimum = -m_sideLen * 0.5f;
 
-	return float4
+	return dlh::float4
 	(
 		minimum,
 		minimum,
@@ -67,11 +68,11 @@ svc::float4 svc::Volume::Minimum() const
 	);
 }
 
-svc::float4 svc::Volume::Maximum() const
+dlh::float4 svc::Volume::Maximum() const
 {
 	float maximum = 0.5f * m_sideLen;
 
-	return float4
+	return dlh::float4
 	(
 		maximum,
 		maximum,
@@ -82,7 +83,7 @@ svc::float4 svc::Volume::Maximum() const
 
 
 
-svc::float4 svc::Volume::VoxelCenter( int x, int y, int z ) const
+dlh::float4 svc::Volume::VoxelCenter( int x, int y, int z ) const
 {
 	assert( x >= 0 && x < Resolution() );
 	assert( y >= 0 && y < Resolution() );
@@ -90,7 +91,7 @@ svc::float4 svc::Volume::VoxelCenter( int x, int y, int z ) const
 
 	return 
 		Minimum() +
-		float4
+		dlh::float4
 		( 
 			( x + 0.5f ) / Resolution(), 
 			( y + 0.5f ) / Resolution(), 
@@ -100,21 +101,21 @@ svc::float4 svc::Volume::VoxelCenter( int x, int y, int z ) const
 		( Maximum() - Minimum() );
 }
 
-svc::float4 svc::Volume::ChunkIndex( float4 const & world, int chunkRes ) const
+dlh::float4 svc::Volume::ChunkIndex( dlh::float4 const & world, int chunkRes ) const
 {
 	return
 		( world - Minimum() ) / ( Maximum() - Minimum() ) *
-		make_float4( (float) NumChunksInVolume( chunkRes ) );
+		dlh::make_float4( (float) NumChunksInVolume( chunkRes ) );
 }
 
 
 
-svc::flat_map< unsigned, svc::Brick > & svc::Volume::Data()
+dlh::flat_map< unsigned, svc::Brick > & svc::Volume::Data()
 {
 	return m_data;
 }
 
-svc::flat_map< unsigned, svc::Brick > const & svc::Volume::Data() const
+dlh::flat_map< unsigned, svc::Brick > const & svc::Volume::Data() const
 {
 	return m_data;
 }

@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "dxmath.h"
+#include <dlh/DirectXMathExt.h>
 
 
 
@@ -20,20 +20,20 @@ public:
 	(
 		Volume const & volume,
 
-		std::vector< float4 > & outVertices,
+		std::vector< dlh::float4 > & outVertices,
 		std::vector< unsigned > & outIndices
 	);
 
 	static void Mesh2Obj
 	(
-		std::vector< float4 > const & vertices,
+		std::vector< dlh::float4 > const & vertices,
 		std::vector< unsigned > const & indices,
 
 		char const * outObjFileName
 	);
 
 	static int const * TriOffsets();
-	static uint4 const * TriTable();
+	static dlh::uint4 const * TriTable();
 
 private:
 	std::vector< unsigned > m_vertexIDs;
@@ -44,7 +44,7 @@ private:
 	(
 		Volume const & volume,
 
-		std::vector< float4 > & outVertices,
+		std::vector< dlh::float4 > & outVertices,
 		std::vector< unsigned > & outVertexIDs,
 		std::vector< unsigned > & outIndices
 	);

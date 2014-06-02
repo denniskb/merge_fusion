@@ -1,31 +1,30 @@
-#include "Splatter.h"
-
 #include <cassert>
 
-#include "array3d.h"
-#include "dxmath.h"
-#include "Volume.h"
+#include <dlh/array3d.h>
+#include <dlh/DirectXMathExt.h>
+#include <dlh/stop_watch.h>
 
-#include "timer.h"
+#include "Splatter.h"
+#include "Volume.h"
 
 
 
 // static
-void svc::Splatter::Splat( Volume const & volume, std::vector< float4 > & outVertices )
+void svc::Splatter::Splat( Volume const & volume, std::vector< dlh::float4 > & outVertices )
 {
-	assert( 1 == packX( 1 ) );
+	assert( 1 == dlh::packX( 1 ) );
 
 	outVertices.reserve( 1 << 16 );
 	outVertices.clear();
 
-	timer t;
+	dlh::chrono::stop_watch t;
 
-	array3d< Voxel, 4, 4, 4 > cache;
+	dlh::array3d< Voxel, 4, 4, 4 > cache;
 
 	// self, right, top, front
-	unsigned deltas[] = { 0, packX( 1 ), packY( 1 ), packZ( 1 ) };
+	unsigned deltas[] = { 0, dlh::packX( 1 ), dlh::packY( 1 ), dlh::packZ( 1 ) };
 
-	flat_map< unsigned, Brick >::const_key_iterator bricks[ 4 ];
+	dlh::flat_map< unsigned, Brick >::const_key_iterator bricks[ 4 ];
 	std::fill( bricks, bricks + 4, volume.Data().keys_cbegin() );
 
 	auto last = volume.Data().keys_cend() - 1;
@@ -63,7 +62,7 @@ void svc::Splatter::Splat( Volume const & volume, std::vector< float4 > & outVer
 		}
 
 		unsigned bx, by, bz;
-		unpackInts( * bricks[ 0 ], bx, by, bz );
+		dlh::unpackInts( * bricks[ 0 ], bx, by, bz );
 
 		bx *= 2;
 		by *= 2;
@@ -88,7 +87,7 @@ void svc::Splatter::Splat( Volume const & volume, std::vector< float4 > & outVer
 			y += by;
 			z += bz;
 
-			float4 vert000 = volume.VoxelCenter( x, y, z );
+			dlh::float4 vert000 = volume.VoxelCenter( x, y, z );
 
 			float dself, dright, dtop, dfront;
 			dself  = self. Distance( volume.TruncationMargin() );
@@ -101,30 +100,30 @@ void svc::Splatter::Splat( Volume const & volume, std::vector< float4 > & outVer
 			// TODO: Re-evaluate interpolation (esp. use of weights in lerp)
 			if( right.Weight() > 0 && dself * dright < 0.0f )
 			{
-				float4 vert = vert000;
-				vert.x += lerp( 0.0f, volume.VoxelLength(), abs( dright ), abs( dself ) );
+				dlh::float4 vert = vert000;
+				vert.x += dlh::lerp( 0.0f, volume.VoxelLength(), abs( dright ), abs( dself ) );
 
 				outVertices.push_back( vert );
 			}
 				
 			if( top.Weight() > 0 && dself * dtop < 0.0f )
 			{
-				float4 vert = vert000;
-				vert.y += lerp( 0.0f, volume.VoxelLength(), abs( dtop ), abs( dself ) );
+				dlh::float4 vert = vert000;
+				vert.y += dlh::lerp( 0.0f, volume.VoxelLength(), abs( dtop ), abs( dself ) );
 
 				outVertices.push_back( vert );
 			}
 				
 			if( front.Weight() > 0 && dself * dfront < 0.0f )
 			{
-				float4 vert = vert000;
-				vert.z += lerp( 0.0f, volume.VoxelLength(), abs( dfront ), abs( dself ) );
+				dlh::float4 vert = vert000;
+				vert.z += dlh::lerp( 0.0f, volume.VoxelLength(), abs( dfront ), abs( dself ) );
 
 				outVertices.push_back( vert );
 			}
 		}
 	}
 
-	t.record_time( "tsplat" );
+	t.take_time( "tsplat" );
 	//t.print();
 }
