@@ -4,20 +4,5 @@
 *.suo
 *.vcxproj.user
 
-/cuda/bin
-/cuda/obj
-
-/cudatest/bin
-/cudatest/obj
-
-/dlh/bin
-/dlh/obj
-
-/dlhtest/bin
-/dlhtest/obj
-
-/reference/bin
-/reference/obj
-
-/test/bin
-/test/obj
+/*/bin
+/*/obj
