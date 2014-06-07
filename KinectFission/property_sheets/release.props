@@ -23,6 +23,15 @@
     <Lib>
       <LinkTimeCodeGeneration>true</LinkTimeCodeGeneration>
     </Lib>
+    <CudaCompile>
+      <Optimization>O3</Optimization>
+    </CudaCompile>
+    <CudaCompile>
+      <Runtime>MD</Runtime>
+    </CudaCompile>
+    <CudaCompile>
+      <RuntimeChecks>Default</RuntimeChecks>
+    </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup />
 </Project>

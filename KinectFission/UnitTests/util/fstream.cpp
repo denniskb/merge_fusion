@@ -6,10 +6,13 @@
 
 using namespace kifi;
 
-
+// function tmpnam may be unsafe
 #pragma warning( disable : 4996 )
 
-BOOST_AUTO_TEST_SUITE( fstream )
+
+
+BOOST_AUTO_TEST_SUITE( util_test )
+BOOST_AUTO_TEST_SUITE( fstream_test )
 
 BOOST_AUTO_TEST_CASE( fsize )
 {
@@ -39,4 +42,5 @@ BOOST_AUTO_TEST_CASE( fsize )
 	std::remove( fileName.c_str() );
 }
 
+BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()

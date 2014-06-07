@@ -1,13 +1,14 @@
-#include "reduce.h"
-
 #include <cassert>
 
 #include <vector_types.h>
 
-#include "constants.cuh"
-#include "cuda_device.h"
-#include "helper_math_ext.h"
-#include "warp.cuh"
+#include <kifi/cuda/constants.cuh>
+#include <kifi/cuda/cuda_device.h>
+#include <kifi/cuda/helper_math_ext.h>
+#include <kifi/cuda/reduce.h>
+#include <kifi/cuda/warp.cuh>
+
+using namespace kifi::cuda;
 
 
 
@@ -41,7 +42,7 @@ static __global__ void _segmented_reduce( unsigned const * data, unsigned size, 
 		)
 			sum += horizontal_sum( reinterpret_cast< uint4 const * >( data )[ src ] );
 
-		sum = svcu::warp<>::reduce( sum );
+		sum = warp<>::reduce( sum );
 
 		__syncthreads();
 		if( 0 == laneIdx )
@@ -54,7 +55,7 @@ static __global__ void _segmented_reduce( unsigned const * data, unsigned size, 
 		for( int tid = laneIdx + size / SEG_SZ * SEG_SZ; tid < size; tid += WARP_SZ )
 			sum += data[ tid ];
 
-		sum = svcu::warp<>::reduce( sum );
+		sum = warp<>::reduce( sum );
 
 		if( 0 == laneIdx )
 			outSums[ size / SEG_SZ ] = sum;
@@ -63,7 +64,10 @@ static __global__ void _segmented_reduce( unsigned const * data, unsigned size, 
 
 
 
-void svcu::segmented_reduce
+namespace kifi {
+namespace cuda {
+
+void segmented_reduce
 (
 	unsigned const * data, unsigned size,
 	unsigned segmentSize,
@@ -82,3 +86,5 @@ void svcu::segmented_reduce
 		default: assert( false );
 	}
 }
+
+}} // namespace

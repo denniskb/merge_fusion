@@ -1,11 +1,14 @@
 #include <cuda_runtime.h>
 
-#include "cuda_event.h"
+#include <kifi/cuda/cuda_event.h>
 
 
+
+namespace kifi {
+namespace cuda {
 
 template< typename T >
-svcu::vector< T >::vector( size_t initialCapacity ) :
+vector< T >::vector( size_t initialCapacity ) :
 	m_data( initialCapacity ),
 	m_size( 4 ),
 	m_tmpSize( 4 )
@@ -16,13 +19,13 @@ svcu::vector< T >::vector( size_t initialCapacity ) :
 
 
 template< typename T >
-void svcu::vector< T >::clear( cudaStream_t stream )
+void vector< T >::clear( cudaStream_t stream )
 {
 	resize( 0, stream );
 }
 
 template< typename T >
-size_t svcu::vector< T >::capacity() const
+size_t vector< T >::capacity() const
 {
 	return m_data.capacity();
 }
@@ -30,13 +33,13 @@ size_t svcu::vector< T >::capacity() const
 
 
 template< typename T >
-T * svcu::vector< T >::data()
+T * vector< T >::data()
 {
 	return m_data.data();
 }
 
 template< typename T >
-T const * svcu::vector< T >::data() const
+T const * vector< T >::data() const
 {
 	return m_data.data();
 }
@@ -44,13 +47,13 @@ T const * svcu::vector< T >::data() const
 
 
 template< typename T >
-unsigned * svcu::vector< T >::size()
+unsigned * vector< T >::size()
 {
 	return m_size.data();
 }
 
 template< typename T >
-unsigned const * svcu::vector< T >::size() const
+unsigned const * vector< T >::size() const
 {
 	return m_size.data();
 }
@@ -58,21 +61,21 @@ unsigned const * svcu::vector< T >::size() const
 
 
 template< typename T >
-svcu::kernel_vector< T > svcu::vector< T >::kernel_vector()
+cuda::kernel_vector< T > vector< T >::kernel_vector()
 {
-	return svcu::kernel_vector< T >( data(), size() );
+	return cuda::kernel_vector< T >( data(), size() );
 }
 
 template< typename T >
-svcu::kernel_vector< T > const svcu::vector< T >::kernel_vector() const
+cuda::kernel_vector< T > const vector< T >::kernel_vector() const
 {
-	return svcu::kernel_vector< T >( data(), size() );
+	return cuda::kernel_vector< T >( data(), size() );
 }
 
 
 
 template< typename T >
-void svcu::vector< T >::reserve( size_t newCapacity )
+void vector< T >::reserve( size_t newCapacity )
 {
 	if( newCapacity > capacity() )
 	{
@@ -85,7 +88,7 @@ void svcu::vector< T >::reserve( size_t newCapacity )
 }
 
 template< typename T >
-void svcu::vector< T >::resize( size_t newSize, cudaStream_t stream )
+void vector< T >::resize( size_t newSize, cudaStream_t stream )
 {
 	* m_tmpSize.data() = (unsigned) newSize;
 	cudaMemcpyAsync( size(), m_tmpSize.data(), 4, cudaMemcpyHostToDevice, stream );
@@ -96,10 +99,10 @@ void svcu::vector< T >::resize( size_t newSize, cudaStream_t stream )
 
 
 template< typename T >
-void svcu::copy( vector< T > & dst, vector< T > const & src, cudaStream_t stream )
+void copy( vector< T > & dst, vector< T > const & src, cudaStream_t stream )
 {
 	unsigned srcSize;
-	svcu::cuda_event sizeCopied;
+	cuda_event sizeCopied;
 
 	cudaMemcpyAsync( & srcSize, src.m_size, 4, cudaMemcpyDeviceToHost, stream );
 	sizeCopied.record( stream );
@@ -113,10 +116,10 @@ void svcu::copy( vector< T > & dst, vector< T > const & src, cudaStream_t stream
 }
 
 template< typename T >
-void svcu::copy( std::vector< T > & dst, vector< T > const & src, cudaStream_t stream )
+void copy( std::vector< T > & dst, vector< T > const & src, cudaStream_t stream )
 {
 	unsigned srcSize;
-	svcu::cuda_event sizeCopied;
+	cuda_event sizeCopied;
 
 	cudaMemcpyAsync( & srcSize, src.size(), 4, cudaMemcpyDeviceToHost, stream );
 	sizeCopied.record( stream );
@@ -127,9 +130,11 @@ void svcu::copy( std::vector< T > & dst, vector< T > const & src, cudaStream_t s
 }
 
 template< typename T >
-void svcu::copy( vector< T > & dst, std::vector< T > const & src, cudaStream_t stream )
+void copy( vector< T > & dst, std::vector< T > const & src, cudaStream_t stream )
 {
 	dst.resize( src.size(), stream );
 
 	cudaMemcpyAsync( dst.data(), src.data(), src.size() * sizeof( T ), cudaMemcpyHostToDevice, stream );
 }
+
+}} // namespace

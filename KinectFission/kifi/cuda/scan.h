@@ -2,7 +2,8 @@
 
 
 
-namespace svcu {
+namespace kifi {
+namespace cuda {
 
 void segmented_inclusive_scan
 (
@@ -20,4 +21,4 @@ void segmented_exclusive_scan
 	unsigned * out
 );
 
-}
+}} // namespace

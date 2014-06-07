@@ -8,7 +8,8 @@ using namespace kifi;
 
 
 
-BOOST_AUTO_TEST_SUITE( flat_map )
+BOOST_AUTO_TEST_SUITE( util_test )
+BOOST_AUTO_TEST_SUITE( flat_map_test )
 
 BOOST_AUTO_TEST_CASE( ctor )
 {
@@ -76,4 +77,5 @@ BOOST_AUTO_TEST_CASE( merge_unique )
 	}
 }
 
+BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()

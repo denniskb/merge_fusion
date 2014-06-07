@@ -18,7 +18,7 @@ using namespace kifi;
 
 
 
-BOOST_AUTO_TEST_SUITE( Splatter )
+BOOST_AUTO_TEST_SUITE( SplatterTest )
 
 BOOST_AUTO_TEST_CASE( Splat )
 {
@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE( Splat )
 	i.Integrate( v, depth, 2, eye, forward, viewProj, viewToWorld );
 
 	std::vector< util::float4 > verts;
-	kifi::Splatter::Splat( v, verts );
+	Splatter::Splat( v, verts );
 
 	Mesher::Mesh2Obj( verts, std::vector< unsigned >(), "C:/TEMP/volume_splat.obj" );
 

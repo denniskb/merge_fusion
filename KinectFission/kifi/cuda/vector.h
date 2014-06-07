@@ -5,13 +5,14 @@
 
 #include <driver_types.h>
 
-#include "buffer.h"
-#include "kernel_vector.h"
-#include "page_locked_allocator.h"
+#include <kifi/cuda/buffer.h>
+#include <kifi/cuda/kernel_vector.h>
+#include <kifi/cuda/page_locked_allocator.h>
 
 
 
-namespace svcu {
+namespace kifi {
+namespace cuda {
 
 template< typename T >
 class vector
@@ -28,8 +29,8 @@ public:
 	unsigned * size();
 	unsigned const * size() const;
 
-	svcu::kernel_vector< T > kernel_vector();
-	svcu::kernel_vector< T > const kernel_vector() const;
+	cuda::kernel_vector< T > kernel_vector();
+	cuda::kernel_vector< T > const kernel_vector() const;
 
 	void reserve( size_t newCapacity );
 	void resize( size_t newSize, cudaStream_t stream = 0 );
@@ -53,7 +54,7 @@ void copy( std::vector< T > & dst, vector< T > const & src, cudaStream_t stream 
 template< typename T >
 void copy( vector< T > & dst, std::vector< T > const & src, cudaStream_t stream = 0 );
 
-}
+}} // namespace
 
 
 

@@ -6,7 +6,8 @@ using namespace kifi;
 
 
 
-BOOST_AUTO_TEST_SUITE( DirectXMathExt )
+BOOST_AUTO_TEST_SUITE( util_test )
+BOOST_AUTO_TEST_SUITE( DirectXMathExtTest )
 
 BOOST_AUTO_TEST_CASE( load_store )
 {
@@ -62,4 +63,5 @@ BOOST_AUTO_TEST_CASE( powerOf2 )
 
 // TODO: Rework packInts and test!
 
+BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()

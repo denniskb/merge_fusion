@@ -15,7 +15,7 @@ using namespace kifi;
 
 
 
-BOOST_AUTO_TEST_SUITE( Mesher )
+BOOST_AUTO_TEST_SUITE( MesherTest )
 
 BOOST_AUTO_TEST_CASE( Triangulate )
 {
@@ -25,7 +25,7 @@ BOOST_AUTO_TEST_CASE( Triangulate )
 	the volume is triangulated using mc and stored as an .obj
 	*/
 	Integrator i;
-	kifi::Mesher m;
+	Mesher m;
 
 	Volume v( 256, 2.0f, 0.02f );
 
@@ -43,7 +43,7 @@ BOOST_AUTO_TEST_CASE( Triangulate )
 	std::vector< util::float4 > VB;
 	std::vector< unsigned > IB;
 	m.Triangulate( v, VB, IB );
-	kifi::Mesher::Mesh2Obj( VB, IB, "C:/TEMP/volume_triangulate.obj" );
+	Mesher::Mesh2Obj( VB, IB, "C:/TEMP/volume_triangulate.obj" );
 
 	BOOST_REQUIRE( true );
 }

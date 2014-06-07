@@ -40,7 +40,7 @@ static void WriteHeader
 
 
 
-BOOST_AUTO_TEST_SUITE( DepthStream )
+BOOST_AUTO_TEST_SUITE( DepthStreamTest )
 
 BOOST_AUTO_TEST_CASE( NextFrame_v1 )
 {
@@ -65,7 +65,7 @@ BOOST_AUTO_TEST_CASE( NextFrame_v1 )
 	util::float4x4 view;
 	util::vector2d< float > depth;
 
-	kifi::DepthStream ds( fileName );
+	DepthStream ds( fileName );
 	BOOST_CHECK( ds.NextFrame( depth, view ) );
 	BOOST_CHECK( 640 == depth.width() );
 	BOOST_CHECK( 480 == depth.height() );
@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE( NextFrame_v2_short )
 	util::float4x4 view;
 	util::vector2d< float > depth;
 
-	kifi::DepthStream ds( fileName );
+	DepthStream ds( fileName );
 	BOOST_CHECK( ds.NextFrame( depth, view ) );
 	BOOST_CHECK( 640 == depth.width() );
 	BOOST_CHECK( 480 == depth.height() );
@@ -143,7 +143,7 @@ BOOST_AUTO_TEST_CASE( NextFrame_v2_float )
 	util::float4x4 view;
 	util::vector2d< float > depth;
 
-	kifi::DepthStream ds( fileName );
+	DepthStream ds( fileName );
 	BOOST_CHECK( ds.NextFrame( depth, view ) );
 	BOOST_CHECK( 640 == depth.width() );
 	BOOST_CHECK( 480 == depth.height() );

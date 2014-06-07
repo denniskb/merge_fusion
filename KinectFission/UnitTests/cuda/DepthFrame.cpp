@@ -1,17 +1,20 @@
 #include <boost/test/auto_unit_test.hpp>
 
-#include <cuda/DepthFrame.h>
+#include <kifi/cuda/DepthFrame.h>
 
-#include <dlh/vector2d.h>
+#include <kifi/util/vector2d.h>
+
+using namespace kifi;
 
 
 
-BOOST_AUTO_TEST_SUITE( DepthFrame )
+BOOST_AUTO_TEST_SUITE( cuda_test )
+BOOST_AUTO_TEST_SUITE( DepthFrameTest )
 
 BOOST_AUTO_TEST_CASE( load_and_store )
 {
-	dlh::vector2d< float > hf( 4, 3 );
-	svcu::DepthFrame df;
+	util::vector2d< float > hf( 4, 3 );
+	cuda::DepthFrame df;
 
 	hf( 0, 0 ) = 7.0f;
 	hf( 2, 1 ) = 3.0f;
@@ -29,4 +32,5 @@ BOOST_AUTO_TEST_CASE( load_and_store )
 	BOOST_REQUIRE( hf( 2, 1 ) == 3.0f );
 }
 
+BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()

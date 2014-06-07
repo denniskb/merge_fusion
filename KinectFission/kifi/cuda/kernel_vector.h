@@ -4,7 +4,8 @@
 
 
 
-namespace svcu {
+namespace kifi {
+namespace cuda {
 
 template< typename T >
 class kernel_vector
@@ -41,4 +42,4 @@ private:
 	unsigned * m_size;
 };
 
-}
+}} // namespace

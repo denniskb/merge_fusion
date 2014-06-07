@@ -4,7 +4,8 @@
 
 
 
-namespace svcu {
+namespace kifi {
+namespace cuda {
 
 struct Brick
 {
@@ -12,4 +13,4 @@ struct Brick
 	uint4 slice1;
 };
 
-}
+}} // namespace

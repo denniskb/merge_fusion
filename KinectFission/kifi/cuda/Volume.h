@@ -1,18 +1,19 @@
 #pragma once
 
-#include "KernelVolume.h"
+#include <kifi/cuda/KernelVolume.h>
 
 
 
-namespace svcu {
+namespace kifi {
+namespace cuda {
 
 class Volume
 {
 public:
 	Volume( int resolution, float sideLength, float truncationMargin );
 
-	svcu::KernelVolume KernelVolume();
-	svcu::KernelVolume const KernelVolume() const;
+	cuda::KernelVolume KernelVolume();
+	cuda::KernelVolume const KernelVolume() const;
 
 private:
 	int m_res;
@@ -20,4 +21,4 @@ private:
 	float m_truncMargin;
 };
 
-}
+}} // namespace

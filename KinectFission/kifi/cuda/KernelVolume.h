@@ -6,14 +6,15 @@
 
 
 
-namespace svcu {
+namespace kifi {
+namespace cuda {
 
 class KernelVolume
 {
 public:
 	inline __host__ KernelVolume( unsigned resolution, float sideLength ) :
-		resolution( resolution ),
-		sideLength( sideLength )
+		m_resolution( resolution ),
+		m_sideLength( sideLength )
 	{
 	}
 
@@ -21,21 +22,21 @@ public:
 	{
 		return make_float4
 		(
-			( world.x + sideLength * 0.5f ) / sideLength * NumChunksInVolume( chunkRes ),
-			( world.y + sideLength * 0.5f ) / sideLength * NumChunksInVolume( chunkRes ),
-			( world.z + sideLength * 0.5f ) / sideLength * NumChunksInVolume( chunkRes ),
+			( world.x + m_sideLength * 0.5f ) / m_sideLength * NumChunksInVolume( chunkRes ),
+			( world.y + m_sideLength * 0.5f ) / m_sideLength * NumChunksInVolume( chunkRes ),
+			( world.z + m_sideLength * 0.5f ) / m_sideLength * NumChunksInVolume( chunkRes ),
 			1.0f
 		);
 	}
 
 	inline __device__ unsigned NumChunksInVolume( unsigned chunkRes ) const
 	{
-		return resolution / chunkRes;
+		return m_resolution / chunkRes;
 	}
 
 private:
-	unsigned resolution;
-	float sideLength;
+	unsigned m_resolution;
+	float m_sideLength;
 };
 
-}
+}}

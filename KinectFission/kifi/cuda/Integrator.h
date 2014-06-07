@@ -1,12 +1,13 @@
 #pragma once
 
-#include <dlh/DirectXMathExt.h>
+#include <kifi/util/DirectXMathExt.h>
 
-#include "vector.h"
+#include <kifi/cuda/vector.h>
 
 
 
-namespace svcu {
+namespace kifi {
+namespace cuda {
 
 class DepthFrame;
 class Volume;
@@ -20,11 +21,11 @@ public:
 		DepthFrame const & frame,
 		unsigned chunkFootPrint,
 
-		dlh::float4 const & eye,
-		dlh::float4 const & forward,
+		util::float4 const & eye,
+		util::float4 const & forward,
 
-		dlh::float4x4 const & viewProjection,
-		dlh::float4x4 const & viewToWorld
+		util::float4x4 const & viewProjection,
+		util::float4x4 const & viewToWorld
 	);
 
 private:
@@ -34,11 +35,11 @@ private:
 	(
 		Volume const & volume,
 		DepthFrame const & frame,
-		dlh::float4x4 const & viewToWorld,
+		util::float4x4 const & viewToWorld,
 		unsigned chunkFootPrint,
 
 		vector< unsigned > & outChunkIndices
 	);
 };
 
-}
+}} // namespace

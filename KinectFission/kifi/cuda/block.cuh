@@ -1,10 +1,11 @@
 #pragma once
 
-#include "constants.cuh"
+#include <kifi/cuda/constants.cuh>
 
 
 
-namespace svcu {
+namespace kifi {
+namespace cuda {
 
 template< unsigned NT >
 struct block
@@ -27,7 +28,7 @@ private:
 	template< typename T > static inline __device__ T _reduce( T partialSum, T * shared );
 };
 
-}
+}} // namespace
 
 
 

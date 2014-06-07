@@ -1,3 +1,5 @@
+#include <algorithm>
+#include <iterator>
 #include <utility>
 #include <vector>
 
@@ -42,7 +44,12 @@ void Integrator::Integrate
 	util::radix_sort( m_splattedChunks.begin(), m_splattedChunks.end(), m_scratchPad );
 	t.take_time( "tsort" );
 	
-	m_splattedChunks.resize( util::unique( m_splattedChunks.begin(), m_splattedChunks.end() ) );
+	m_splattedChunks.resize( 
+		std::distance( 
+			m_splattedChunks.begin(), 
+			std::unique( m_splattedChunks.begin(), m_splattedChunks.end() ) 
+		)
+	);
 	t.take_time( "tdups" );
 
 	ExpandChunks( m_splattedChunks, m_scratchPad );
@@ -228,7 +235,10 @@ void Integrator::ExpandChunksHelper
 
 			if( ! disjunct )
 				inOutChunkIndices.resize( 
-					util::unique( inOutChunkIndices.begin(), inOutChunkIndices.end() )
+					std::distance(
+						inOutChunkIndices.begin(),
+						std::unique( inOutChunkIndices.begin(), inOutChunkIndices.end() )
+					)
 				);
 		}
 		break;

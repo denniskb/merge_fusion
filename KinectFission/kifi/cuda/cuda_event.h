@@ -4,7 +4,8 @@
 
 
 
-namespace svcu {
+namespace kifi {
+namespace cuda {
 
 class cuda_event
 {
@@ -23,4 +24,4 @@ private:
 	cuda_event & operator=( cuda_event );
 };
 
-}
+}} // namespace

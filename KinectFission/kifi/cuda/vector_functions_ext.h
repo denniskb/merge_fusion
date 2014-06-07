@@ -1,13 +1,14 @@
 #pragma once
 
-#include <dlh/DirectXMathExt.h>
+#include <vector_functions.h>
 
-#include "vector_functions.h"
-#include "vector_types_ext.h"
+#include <kifi/cuda/vector_types_ext.h>
+
+#include <kifi/util/DirectXMathExt.h>
 
 
 
-inline float4x4 make_float4x4( dlh::float4x4 const & m )
+inline float4x4 make_float4x4( kifi::util::float4x4 const & m )
 {
 	float4x4 result;
 

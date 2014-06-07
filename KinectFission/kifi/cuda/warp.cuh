@@ -4,7 +4,8 @@
 
 
 
-namespace svcu {
+namespace kifi {
+namespace cuda {
 
 // TODO: Make reduce and scan work with not-power-of-2 'width's !!!
 
@@ -42,7 +43,7 @@ private:
 	template< bool includeSelf, typename T > static inline __device__ T _scan( T partialScan, T & outSum );
 };
 
-}
+}} // namespace
 
 
 

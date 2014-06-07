@@ -19,11 +19,16 @@
       <CompileAsManaged>false</CompileAsManaged>
       <PreprocessorDefinitions>WIN32;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <AdditionalDependencies />
     </Link>
+    <CudaCompile>
+      <Warning>W4</Warning>
+      <TypeInfo>false</TypeInfo>
+    </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup />
 </Project>

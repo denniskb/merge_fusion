@@ -2,15 +2,18 @@
 
 #include <driver_types.h>
 
-#include <dlh/vector2d.h>
+#include <kifi/util/vector2d.h>
 
-#include "DepthFrame.h"
-#include "kernel_vector2d.h"
-#include "vector.h"
+#include <kifi/cuda/DepthFrame.h>
+#include <kifi/cuda/kernel_vector2d.h>
+#include <kifi/cuda/vector.h>
 
 
 
-svcu::DepthFrame::DepthFrame() :
+namespace kifi {
+namespace cuda {
+
+DepthFrame::DepthFrame() :
 	m_width( 0 ),
 	m_height( 0 )
 {
@@ -18,14 +21,14 @@ svcu::DepthFrame::DepthFrame() :
 
 
 
-unsigned svcu::DepthFrame::Width() const
+unsigned DepthFrame::Width() const
 {
 	assert( m_width <= std::numeric_limits< unsigned >::max() );
 
 	return (unsigned) m_width;
 }
 
-unsigned svcu::DepthFrame::Height() const
+unsigned DepthFrame::Height() const
 {
 	assert( m_height <= std::numeric_limits< unsigned >::max() );
 
@@ -34,27 +37,29 @@ unsigned svcu::DepthFrame::Height() const
 
 
 
-svcu::kernel_vector2d< float > svcu::DepthFrame::KernelFrame()
+kernel_vector2d< float > DepthFrame::KernelFrame()
 {
 	return kernel_vector2d< float >( m_data.data(), (unsigned) Width(), (unsigned) Height() );
 }
 
-svcu::kernel_vector2d< const float > svcu::DepthFrame::KernelFrame() const
+kernel_vector2d< const float > DepthFrame::KernelFrame() const
 {
 	return kernel_vector2d< const float >( m_data.data(), (unsigned) Width(), (unsigned) Height() );
 }
 
 
 
-void svcu::DepthFrame::CopyFrom( dlh::vector2d< float > const & frame, cudaStream_t stream )
+void DepthFrame::CopyFrom( util::vector2d< float > const & frame, cudaStream_t stream )
 {
 	copy( m_data, frame, stream );
 	m_width = frame.width();
 	m_height = frame.height();
 }
 
-void svcu::DepthFrame::CopyTo( dlh::vector2d< float > & frame, cudaStream_t stream ) const
+void DepthFrame::CopyTo( util::vector2d< float > & frame, cudaStream_t stream ) const
 {
 	frame.resize( Width(), Height() );
 	copy( frame, m_data, stream );
 }
+
+}} // namespace

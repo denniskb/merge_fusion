@@ -18,7 +18,8 @@ static void sleep_for( int ms )
 
 
 
-BOOST_AUTO_TEST_SUITE( semaphore )
+BOOST_AUTO_TEST_SUITE( util_test )
+BOOST_AUTO_TEST_SUITE( semaphore_test )
 
 BOOST_AUTO_TEST_CASE( basic_wait_signal )
 {
@@ -132,4 +133,5 @@ BOOST_AUTO_TEST_CASE( negative_preload )
 	worker2.join();
 }
 
+BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()

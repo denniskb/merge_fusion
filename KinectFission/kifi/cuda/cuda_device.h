@@ -4,7 +4,8 @@
 
 
 
-namespace svcu {
+namespace kifi {
+namespace cuda {
 
 class cuda_device
 {
@@ -28,4 +29,4 @@ private:
 	explicit cuda_device( int id );
 };
 
-}
+}} // namespace

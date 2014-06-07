@@ -22,6 +22,30 @@
     <ClInclude Include="Splatter.h" />
     <ClInclude Include="Volume.h" />
     <ClInclude Include="Voxel.h" />
+    <ClInclude Include="cuda\Brick.h" />
+    <ClInclude Include="cuda\buffer.h" />
+    <ClInclude Include="cuda\cuda_device.h" />
+    <ClInclude Include="cuda\cuda_event.h" />
+    <ClInclude Include="cuda\DepthFrame.h" />
+    <ClInclude Include="cuda\vector.h" />
+    <ClInclude Include="cuda\kernel_vector2d.h" />
+    <ClInclude Include="cuda\kernel_vector.h" />
+    <ClInclude Include="cuda\device_allocator.h" />
+    <ClInclude Include="cuda\page_locked_allocator.h" />
+    <ClInclude Include="cuda\flat_map.h" />
+    <ClInclude Include="cuda\helper_math_ext.h" />
+    <ClInclude Include="cuda\Integrator.h" />
+    <ClInclude Include="cuda\IntegratorKernels.h" />
+    <ClInclude Include="cuda\KernelVolume.h" />
+    <ClInclude Include="cuda\timer.h" />
+    <ClInclude Include="cuda\radix_sort.h" />
+    <ClInclude Include="cuda\reduce.h" />
+    <ClInclude Include="cuda\scan.h" />
+    <ClInclude Include="cuda\vector_functions_ext.h" />
+    <ClInclude Include="cuda\vector_types_ext.h" />
+    <ClInclude Include="cuda\Volume.h" />
+    <ClInclude Include="cuda\Voxel.h" />
+    <ClInclude Include="util\numeric.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="util\algorithm.inl" />
@@ -29,6 +53,16 @@
     <None Include="util\DirectXMathExt.inl" />
     <None Include="util\flat_map.inl" />
     <None Include="util\vector2d.inl" />
+    <None Include="cuda\block.cuh" />
+    <None Include="cuda\block.inl" />
+    <None Include="cuda\buffer.inl" />
+    <None Include="cuda\constants.cuh" />
+    <None Include="cuda\vector.inl" />
+    <None Include="cuda\device_allocator.inl" />
+    <None Include="cuda\page_locked_allocator.inl" />
+    <None Include="cuda\intrinsics.cuh" />
+    <None Include="cuda\warp.cuh" />
+    <None Include="cuda\warp.inl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="util\barrier.cpp" />
@@ -43,5 +77,17 @@
     <ClCompile Include="Splatter.cpp" />
     <ClCompile Include="Volume.cpp" />
     <ClCompile Include="Voxel.cpp" />
+    <ClCompile Include="cuda\cuda_device.cpp" />
+    <ClCompile Include="cuda\cuda_event.cpp" />
+    <ClCompile Include="cuda\DepthFrame.cpp" />
+    <ClCompile Include="cuda\Integrator.cpp" />
+    <ClCompile Include="cuda\timer.cpp" />
+    <ClCompile Include="cuda\Volume.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="cuda\IntegratorKernels.cu" />
+    <CudaCompile Include="cuda\radix_sort.cu" />
+    <CudaCompile Include="cuda\reduce.cu" />
+    <CudaCompile Include="cuda\scan.cu" />
   </ItemGroup>
 </Project>

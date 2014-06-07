@@ -1,17 +1,22 @@
 #include <boost/test/auto_unit_test.hpp>
 
 #include <algorithm>
+#include <numeric>
 #include <vector>
 
-#include <dlh/algorithm.h>
+#include <kifi/cuda/scan.h>
+#include <kifi/cuda/timer.h>
+#include <kifi/cuda/vector.h>
 
-#include <cuda/scan.h>
-#include <cuda/timer.h>
-#include <cuda/vector.h>
+#include <kifi/util/algorithm.h>
+#include <kifi/util/numeric.h>
+
+using namespace kifi;
 
 
 
-BOOST_AUTO_TEST_SUITE( scan )
+BOOST_AUTO_TEST_SUITE( cuda_test )
+BOOST_AUTO_TEST_SUITE( scan_test )
 
 BOOST_AUTO_TEST_CASE( segmented_inclusive_scan )
 {
@@ -21,16 +26,16 @@ BOOST_AUTO_TEST_CASE( segmented_inclusive_scan )
 	for( int i = 0; i < data.size(); i++ )
 		data[ i ] = rand() % 531;
 
-	svcu::vector< unsigned > ddata;
-	svcu::copy( ddata, data );
+	cuda::vector< unsigned > ddata;
+	cuda::copy( ddata, data );
 
 	for( int i = 0; i < data.size(); i += segmentSize )
-		dlh::inclusive_scan( data.data() + i, data.data() + std::min< size_t >( data.size(), i + segmentSize ) );
+		std::partial_sum( data.data() + i, data.data() + std::min< size_t >( data.size(), i + segmentSize ), data.data() + i );
 
-	svcu::segmented_inclusive_scan( ddata.data(), (int) data.size(), segmentSize, ddata.data() );
+	cuda::segmented_inclusive_scan( ddata.data(), (int) data.size(), segmentSize, ddata.data() );
 
 	std::vector< unsigned > testdata;
-	svcu::copy( testdata, ddata );
+	cuda::copy( testdata, ddata );
 
 	for( int i = 0; i < data.size(); i++ )
 		if( data[ i ] != testdata[ i ] )
@@ -48,23 +53,24 @@ BOOST_AUTO_TEST_CASE( segmented_exclusive_scan )
 	for( int i = 0; i < data.size(); i++ )
 		data[ i ] = rand() % 491;
 
-	svcu::vector< unsigned > ddata;
-	svcu::copy( ddata, data );
+	cuda::vector< unsigned > ddata;
+	cuda::copy( ddata, data );
 
 	for( int i = 0; i < data.size(); i += segmentSize )
-		dlh::exclusive_scan( data.data() + i, data.data() + std::min< size_t >( data.size(), i + segmentSize ) );
+		util::partial_sum_exclusive( data.data() + i, data.data() + std::min< size_t >( data.size(), i + segmentSize ), data.data() + i );
 
-	//svcu::timer t;
-	svcu::segmented_exclusive_scan( ddata.data(), (int) data.size(), segmentSize, ddata.data() );
+	//cuda::timer t;
+	cuda::segmented_exclusive_scan( ddata.data(), (int) data.size(), segmentSize, ddata.data() );
 
 	//float time = t.record_time( "test" );
 	//printf( "%.2fms (%.1fGB/s)\n", time, data.capacity() / time * 4000 / 1024 / 1024 / 1024 );
 
 	std::vector< unsigned > testdata;
-	svcu::copy( testdata, ddata );
+	cuda::copy( testdata, ddata );
 
 	for( int i = 0; i < data.size(); i++ )
 		BOOST_REQUIRE( data[ i ] == testdata[ i ] );
 }
 
+BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()

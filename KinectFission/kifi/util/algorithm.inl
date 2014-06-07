@@ -4,39 +4,12 @@
 #include <utility>
 #include <vector>
 
+#include <kifi/util/numeric.h>
+
 
 
 namespace kifi {
 namespace util {
-
-template< class OutputIterator >
-void exclusive_scan( OutputIterator first, OutputIterator last )
-{
-	typedef std::iterator_traits< OutputIterator >::value_type T;
-
-	T acc = T();
-	for( ; first != last; ++first )
-	{
-		T tmp = * first;
-		* first = acc;
-		acc += tmp;
-	}
-}
-
-template< class OutputIterator >
-void inclusive_scan( OutputIterator first, OutputIterator last )
-{
-	typedef std::iterator_traits< OutputIterator >::value_type T;
-
-	T prev = T();
-	for( ; first != last; ++first )
-	{
-		* first += prev;
-		prev = * first;
-	}
-}
-
-
 
 template< class InputIterator1, class InputIterator2 >
 size_t intersection_size
@@ -57,21 +30,6 @@ size_t intersection_size
 		std::advance( first1, lte );
 		std::advance( first2, gte );
 	}
-
-	return result;
-}
-
-
-
-template< class InputIterator >
-typename std::iterator_traits< InputIterator >::value_type
-reduce( InputIterator first, InputIterator last )
-{
-	typedef std::iterator_traits< InputIterator >::value_type T;
-
-	T result = T();
-	for( ; first != last; ++first )
-		result += * first;
 
 	return result;
 }
@@ -216,7 +174,7 @@ void radix_sort
 		for( auto it = first; it != last; ++it )
 			++cnt[ ( * it >> shift ) & 0xff ];
 
-		exclusive_scan( cnt, cnt + 256 );
+		partial_sum_exclusive( cnt, cnt + 256, cnt );
 
 		for( auto it = first; it != last; ++it )
 			tmp[ cnt[ ( * it >> shift ) & 0xff ]++ ] = * it;
@@ -284,7 +242,7 @@ void radix_sort
 		for( auto it = keys_first; it != keys_last; ++it )
 			++cnt[ ( * it >> shift ) & 0xff ];
 
-		exclusive_scan( cnt, cnt + 256 );
+		partial_sum_exclusive( cnt, cnt + 256, cnt );
 
 		for
 		( 
@@ -302,19 +260,6 @@ void radix_sort
 		swap( keys_first, keys_tmp );
 		swap( values_first, values_tmp );
 	}
-}
-
-
-
-template< class OutputIterator >
-size_t unique( OutputIterator first, OutputIterator last )
-{
-	auto dst = first;
-	for( auto it = first; it != last; ++it )
-		if( * it != * dst )
-			* ++dst = * it;
-
-	return std::distance( first, dst ) + 1;
 }
 
 }} // namespaces

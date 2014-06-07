@@ -3,30 +3,22 @@
 #include <boost/test/auto_unit_test.hpp>
 
 #include <kifi/util/algorithm.h>
+#include <kifi/util/numeric.h>
 
 using namespace kifi;
 
 
 
-BOOST_AUTO_TEST_SUITE( algorithm )
+BOOST_AUTO_TEST_SUITE( util_test )
+BOOST_AUTO_TEST_SUITE( algorithm_test )
 
 BOOST_AUTO_TEST_CASE( exclusive_scan )
 {
 	int a[]             = { 1, 3, 3, 7,  0 };
 	int const scanOfA[] = { 0, 1, 4, 7, 14 };
 	
-	util::exclusive_scan( a, a + 5 );
-
-	for( int i = 0; i < 5; i++ )
-		BOOST_REQUIRE( scanOfA[ i ] == a[ i ] );
-}
-
-BOOST_AUTO_TEST_CASE( inclusive_scan )
-{
-	int a[]             = { 1, 3, 3,  7,  0 };
-	int const scanOfA[] = { 1, 4, 7, 14, 14 };
-
-	util::inclusive_scan( a, a + 5 );
+	//util::exclusive_scan( a, a + 5 );
+	util::partial_sum_exclusive( a, a + 5, a );
 
 	for( int i = 0; i < 5; i++ )
 		BOOST_REQUIRE( scanOfA[ i ] == a[ i ] );
@@ -64,26 +56,6 @@ BOOST_AUTO_TEST_CASE( intersection_size )
 
 		BOOST_REQUIRE( 1 == util::intersection_size( a, a+1, b, b+2 ) );
 		BOOST_REQUIRE( 1 == util::intersection_size( b, b+2, a, a+1 ) );
-	}
-}
-
-
-
-BOOST_AUTO_TEST_CASE( reduce )
-{
-	{
-		int const a[] = { 1 };
-		BOOST_REQUIRE( 0 == util::reduce( a, a+0 ) );
-	}
-
-	{
-		int const a[] = { 5 };
-		BOOST_REQUIRE( 5 == util::reduce( a, a+1 ) );
-	}
-
-	{
-		int const a[] = { 1, 3, 3, 7 };
-		BOOST_REQUIRE( 14 == util::reduce( a, a+4 ) );
 	}
 }
 
@@ -248,37 +220,5 @@ BOOST_AUTO_TEST_CASE( radix_sort2 )
 		BOOST_REQUIRE( keys[ i ] == values[ i ] );
 }
 
-
-
-BOOST_AUTO_TEST_CASE( unique )
-{
-	{
-		int a[] = { 7 };
-
-		size_t newSize = util::unique( a, a + 1 );
-
-		BOOST_REQUIRE( newSize == 1 );
-		BOOST_REQUIRE( a[ 0 ] == 7 );
-	}
-
-	{
-		int a[] = { 2, 2 };
-
-		size_t newSize = util::unique( a, a + 2 );
-
-		BOOST_REQUIRE( newSize == 1 );
-		BOOST_REQUIRE( a[ 0 ] == 2 );
-	}
-
-	{
-		int a[] = { 1, 1, 2 };
-
-		size_t newSize = util::unique( a, a + 3 );
-
-		BOOST_REQUIRE( newSize == 2 );
-		BOOST_REQUIRE( a[ 0 ] == 1 );
-		BOOST_REQUIRE( a[ 1 ] == 2 );
-	}
-}
-
+BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()

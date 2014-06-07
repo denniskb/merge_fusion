@@ -1,8 +1,11 @@
-#include "Volume.h"
+#include <kifi/cuda/Volume.h>
 
 
 
-svcu::Volume::Volume( int resolution, float sideLength, float truncationMargin ) :
+namespace kifi {
+namespace cuda {
+
+Volume::Volume( int resolution, float sideLength, float truncationMargin ) :
 	m_res( resolution ),
 	m_sideLen( sideLength ),
 	m_truncMargin( truncationMargin )
@@ -11,12 +14,14 @@ svcu::Volume::Volume( int resolution, float sideLength, float truncationMargin )
 
 
 
-svcu::KernelVolume svcu::Volume::KernelVolume()
+cuda::KernelVolume Volume::KernelVolume()
 {
-	return svcu::KernelVolume( m_res, m_sideLen );
+	return cuda::KernelVolume( m_res, m_sideLen );
 }
 
-svcu::KernelVolume const svcu::Volume::KernelVolume() const
+cuda::KernelVolume const Volume::KernelVolume() const
 {
-	return svcu::KernelVolume( m_res, m_sideLen );
+	return cuda::KernelVolume( m_res, m_sideLen );
 }
+
+}} // namespace

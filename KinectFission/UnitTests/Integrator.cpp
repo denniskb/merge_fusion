@@ -16,7 +16,7 @@ using namespace kifi;
 
 
 
-BOOST_AUTO_TEST_SUITE( Integrator )
+BOOST_AUTO_TEST_SUITE( IntegratorTest )
 
 BOOST_AUTO_TEST_CASE( Integrate )
 {
@@ -25,7 +25,7 @@ BOOST_AUTO_TEST_CASE( Integrate )
 	One depth frame is integrated (generated with poly2depth) and then
 	all voxels near surface are stored as vertices to an .obj
 	*/
-	kifi::Integrator i;
+	Integrator i;
 
 	Volume v( 256, 2.0f, 0.02f );
 

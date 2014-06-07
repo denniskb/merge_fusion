@@ -5,7 +5,8 @@
 
 
 
-namespace svcu {
+namespace kifi {
+namespace cuda {
 
 template< typename T >
 class device_allocator : public std::allocator< T >
@@ -15,7 +16,7 @@ public:
 	void deallocate( pointer p, size_t n );
 };
 
-}
+}} // namespace
 
 
 

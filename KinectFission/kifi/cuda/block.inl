@@ -1,31 +1,34 @@
-#include "constants.cuh"
-#include "intrinsics.cuh"
-#include "warp.cuh"
+#include <kifi/cuda/constants.cuh>
+#include <kifi/cuda/intrinsics.cuh>
+#include <kifi/cuda/warp.cuh>
 
 
+
+namespace kifi {
+namespace cuda {
 
 #pragma region reduce
 
 template< unsigned NT >
-__device__ int svcu::block< NT >::reduce( int partialSum, int * shared )
+__device__ int block< NT >::reduce( int partialSum, int * shared )
 {
 	return _reduce< int >( partialSum, shared );
 }
 
 template< unsigned NT >
-__device__ unsigned svcu::block< NT >::reduce( unsigned partialSum, unsigned * shared )
+__device__ unsigned block< NT >::reduce( unsigned partialSum, unsigned * shared )
 {
 	return _reduce< unsigned >( partialSum, shared );
 }
 
 template< unsigned NT >
-__device__ float svcu::block< NT >::reduce( float partialSum, float * shared )
+__device__ float block< NT >::reduce( float partialSum, float * shared )
 {
 	return _reduce< float >( partialSum, shared );
 }
 
 template< unsigned NT >
-__device__ unsigned svcu::block< NT >::reduce_bit( unsigned pred )
+__device__ unsigned block< NT >::reduce_bit( unsigned pred )
 {
 	return __syncthreads_count( pred );
 }
@@ -36,7 +39,7 @@ __device__ unsigned svcu::block< NT >::reduce_bit( unsigned pred )
 
 template< unsigned NT >
 template< bool includeSelf, typename T >
-__device__ void svcu::block< NT >::scan( T partialScan, T * shared )
+__device__ void block< NT >::scan( T partialScan, T * shared )
 {
 	int const VT = NT / WARP_SZ;
 
@@ -66,7 +69,7 @@ __device__ void svcu::block< NT >::scan( T partialScan, T * shared )
 
 template< unsigned NT >
 template< bool includeSelf, typename T >
-__device__ void svcu::block< NT >::scan( T partialScan, T & shOutSum, T * shared )
+__device__ void block< NT >::scan( T partialScan, T & shOutSum, T * shared )
 {
 	int const VT = NT / WARP_SZ;
 
@@ -104,7 +107,7 @@ __device__ void svcu::block< NT >::scan( T partialScan, T & shOutSum, T * shared
 
 template< unsigned NT >
 template< bool includeSelf >
-__device__ unsigned svcu::block< NT >::scan_bit( unsigned pred, unsigned * shared )
+__device__ unsigned block< NT >::scan_bit( unsigned pred, unsigned * shared )
 {
 	unsigned const warpIdx = warpid();
 
@@ -128,7 +131,7 @@ __device__ unsigned svcu::block< NT >::scan_bit( unsigned pred, unsigned * share
 
 template<>
 template< bool includeSelf >
-__device__ unsigned svcu::block< 128 >::scan_bit( unsigned pred, unsigned * shared )
+__device__ unsigned block< 128 >::scan_bit( unsigned pred, unsigned * shared )
 {
 	unsigned const warpIdx = warpid();
 
@@ -152,7 +155,7 @@ __device__ unsigned svcu::block< 128 >::scan_bit( unsigned pred, unsigned * shar
 
 template< unsigned NT >
 template< bool includeSelf >
-__device__ unsigned svcu::block< NT >::scan_bit( unsigned pred, unsigned & outSum, unsigned * shared )
+__device__ unsigned block< NT >::scan_bit( unsigned pred, unsigned & outSum, unsigned * shared )
 {
 	unsigned const warpIdx = warpid();
 
@@ -176,7 +179,7 @@ __device__ unsigned svcu::block< NT >::scan_bit( unsigned pred, unsigned & outSu
 
 template<>
 template< bool includeSelf >
-__device__ unsigned svcu::block< 128 >::scan_bit( unsigned pred, unsigned & outSum, unsigned * shared )
+__device__ unsigned block< 128 >::scan_bit( unsigned pred, unsigned & outSum, unsigned * shared )
 {
 	unsigned const warpIdx = warpid();
 
@@ -202,7 +205,7 @@ __device__ unsigned svcu::block< 128 >::scan_bit( unsigned pred, unsigned & outS
 
 template< unsigned NT >
 template< typename T >
-__device__ T svcu::block< NT >::_reduce( T partialSum, T * shared )
+__device__ T block< NT >::_reduce( T partialSum, T * shared )
 {
 	shared[ threadIdx.x ] = partialSum;
 	__syncthreads();
@@ -222,3 +225,5 @@ __device__ T svcu::block< NT >::_reduce( T partialSum, T * shared )
 }
 
 #pragma endregion
+
+}} // namespace

@@ -18,7 +18,8 @@ static void sleep_for( int ms )
 
 
 
-BOOST_AUTO_TEST_SUITE( barrier )
+BOOST_AUTO_TEST_SUITE( util_test )
+BOOST_AUTO_TEST_SUITE( barrier_test )
 
 BOOST_AUTO_TEST_CASE( basic )
 {
@@ -66,4 +67,5 @@ BOOST_AUTO_TEST_CASE( multi_pass )
 	BOOST_CHECK( 2 == count );
 }
 
+BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()

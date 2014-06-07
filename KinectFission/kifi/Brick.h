@@ -14,6 +14,7 @@ public:
 	static void Index1Dto3D
 	( 
 		unsigned index, 
+
 		unsigned & outX,
 		unsigned & outY, 
 		unsigned & outZ

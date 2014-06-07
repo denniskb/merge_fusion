@@ -1,30 +1,33 @@
-#include "constants.cuh"
-#include "intrinsics.cuh"
+#include <kifi/cuda/constants.cuh>
+#include <kifi/cuda/intrinsics.cuh>
 
 
+
+namespace kifi {
+namespace cuda {
 
 #pragma region T reduce( T )
 
 template< unsigned width >
-__device__ int svcu::warp< width >::reduce( int partialSum )
+__device__ int warp< width >::reduce( int partialSum )
 {
 	return _reduce( partialSum ); 
 }
 	
 template< unsigned width >
-__device__ unsigned svcu::warp< width >::reduce( unsigned partialSum ) 
+__device__ unsigned warp< width >::reduce( unsigned partialSum ) 
 { 
 	return _reduce( partialSum ); 
 }
 
 template< unsigned width >
-__device__ float svcu::warp< width >::reduce( float partialSum ) 
+__device__ float warp< width >::reduce( float partialSum ) 
 { 
 	return _reduce( partialSum ); 
 }
 
 template< unsigned width >
-__device__ unsigned svcu::warp< width >::reduce_bit( unsigned pred ) 
+__device__ unsigned warp< width >::reduce_bit( unsigned pred ) 
 {
 	return __popc( __ballot( pred ) & (~0u >> (WARP_SZ - width)) );
 }
@@ -35,21 +38,21 @@ __device__ unsigned svcu::warp< width >::reduce_bit( unsigned pred )
 
 template< unsigned width >
 template< bool includeSelf >
-__device__ int svcu::warp< width >::scan( int partialScan )
+__device__ int warp< width >::scan( int partialScan )
 {
 	return _scan< includeSelf, int >( partialScan );
 }
 
 template< unsigned width >
 template< bool includeSelf >
-__device__ unsigned svcu::warp< width >::scan( unsigned partialScan )
+__device__ unsigned warp< width >::scan( unsigned partialScan )
 {
 	return _scan< includeSelf, unsigned >( partialScan );
 }
 
 template< unsigned width >
 template< bool includeSelf >
-__device__ float svcu::warp< width >::scan( float partialScan )
+__device__ float warp< width >::scan( float partialScan )
 {
 	return _scan< includeSelf, float >( partialScan );
 }
@@ -60,21 +63,21 @@ __device__ float svcu::warp< width >::scan( float partialScan )
 
 template< unsigned width >
 template< bool includeSelf >
-__device__ int svcu::warp< width >::scan( int partialScan, int & outSum )
+__device__ int warp< width >::scan( int partialScan, int & outSum )
 {
 	return _scan< includeSelf, int >( partialScan, outSum );
 }
 
 template< unsigned width >
 template< bool includeSelf >
-__device__ unsigned svcu::warp< width >::scan( unsigned partialScan, unsigned & outSum )
+__device__ unsigned warp< width >::scan( unsigned partialScan, unsigned & outSum )
 {
 	return _scan< includeSelf, unsigned >( partialScan, outSum );
 }
 
 template< unsigned width >
 template< bool includeSelf >
-__device__ float svcu::warp< width >::scan( float partialScan, float & outSum )
+__device__ float warp< width >::scan( float partialScan, float & outSum )
 {
 	return _scan< includeSelf, float >( partialScan, outSum );
 }
@@ -85,7 +88,7 @@ __device__ float svcu::warp< width >::scan( float partialScan, float & outSum )
 
 template< unsigned width >
 template< bool includeSelf >
-__device__ unsigned svcu::warp< width >::scan_bit( unsigned pred )
+__device__ unsigned warp< width >::scan_bit( unsigned pred )
 {
 	unsigned result;
 
@@ -135,7 +138,7 @@ __device__ unsigned svcu::warp< width >::scan_bit( unsigned pred )
 
 template< unsigned width >
 template< bool includeSelf >
-__device__ unsigned svcu::warp< width >::scan_bit( unsigned pred, unsigned & outSum )
+__device__ unsigned warp< width >::scan_bit( unsigned pred, unsigned & outSum )
 {
 	unsigned result;
 	unsigned warpMask;
@@ -196,7 +199,7 @@ __device__ unsigned svcu::warp< width >::scan_bit( unsigned pred, unsigned & out
 
 template< unsigned width >
 template< typename T >
-__device__ T svcu::warp< width >::_reduce( T partialSum )
+__device__ T warp< width >::_reduce( T partialSum )
 {
 #pragma unroll
 	for( int mask = width / 2; mask > 0; mask /= 2 )
@@ -226,21 +229,21 @@ asm\
 
 
 template< unsigned width >
-__device__ int svcu::warp< width >::_add_up( int var, unsigned delta, unsigned laneIdx )
+__device__ int warp< width >::_add_up( int var, unsigned delta, unsigned laneIdx )
 {
 	_svcu_add_up( s32, r, var, delta, laneIdx )
 	return var;
 }
 
 template< unsigned width >
-__device__ unsigned svcu::warp< width >::_add_up( unsigned var, unsigned delta, unsigned laneIdx )
+__device__ unsigned warp< width >::_add_up( unsigned var, unsigned delta, unsigned laneIdx )
 {
 	_svcu_add_up( u32, r, var, delta, laneIdx )
 	return var;
 }
 
 template< unsigned width >
-__device__ float svcu::warp< width >::_add_up( float var, unsigned delta, unsigned laneIdx )
+__device__ float warp< width >::_add_up( float var, unsigned delta, unsigned laneIdx )
 {
 	_svcu_add_up( f32, f, var, delta, laneIdx )
 	return var;
@@ -250,7 +253,7 @@ __device__ float svcu::warp< width >::_add_up( float var, unsigned delta, unsign
 
 template< unsigned width >
 template< bool includeSelf, typename T >
-__device__ T svcu::warp< width >::_scan( T partialScan )
+__device__ T warp< width >::_scan( T partialScan )
 {
 	unsigned const laneIdx = laneid();
 
@@ -265,7 +268,7 @@ __device__ T svcu::warp< width >::_scan( T partialScan )
 
 template< unsigned width >
 template< bool includeSelf, typename T >
-__device__ T svcu::warp< width >::_scan( T partialScan, T & outSum )
+__device__ T warp< width >::_scan( T partialScan, T & outSum )
 {
 	T result = _scan< true, T >( partialScan );
 
@@ -275,3 +278,5 @@ __device__ T svcu::warp< width >::_scan( T partialScan, T & outSum )
 }
 
 #pragma endregion
+
+}} // namespace

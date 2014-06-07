@@ -4,11 +4,12 @@
 #include <utility>
 #include <vector>
 
-#include "cuda_event.h"
+#include <kifi/cuda/cuda_event.h>
 
 
 
-namespace svcu {
+namespace kifi {
+namespace cuda {
 
 class timer
 {
@@ -30,4 +31,4 @@ private:
 	float time();
 };
 
-}
+}} // namespace

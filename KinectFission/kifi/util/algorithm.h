@@ -9,26 +9,12 @@
 namespace kifi {
 namespace util {
 
-template< class OutputIterator >
-void exclusive_scan( OutputIterator first, OutputIterator last );
-
-template< class OutputIterator >
-void inclusive_scan( OutputIterator first, OutputIterator last );
-
-
-
 template< class InputIterator1, class InputIterator2 >
 size_t intersection_size
 (
 	InputIterator1 first1, InputIterator1 last1,
 	InputIterator2 first2, InputIterator2 last2
 );
-
-
-
-template< class InputIterator >
-typename std::iterator_traits< InputIterator >::value_type
-reduce( InputIterator first, InputIterator last );
 
 // Merging
 
@@ -97,11 +83,6 @@ void radix_sort
 	RandomAccessIterator3 values_first,
 	RandomAccessIterator4 values_tmp
 );
-
-
-
-template< class OutputIterator >
-size_t unique( OutputIterator first, OutputIterator last );
 
 }} // namespace
 

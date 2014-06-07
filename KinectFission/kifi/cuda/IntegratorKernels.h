@@ -1,12 +1,13 @@
 #pragma once
 
-#include <dlh/DirectXMathExt.h>
+#include <kifi/util/DirectXMathExt.h>
 
-#include "vector.h"
+#include <kifi/cuda/vector.h>
 
 
 
-namespace svcu {
+namespace kifi {
+namespace cuda {
 
 class DepthFrame;
 class Volume;
@@ -15,10 +16,10 @@ void SplatChunksKernel
 (
 	Volume const & volume,
 	DepthFrame const & frame,
-	dlh::float4x4 const & viewToWorld,
+	util::float4x4 const & viewToWorld,
 	unsigned footPrint,
 
 	vector< unsigned > & outChunkIndices
 );
 
-}
+}}

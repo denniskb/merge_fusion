@@ -6,7 +6,8 @@ using namespace kifi;
 
 
 
-BOOST_AUTO_TEST_SUITE( array3d )
+BOOST_AUTO_TEST_SUITE( util_test )
+BOOST_AUTO_TEST_SUITE( array3d_test )
 
 BOOST_AUTO_TEST_CASE( ctor )
 {
@@ -43,4 +44,5 @@ BOOST_AUTO_TEST_CASE( access )
 	BOOST_REQUIRE( 3 == a( 1, 0, 1 ) );
 }
 
+BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()

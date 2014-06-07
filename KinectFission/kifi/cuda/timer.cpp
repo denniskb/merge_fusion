@@ -1,5 +1,3 @@
-#include "timer.h"
-
 #include <string>
 #include <utility>
 #include <vector>
@@ -7,9 +5,14 @@
 #include <cuda_runtime.h>
 #include <driver_types.h>
 
+#include <kifi/cuda/timer.h>
 
 
-svcu::timer::timer( cudaStream_t stream ) :
+
+namespace kifi {
+namespace cuda {
+
+timer::timer( cudaStream_t stream ) :
 	m_stream( stream )
 {
 	reset();
@@ -17,7 +20,7 @@ svcu::timer::timer( cudaStream_t stream ) :
 	
 
 
-float svcu::timer::record_time( std::string label )
+float timer::record_time( std::string label )
 {
 	float result = time();
 
@@ -26,14 +29,14 @@ float svcu::timer::record_time( std::string label )
 	return result;
 }
 
-void svcu::timer::reset()
+void timer::reset()
 {
 	m_start.record( m_stream );
 }
 
 
 
-void svcu::timer::print() const
+void timer::print() const
 {
 	float total = 0.0f;
 	
@@ -48,7 +51,7 @@ void svcu::timer::print() const
 
 
 
-float svcu::timer::time()
+float timer::time()
 {
 	m_end.record( m_stream );
 	m_end.synchronize();
@@ -57,3 +60,5 @@ float svcu::timer::time()
 	cudaEventElapsedTime( & result, m_start, m_end );
 	return result;
 }
+
+}} // namepspace

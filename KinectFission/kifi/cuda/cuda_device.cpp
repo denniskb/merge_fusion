@@ -1,19 +1,22 @@
-#include "cuda_device.h"
-
 #include <algorithm>
 
 #include <cuda_runtime.h>
 
+#include <kifi/cuda/cuda_device.h>
 
+
+
+namespace kifi {
+namespace cuda {
 
 // static 
-svcu::cuda_device svcu::cuda_device::from_id( int id )
+cuda_device cuda_device::from_id( int id )
 {
 	return cuda_device( id );
 }
 
 // static 
-svcu::cuda_device & svcu::cuda_device::main()
+cuda_device & cuda_device::main()
 {
 	static cuda_device main_device( 0 );
 
@@ -22,12 +25,12 @@ svcu::cuda_device & svcu::cuda_device::main()
 
 
 
-int svcu::cuda_device::id() const
+int cuda_device::id() const
 {
 	return m_id;
 }
 
-int svcu::cuda_device::max_residing_blocks
+int cuda_device::max_residing_blocks
 (
 	int threadsPerBlock, 
 	int regsPerThread, 
@@ -55,7 +58,7 @@ int svcu::cuda_device::max_residing_blocks
 		m_props.multiProcessorCount;
 }
 
-cudaDeviceProp const & svcu::cuda_device::props() const
+cudaDeviceProp const & cuda_device::props() const
 {
 	return m_props;
 }
@@ -63,8 +66,10 @@ cudaDeviceProp const & svcu::cuda_device::props() const
 	
 	
 	
-svcu::cuda_device::cuda_device( int id ) :
+cuda_device::cuda_device( int id ) :
 	m_id( id )
 {
 	cudaGetDeviceProperties( & m_props, id );
 }
+
+}} // namespace

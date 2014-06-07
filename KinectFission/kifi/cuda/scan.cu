@@ -1,13 +1,14 @@
-#include "scan.h"
-
 #include <cassert>
 
 #include <vector_types.h>
 
-#include "constants.cuh"
-#include "cuda_device.h"
-#include "helper_math_ext.h"
-#include "warp.cuh"
+#include <kifi/cuda/constants.cuh>
+#include <kifi/cuda/cuda_device.h>
+#include <kifi/cuda/helper_math_ext.h>
+#include <kifi/cuda/scan.h>
+#include <kifi/cuda/warp.cuh>
+
+using namespace kifi::cuda;
 
 
 
@@ -49,9 +50,9 @@ static __global__ void _segmented_scan
 
 			unsigned warpOffset, warpSum;
 			if( i < VT / 4 - 1 )
-				warpOffset = svcu::warp<>::scan< false >( horizontal_sum( word ), warpSum );
+				warpOffset = warp<>::scan< false >( horizontal_sum( word ), warpSum );
 			else
-				warpOffset = svcu::warp<>::scan< false >( horizontal_sum( word ) );
+				warpOffset = warp<>::scan< false >( horizontal_sum( word ) );
 			
 			warpOffset += segmentOffset;
 			segmentOffset += warpSum;
@@ -79,7 +80,7 @@ static __global__ void _segmented_scan
 			unsigned word = tid < size ? data[ tid ] : 0;
 
 			unsigned warpSum;
-			word = svcu::warp<>::scan< includeSelf >( word, warpSum );
+			word = warp<>::scan< includeSelf >( word, warpSum );
 
 			word += segmentOffset;
 			segmentOffset += warpSum;
@@ -101,7 +102,7 @@ static void segmented_scan
 	unsigned * out
 )
 {
-	int nBlocks = svcu::cuda_device::main().max_residing_blocks( 128, 32, 0 );
+	int nBlocks = cuda_device::main().max_residing_blocks( 128, 32, 0 );
 
 	switch( segmentSize )
 	{
@@ -115,7 +116,10 @@ static void segmented_scan
 
 
 
-void svcu::segmented_inclusive_scan
+namespace kifi {
+namespace cuda {
+
+void segmented_inclusive_scan
 (
 	unsigned const * data, unsigned size,
 	unsigned segmentSize,
@@ -126,7 +130,7 @@ void svcu::segmented_inclusive_scan
 	segmented_scan< true >( data, size, segmentSize, out );
 }
 
-void svcu::segmented_exclusive_scan
+void segmented_exclusive_scan
 (
 	unsigned const * data, unsigned size,
 	unsigned segmentSize,
@@ -136,3 +140,5 @@ void svcu::segmented_exclusive_scan
 {
 	segmented_scan< false >( data, size, segmentSize, out );
 }
+
+}} // namespace

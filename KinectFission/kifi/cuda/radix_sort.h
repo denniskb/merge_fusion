@@ -2,7 +2,8 @@
 
 
 
-namespace svcu {
+namespace kifi {
+namespace cuda {
 
 void radix_sort
 (
@@ -10,4 +11,4 @@ void radix_sort
 	unsigned * tmp 
 );
 
-}
+}} // namespace

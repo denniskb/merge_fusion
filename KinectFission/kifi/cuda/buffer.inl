@@ -2,8 +2,11 @@
 
 
 
+namespace kifi {
+namespace cuda {
+
 template< typename T, class Alloc >
-svcu::buffer< T, Alloc >::buffer( size_t capacity, Alloc const & alloc ) :
+buffer< T, Alloc >::buffer( size_t capacity, Alloc const & alloc ) :
 	m_capacity( capacity ),
 	m_alloc( alloc )
 {
@@ -11,13 +14,13 @@ svcu::buffer< T, Alloc >::buffer( size_t capacity, Alloc const & alloc ) :
 }
 
 template< typename T, class Alloc >
-svcu::buffer< T, Alloc >::buffer( buffer && move )
+buffer< T, Alloc >::buffer( buffer && move )
 {
 	swap( move );
 }
 
 template< typename T, class Alloc >
-svcu::buffer< T, Alloc >::~buffer()
+buffer< T, Alloc >::~buffer()
 {
 	m_alloc.deallocate( m_data, m_capacity );
 }
@@ -25,19 +28,19 @@ svcu::buffer< T, Alloc >::~buffer()
 
 
 template< typename T, class Alloc >
-size_t svcu::buffer< T, Alloc >::capacity() const
+size_t buffer< T, Alloc >::capacity() const
 {
 	return m_capacity;
 }
 
 template< typename T, class Alloc >
-T * svcu::buffer< T, Alloc >::data()
+T * buffer< T, Alloc >::data()
 {
 	return m_data;
 }
 
 template< typename T, class Alloc >
-T const * svcu::buffer< T, Alloc >::data() const
+T const * buffer< T, Alloc >::data() const
 {
 	return m_data;
 }
@@ -45,7 +48,7 @@ T const * svcu::buffer< T, Alloc >::data() const
 
 
 template< typename T, class Alloc >
-void svcu::buffer< T, Alloc >::swap( buffer & rhs )
+void buffer< T, Alloc >::swap( buffer & rhs )
 {
 	using std::swap;
 
@@ -55,8 +58,10 @@ void svcu::buffer< T, Alloc >::swap( buffer & rhs )
 }
 
 template< typename T, class Alloc >
-svcu::buffer< T, Alloc > & svcu::buffer< T, Alloc >::operator=( buffer && rhs )
+buffer< T, Alloc > & buffer< T, Alloc >::operator=( buffer && rhs )
 {
 	swap( rhs );
 	return * this;
 }
+
+}} // namespace

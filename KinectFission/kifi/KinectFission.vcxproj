@@ -29,6 +29,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 5.5.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="..\property_sheets\base.props" />
@@ -44,18 +45,60 @@
     <ClCompile />
     <Link />
     <ClCompile>
-      <AdditionalIncludeDirectories>..</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..;$(CUDA_PATH)\include;$(NVCUDASAMPLES_ROOT)\common\inc</AdditionalIncludeDirectories>
     </ClCompile>
+    <CudaCompile>
+      <Include>$(ProjectDir)..;$(CUDA_PATH)\include;$(NVCUDASAMPLES_ROOT)\common\inc</Include>
+      <CodeGeneration>compute_30,sm_30</CodeGeneration>
+      <GPUDebugInfo>false</GPUDebugInfo>
+      <MaxRegCount>32</MaxRegCount>
+      <TargetMachinePlatform>64</TargetMachinePlatform>
+      <CudaRuntime>None</CudaRuntime>
+      <UseHostInclude>false</UseHostInclude>
+    </CudaCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile />
     <Link />
     <ClCompile>
-      <AdditionalIncludeDirectories>..</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..;$(CUDA_PATH)\include;$(NVCUDASAMPLES_ROOT)\common\inc</AdditionalIncludeDirectories>
+      <FloatingPointModel>Fast</FloatingPointModel>
     </ClCompile>
+    <CudaCompile>
+      <Include>$(ProjectDir)..;$(CUDA_PATH)\include;$(NVCUDASAMPLES_ROOT)\common\inc</Include>
+      <CodeGeneration>compute_30,sm_30</CodeGeneration>
+      <MaxRegCount>32</MaxRegCount>
+      <TargetMachinePlatform>64</TargetMachinePlatform>
+      <FastMath>true</FastMath>
+      <CudaRuntime>None</CudaRuntime>
+      <UseHostInclude>false</UseHostInclude>
+    </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Brick.h" />
+    <ClInclude Include="cuda\Brick.h" />
+    <ClInclude Include="cuda\buffer.h" />
+    <ClInclude Include="cuda\cuda_device.h" />
+    <ClInclude Include="cuda\cuda_event.h" />
+    <ClInclude Include="cuda\DepthFrame.h" />
+    <ClInclude Include="cuda\device_allocator.h" />
+    <ClInclude Include="cuda\flat_map.h" />
+    <ClInclude Include="cuda\helper_math_ext.h" />
+    <ClInclude Include="cuda\Integrator.h" />
+    <ClInclude Include="cuda\IntegratorKernels.h" />
+    <ClInclude Include="cuda\KernelVolume.h" />
+    <ClInclude Include="cuda\kernel_vector.h" />
+    <ClInclude Include="cuda\kernel_vector2d.h" />
+    <ClInclude Include="cuda\page_locked_allocator.h" />
+    <ClInclude Include="cuda\radix_sort.h" />
+    <ClInclude Include="cuda\reduce.h" />
+    <ClInclude Include="cuda\scan.h" />
+    <ClInclude Include="cuda\timer.h" />
+    <ClInclude Include="cuda\vector.h" />
+    <ClInclude Include="cuda\vector_functions_ext.h" />
+    <ClInclude Include="cuda\vector_types_ext.h" />
+    <ClInclude Include="cuda\Volume.h" />
+    <ClInclude Include="cuda\Voxel.h" />
     <ClInclude Include="DepthStream.h" />
     <ClInclude Include="Integrator.h" />
     <ClInclude Include="Mesher.h" />
@@ -68,6 +111,7 @@
     <ClInclude Include="util\flat_map.h" />
     <ClInclude Include="util\fstream.h" />
     <ClInclude Include="util\high_resolution_clock.h" />
+    <ClInclude Include="util\numeric.h" />
     <ClInclude Include="util\semaphore.h" />
     <ClInclude Include="util\std_high_resolution_clock.h" />
     <ClInclude Include="util\stop_watch.h" />
@@ -78,6 +122,16 @@
     <ClInclude Include="Voxel.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="cuda\block.cuh" />
+    <None Include="cuda\block.inl" />
+    <None Include="cuda\buffer.inl" />
+    <None Include="cuda\constants.cuh" />
+    <None Include="cuda\device_allocator.inl" />
+    <None Include="cuda\intrinsics.cuh" />
+    <None Include="cuda\page_locked_allocator.inl" />
+    <None Include="cuda\vector.inl" />
+    <None Include="cuda\warp.cuh" />
+    <None Include="cuda\warp.inl" />
     <None Include="util\algorithm.inl" />
     <None Include="util\array3d.inl" />
     <None Include="util\DirectXMathExt.inl" />
@@ -86,6 +140,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Brick.cpp" />
+    <ClCompile Include="cuda\cuda_device.cpp" />
+    <ClCompile Include="cuda\cuda_event.cpp" />
+    <ClCompile Include="cuda\DepthFrame.cpp" />
+    <ClCompile Include="cuda\Integrator.cpp" />
+    <ClCompile Include="cuda\timer.cpp" />
+    <ClCompile Include="cuda\Volume.cpp" />
     <ClCompile Include="DepthStream.cpp" />
     <ClCompile Include="Integrator.cpp" />
     <ClCompile Include="Mesher.cpp" />
@@ -98,7 +158,14 @@
     <ClCompile Include="Volume.cpp" />
     <ClCompile Include="Voxel.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="cuda\IntegratorKernels.cu" />
+    <CudaCompile Include="cuda\radix_sort.cu" />
+    <CudaCompile Include="cuda\reduce.cu" />
+    <CudaCompile Include="cuda\scan.cu" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 5.5.targets" />
   </ImportGroup>
 </Project>

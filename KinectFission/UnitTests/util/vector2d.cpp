@@ -6,7 +6,8 @@ using namespace kifi;
 
 
 
-BOOST_AUTO_TEST_SUITE( vector2d )
+BOOST_AUTO_TEST_SUITE( util_test )
+BOOST_AUTO_TEST_SUITE( vector2d_test )
 
 BOOST_AUTO_TEST_CASE( default_ctor )
 {
@@ -49,4 +50,5 @@ BOOST_AUTO_TEST_CASE( access )
 	BOOST_REQUIRE( 12 == df( 2, 2 ) );
 }
 
+BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()

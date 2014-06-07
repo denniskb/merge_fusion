@@ -9,7 +9,8 @@
 
 
 
-namespace svcu {
+namespace kifi {
+namespace cuda {
 
 template< typename Key, typename T >
 class flat_map
@@ -61,4 +62,4 @@ private:
 	thrust::device_vector< T > m_tmpValues;
 };
 
-}
+}} // namespace

@@ -44,23 +44,31 @@
     <ClCompile />
     <Link />
     <ClCompile>
-      <AdditionalIncludeDirectories>.;..;$(BOOST_ROOT)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)..;$(BOOST_ROOT);$(CUDA_PATH)\include;$(NVCUDASAMPLES_ROOT)\common\inc</AdditionalIncludeDirectories>
+      <AdditionalOptions>/D_SCL_SECURE_NO_WARNINGS %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(BOOST_LIB_X64)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(BOOST_LIB_X64);$(CUDA_PATH)\lib\x64</AdditionalLibraryDirectories>
+      <AdditionalDependencies>cudart.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile />
     <Link />
     <ClCompile>
-      <AdditionalIncludeDirectories>.;..;$(BOOST_ROOT)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)..;$(BOOST_ROOT);$(CUDA_PATH)\include;$(NVCUDASAMPLES_ROOT)\common\inc</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(BOOST_LIB_X64)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(BOOST_LIB_X64);$(CUDA_PATH)\lib\x64</AdditionalLibraryDirectories>
+      <AdditionalDependencies>cudart.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="cuda\DepthFrame.cpp" />
+    <ClCompile Include="cuda\Integrator.cpp" />
+    <ClCompile Include="cuda\radix_sort.cpp" />
+    <ClCompile Include="cuda\reduce.cpp" />
+    <ClCompile Include="cuda\scan.cpp" />
     <ClCompile Include="DepthStream.cpp" />
     <ClCompile Include="Integrator.cpp" />
     <ClCompile Include="main.cpp" />
@@ -73,6 +81,7 @@
     <ClCompile Include="util\DirectXMathExt.cpp" />
     <ClCompile Include="util\flat_map.cpp" />
     <ClCompile Include="util\fstream.cpp" />
+    <ClCompile Include="util\numeric.cpp" />
     <ClCompile Include="util\semaphore.cpp" />
     <ClCompile Include="util\vector2d.cpp" />
     <ClCompile Include="Volume.cpp" />

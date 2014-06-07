@@ -21,6 +21,11 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <CudaCompile>
+      <RuntimeChecks>RTC1</RuntimeChecks>
+      <Runtime>MDd</Runtime>
+      <Optimization>Od</Optimization>
+    </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup />
 </Project>

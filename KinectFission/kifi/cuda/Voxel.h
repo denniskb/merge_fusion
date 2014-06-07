@@ -5,7 +5,8 @@
 
 
 
-namespace svcu {
+namespace kifi {
+namespace cuda {
 
 class Voxel
 {
@@ -63,4 +64,4 @@ private:
 	}
 };
 
-}
+}} // namespace

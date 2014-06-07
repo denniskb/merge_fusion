@@ -4,11 +4,11 @@
 
 #include <vector_types.h>
 
-#include "block.cuh"
-#include "helper_math_ext.h"
-#include "warp.cuh"
+#include <kifi/cuda/block.cuh>
+#include <kifi/cuda/helper_math_ext.h>
+#include <kifi/cuda/warp.cuh>
 
-using namespace svcu;
+using namespace kifi::cuda;
 
 
 
@@ -55,7 +55,10 @@ static __global__ void _radix_sort
 
 
 
-void svcu::radix_sort
+namespace kifi {
+namespace cuda {
+
+void radix_sort
 (
 	unsigned * data, unsigned size, 
 	unsigned * tmp 
@@ -66,3 +69,5 @@ void svcu::radix_sort
 	//_radix_sort< NT ><<< (96 / (NT / 128)), NT >>>( data, size, tmp );
 	_radix_sort< 256 ><<< 48, 256 >>>( data, size, tmp );
 }
+
+}} // namespace

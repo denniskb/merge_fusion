@@ -3,20 +3,23 @@
 #include <boost/filesystem/operations.hpp>
 #include <boost/test/auto_unit_test.hpp>
 
-#include <cuda/DepthFrame.h>
-#include <cuda/Integrator.h>
-#include <cuda/Volume.h>
+#include <kifi/cuda/DepthFrame.h>
+#include <kifi/cuda/Integrator.h>
+#include <kifi/cuda/Volume.h>
 
-#include <dlh/DirectXMathExt.h>
-#include <dlh/vector2d.h>
+#include <kifi/util/DirectXMathExt.h>
+#include <kifi/util/vector2d.h>
 
-#include <reference/DepthStream.h>
+#include <kifi/DepthStream.h>
 
-#include "util.h"
+#include <helper_test.h>
+
+using namespace kifi;
 
 
 
-BOOST_AUTO_TEST_SUITE( Integrator )
+BOOST_AUTO_TEST_SUITE( cuda_test )
+BOOST_AUTO_TEST_SUITE( IntegratorTest )
 
 BOOST_AUTO_TEST_CASE( Integrate )
 {
@@ -25,20 +28,20 @@ BOOST_AUTO_TEST_CASE( Integrate )
 	One depth frame is integrated (generated with poly2depth) and then
 	all voxels near surface are stored as vertices to an .obj
 	*/
-	svcu::Integrator i;
+	cuda::Integrator i;
 
-	svcu::Volume v( 256, 2.0f, 0.02f );
+	cuda::Volume v( 256, 2.0f, 0.02f );
 
-	svc::DepthStream ds( ( boost::filesystem::current_path() / "../content/imrod_v2.depth" ).string().c_str() );
+	DepthStream ds( ( boost::filesystem::current_path() / "../content/imrod_v2.depth" ).string().c_str() );
 
-	dlh::vector2d< float > depth;
-	dlh::float4x4 view, viewProj, viewToWorld;
-	dlh::float4 eye, forward;
+	util::vector2d< float > depth;
+	util::float4x4 view, viewProj, viewToWorld;
+	util::float4 eye, forward;
 
 	ds.NextFrame( depth, view );
 	ComputeMatrices( view, eye, forward, viewProj, viewToWorld );
 
-	svcu::DepthFrame ddepth;
+	cuda::DepthFrame ddepth;
 	ddepth.CopyFrom( depth );
 
 	i.Integrate( v, ddepth, 2, eye, forward, viewProj, viewToWorld );
@@ -48,4 +51,5 @@ BOOST_AUTO_TEST_CASE( Integrate )
 	BOOST_REQUIRE( true );
 }
 
+BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()

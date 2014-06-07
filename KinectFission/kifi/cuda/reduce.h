@@ -2,7 +2,8 @@
 
 
 
-namespace svcu {
+namespace kifi {
+namespace cuda {
 
 void segmented_reduce
 (
@@ -12,4 +13,4 @@ void segmented_reduce
 	unsigned * outSums
 );
 
-}
+}} // namespace

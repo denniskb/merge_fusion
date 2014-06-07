@@ -1,10 +1,11 @@
 #pragma once
 
-#include "device_allocator.h"
+#include <kifi/cuda/device_allocator.h>
 
 
 
-namespace svcu {
+namespace kifi {
+namespace cuda {
 
 template< typename T, class Alloc = device_allocator< T > >
 class buffer
@@ -30,7 +31,7 @@ private:
 	buffer & operator=( buffer );
 };
 
-}
+}} // namespace
 
 
 

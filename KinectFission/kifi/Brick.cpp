@@ -8,6 +8,7 @@ namespace kifi {
 void Brick::Index1Dto3D
 (
 	unsigned index,
+
 	unsigned & outX,
 	unsigned & outY,
 	unsigned & outZ

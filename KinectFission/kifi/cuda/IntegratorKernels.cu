@@ -1,29 +1,28 @@
-#include "IntegratorKernels.h"
-
 #include <cassert>
 
-#include "DepthFrame.h"
-#include "helper_math_ext.h"
-#include "kernel_vector.h"
-#include "kernel_vector2d.h"
-#include "KernelVolume.h"
-#include "vector_functions_ext.h"
-#include "vector_types_ext.h"
-#include "Volume.h"
+#include <kifi/cuda/DepthFrame.h>
+#include <kifi/cuda/helper_math_ext.h>
+#include <kifi/cuda/IntegratorKernels.h>
+#include <kifi/cuda/kernel_vector.h>
+#include <kifi/cuda/kernel_vector2d.h>
+#include <kifi/cuda/KernelVolume.h>
+#include <kifi/cuda/vector_functions_ext.h>
+#include <kifi/cuda/vector_types_ext.h>
+#include <kifi/cuda/Volume.h>
+
+using namespace kifi::cuda;
 
 
 
-#pragma region Kernels
-
-__global__ void _SplatChunksKernel
+static __global__ void _SplatChunksKernel
 (
-	svcu::KernelVolume const volume,
+	KernelVolume const volume,
 	// TODO: Test using 2d textures
-	svcu::kernel_vector2d< const float > const frame,
+	kernel_vector2d< const float > const frame,
 	float4x4 viewToWorld,
 	unsigned footPrint,
-
-	svcu::kernel_vector< unsigned > outChunkIndices
+	
+	kernel_vector< unsigned > outChunkIndices
 )
 {
 	// TODO: Reorder access to improve coherence
@@ -67,15 +66,16 @@ __global__ void _SplatChunksKernel
 		* slot = chunkIndex;
 }
 
-#pragma endregion
 
-#pragma region Wrappers
 
-void svcu::SplatChunksKernel
+namespace kifi {
+namespace cuda {
+
+void SplatChunksKernel
 (
 	Volume const & volume,
 	DepthFrame const & frame,
-	dlh::float4x4 const & viewToWorld,
+	util::float4x4 const & viewToWorld,
 	unsigned footPrint,
 
 	vector< unsigned > & outChunkIndices
@@ -95,4 +95,4 @@ void svcu::SplatChunksKernel
 	);
 }
 
-#pragma endregion
+}} // namespace

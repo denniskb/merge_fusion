@@ -8,11 +8,11 @@ using namespace kifi;
 
 
 
-BOOST_AUTO_TEST_SUITE( Volume )
+BOOST_AUTO_TEST_SUITE( VolumeTest )
 
 BOOST_AUTO_TEST_CASE( ctor )
 {
-	kifi::Volume v( 128, 2.0f, 0.02f );
+	Volume v( 128, 2.0f, 0.02f );
 
 	BOOST_REQUIRE( v.Resolution() == 128 );
 	BOOST_REQUIRE( v.SideLength() == 2.0f );
@@ -29,7 +29,7 @@ BOOST_AUTO_TEST_CASE( ctor )
 
 BOOST_AUTO_TEST_CASE( VoxelCenter_ChunkIndex )
 {
-	kifi::Volume v( 128, 2.0f, 0.02f );
+	Volume v( 128, 2.0f, 0.02f );
 	
 	util::float4 vc = v.VoxelCenter( 33, 21, 92 );
 	util::float4 ci = v.ChunkIndex( vc, 1 );

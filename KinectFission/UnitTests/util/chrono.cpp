@@ -9,7 +9,8 @@ using namespace kifi;
 
 
 
-BOOST_AUTO_TEST_SUITE( chrono )
+BOOST_AUTO_TEST_SUITE( util_test )
+BOOST_AUTO_TEST_SUITE( chrono_test )
 
 BOOST_AUTO_TEST_CASE( hires_clock )
 {
@@ -37,4 +38,5 @@ BOOST_AUTO_TEST_CASE( stop_watch )
 	std::printf( "Leaving test case \"stop_watch\"\n" );
 }
 
+BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()
