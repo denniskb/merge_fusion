@@ -21,9 +21,14 @@ OutputIterator partial_sum_exclusive
 	OutputIterator result, BinaryOperation binary_op
 );
 
+}} // namespace
+
 
 
 #pragma region Implementation
+
+namespace kifi {
+namespace util {
 
 template< class InputIterator, class OutputIterator >
 OutputIterator partial_sum_exclusive
@@ -57,6 +62,6 @@ OutputIterator partial_sum_exclusive
 	return result;
 }
 
-#pragma endregion
-
 }} // namespace
+
+#pragma endregion

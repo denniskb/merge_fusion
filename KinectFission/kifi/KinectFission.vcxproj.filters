@@ -48,11 +48,6 @@
     <ClInclude Include="util\numeric.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="util\algorithm.inl" />
-    <None Include="util\array3d.inl" />
-    <None Include="util\DirectXMathExt.inl" />
-    <None Include="util\flat_map.inl" />
-    <None Include="util\vector2d.inl" />
     <None Include="cuda\block.cuh" />
     <None Include="cuda\block.inl" />
     <None Include="cuda\buffer.inl" />
