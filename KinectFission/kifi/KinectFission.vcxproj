@@ -123,15 +123,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="cuda\block.cuh" />
-    <None Include="cuda\block.inl" />
-    <None Include="cuda\buffer.inl" />
     <None Include="cuda\constants.cuh" />
-    <None Include="cuda\device_allocator.inl" />
     <None Include="cuda\intrinsics.cuh" />
-    <None Include="cuda\page_locked_allocator.inl" />
-    <None Include="cuda\vector.inl" />
     <None Include="cuda\warp.cuh" />
-    <None Include="cuda\warp.inl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Brick.cpp" />

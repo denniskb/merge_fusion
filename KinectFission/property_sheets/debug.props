@@ -20,6 +20,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <OptimizeReferences>false</OptimizeReferences>
     </Link>
     <CudaCompile>
       <RuntimeChecks>RTC1</RuntimeChecks>
