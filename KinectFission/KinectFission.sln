@@ -12,6 +12,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KinectFission", "kifi\Kinec
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnitTests", "UnitTests\UnitTests.vcxproj", "{B97F043C-1494-49D5-8BF3-ABFC4E6E78E7}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SampleBasic", "SampleBasic\SampleBasic.vcxproj", "{2D566488-709C-4083-8AB8-4FAD05A9DF6F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -26,6 +28,10 @@ Global
 		{B97F043C-1494-49D5-8BF3-ABFC4E6E78E7}.Debug|x64.Build.0 = Debug|x64
 		{B97F043C-1494-49D5-8BF3-ABFC4E6E78E7}.Release|x64.ActiveCfg = Release|x64
 		{B97F043C-1494-49D5-8BF3-ABFC4E6E78E7}.Release|x64.Build.0 = Release|x64
+		{2D566488-709C-4083-8AB8-4FAD05A9DF6F}.Debug|x64.ActiveCfg = Debug|x64
+		{2D566488-709C-4083-8AB8-4FAD05A9DF6F}.Debug|x64.Build.0 = Debug|x64
+		{2D566488-709C-4083-8AB8-4FAD05A9DF6F}.Release|x64.ActiveCfg = Release|x64
+		{2D566488-709C-4083-8AB8-4FAD05A9DF6F}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

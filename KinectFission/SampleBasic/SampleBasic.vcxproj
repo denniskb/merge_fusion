@@ -11,8 +11,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{B97F043C-1494-49D5-8BF3-ABFC4E6E78E7}</ProjectGuid>
-    <RootNamespace>UnitTests</RootNamespace>
+    <ProjectGuid>{2D566488-709C-4083-8AB8-4FAD05A9DF6F}</ProjectGuid>
+    <RootNamespace>Project1</RootNamespace>
+    <ProjectName>SampleBasic</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -42,59 +43,33 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <ClCompile />
-    <Link />
     <ClCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)..;$(BOOST_ROOT);$(CUDA_PATH)\include;$(NVCUDASAMPLES_ROOT)\common\inc</AdditionalIncludeDirectories>
-      <AdditionalOptions>/D_SCL_SECURE_NO_WARNINGS %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>$(ProjectDir)..;$(CUDA_PATH)\include;$(NVCUDASAMPLES_ROOT)\common\inc</AdditionalIncludeDirectories>
     </ClCompile>
+    <Link />
     <Link>
-      <AdditionalLibraryDirectories>$(BOOST_LIB_X64);$(CUDA_PATH)\lib\x64</AdditionalLibraryDirectories>
       <AdditionalDependencies>cudart.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(CUDA_PATH)\lib\x64</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <ClCompile />
-    <Link />
     <ClCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)..;$(BOOST_ROOT);$(CUDA_PATH)\include;$(NVCUDASAMPLES_ROOT)\common\inc</AdditionalIncludeDirectories>
+      <WarningLevel>Level3</WarningLevel>
+      <AdditionalIncludeDirectories>$(ProjectDir)..;$(CUDA_PATH)\include;$(NVCUDASAMPLES_ROOT)\common\inc</AdditionalIncludeDirectories>
     </ClCompile>
+    <Link />
     <Link>
-      <AdditionalLibraryDirectories>$(BOOST_LIB_X64);$(CUDA_PATH)\lib\x64</AdditionalLibraryDirectories>
       <AdditionalDependencies>cudart.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(CUDA_PATH)\lib\x64</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="cuda\DepthFrame.cpp" />
-    <ClCompile Include="cuda\Integrator.cpp" />
-    <ClCompile Include="cuda\radix_sort.cpp" />
-    <ClCompile Include="cuda\reduce.cpp" />
-    <ClCompile Include="cuda\scan.cpp" />
-    <ClCompile Include="DepthStream.cpp" />
-    <ClCompile Include="Integrator.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Mesher.cpp" />
-    <ClCompile Include="Splatter.cpp" />
-    <ClCompile Include="util\algorithm.cpp" />
-    <ClCompile Include="util\array3d.cpp" />
-    <ClCompile Include="util\barrier.cpp" />
-    <ClCompile Include="util\chrono.cpp" />
-    <ClCompile Include="util\DirectXMathExt.cpp" />
-    <ClCompile Include="util\flat_map.cpp" />
-    <ClCompile Include="util\fstream.cpp" />
-    <ClCompile Include="util\numeric.cpp" />
-    <ClCompile Include="util\semaphore.cpp" />
-    <ClCompile Include="util\vector2d.cpp" />
-    <ClCompile Include="Volume.cpp" />
-    <ClCompile Include="Voxel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\kifi\KinectFission.vcxproj">
       <Project>{70f6c6a7-3b67-47d7-a9b2-17adac536d30}</Project>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="helper_test.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

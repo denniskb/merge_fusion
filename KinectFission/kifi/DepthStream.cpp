@@ -98,4 +98,11 @@ bool DepthStream::NextFrame
 	return true;
 }
 
+
+
+int DepthStream::FrameCount() const
+{
+	return m_nFrames;
+}
+
 } // namespace

@@ -21,6 +21,8 @@ public:
 		util::float4x4 & outView
 	);
 
+	int FrameCount() const;
+
 private:
 	enum TexelType{ SHORT, FLOAT };
 
