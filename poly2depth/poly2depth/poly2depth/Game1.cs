@@ -15,11 +15,18 @@ namespace poly2depth
     {
         private GraphicsDeviceManager graphics;
         private KinectCamera cam;
-        private Effect viz;
-        private Effect depth;
         private RenderTarget2D rt;
 
+        private Effect vizEffect;
+        private Effect depthEffect;
+        private Effect viz;
+        private Effect depth;
+        private Effect skinnedViz;
+        private Effect skinnedDepth;
+
+        private AnimatedFBX model;
         private AnimatedFBX imrod;
+        private AnimatedFBX temple;
 
         private Recorder recorder;
 
@@ -61,6 +68,8 @@ namespace poly2depth
         {
             viz = Content.Load<Effect>("Viz");
             depth = Content.Load<Effect>("Depth");
+            skinnedViz = Content.Load<Effect>("SkinnedViz");
+            skinnedDepth = Content.Load<Effect>("SkinnedDepth");
 
             imrod = new AnimatedFBX
             (
@@ -69,6 +78,24 @@ namespace poly2depth
                 Matrix.CreateTranslation(0.0f, 0.0f, 42.7585f),
                 Matrix.CreateScale(0.023f) * Matrix.CreateRotationX(MathHelper.PiOver2)
             );
+
+            temple = new AnimatedFBX
+            (
+                Content,
+                "house",
+                Matrix.CreateTranslation(0.0f, -10.0f, 20.0f),
+                Matrix.CreateScale(0.1f)
+            );
+
+            /*
+            vizEffect = skinnedViz;
+            depthEffect = skinnedDepth;
+            model = imrod;
+            /*/
+            vizEffect = viz;
+            depthEffect = depth;
+            model = temple;
+            //*/
         }
 
         /// <summary>
@@ -107,14 +134,14 @@ namespace poly2depth
             {
                 graphics.GraphicsDevice.SetRenderTarget(rt);
                 GraphicsDevice.Clear(Color.Black);
-                imrod.Draw(depth, cam.GetViewProjection(), cam.GetEye(), cam.GetForward());
+                model.Draw(depthEffect, cam.GetViewProjection(), cam.GetEye(), cam.GetForward());
                 graphics.GraphicsDevice.SetRenderTarget(null);
 
                 recorder.RecordFrame(rt, cam.GetView());
             }
 
             GraphicsDevice.Clear(Color.CornflowerBlue);
-            imrod.Draw(viz, cam.GetViewProjection(), cam.GetEye(), cam.GetForward());
+            model.Draw(vizEffect, cam.GetViewProjection(), cam.GetEye(), cam.GetForward());
             
             base.Draw(gameTime);
 

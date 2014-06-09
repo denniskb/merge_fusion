@@ -44,7 +44,10 @@ namespace poly2depth
 
         public void Draw(Effect effect, Matrix viewProjection, Vector3 eye, Vector3 forward)
         {
-            Matrix[] bones = player.GetSkinTransforms();
+            Matrix[] bones = null;
+
+            if (player != null)
+                bones = player.GetSkinTransforms();
 
             foreach (ModelMesh mesh in model.Meshes)
             {
@@ -52,10 +55,12 @@ namespace poly2depth
                 {
                     part.Effect = effect;
                 }
-
+                
                 foreach (Effect meshEffect in mesh.Effects)
                 {
-                    meshEffect.Parameters["joints"].SetValue(bones);
+                    if (bones != null)
+                        meshEffect.Parameters["joints"].SetValue(bones);
+
                     meshEffect.Parameters["local"].SetValue(local);
                     meshEffect.Parameters["world"].SetValue(world);
                     meshEffect.Parameters["viewProjection"].SetValue(viewProjection);

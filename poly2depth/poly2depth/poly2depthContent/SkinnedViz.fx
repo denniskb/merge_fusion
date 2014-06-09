@@ -4,9 +4,13 @@ float4x4 viewProjection;
 float3 eye;
 float3 forward;
 
+float4x4 joints[32];
+
 struct VSIn
 {
 	float4 position: POSITION0;
+	uint4 boneIndices : BLENDINDICES0;
+	float4 boneWeights : BLENDWEIGHT0;
 };
 
 struct VSOut
@@ -20,7 +24,19 @@ VSOut VS(VSIn input)
 	VSOut output;
 
 	float4 modelPos = mul(input.position, local);
-	float4 worldPos = mul(modelPos, world);
+
+	float4 skinnedModelPos0 = mul(modelPos, joints[input.boneIndices.x]);
+	float4 skinnedModelPos1 = mul(modelPos, joints[input.boneIndices.y]);
+	float4 skinnedModelPos2 = mul(modelPos, joints[input.boneIndices.z]);
+	float4 skinnedModelPos3 = mul(modelPos, joints[input.boneIndices.w]);
+
+	float4 skinnedModelPos =
+		skinnedModelPos0 * input.boneWeights.x +
+		skinnedModelPos1 * input.boneWeights.y +
+		skinnedModelPos2 * input.boneWeights.z +
+		skinnedModelPos3 * input.boneWeights.w;
+
+	float4 worldPos = mul(skinnedModelPos, world);
 
 	output.position = mul(worldPos, viewProjection);
 	output.worldPosition = worldPos;
