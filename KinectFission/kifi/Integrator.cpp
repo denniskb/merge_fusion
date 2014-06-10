@@ -5,13 +5,38 @@
 
 #include <kifi/util/algorithm.h>
 #include <kifi/util/DirectXMathExt.h>
-#include <kifi/util/stop_watch.h>
+#include <kifi/util/iterator.h>
 #include <kifi/util/vector2d.h>
 
-#include <kifi/Brick.h>
 #include <kifi/Integrator.h>
 #include <kifi/Volume.h>
 #include <kifi/Voxel.h>
+
+
+
+// HACK during dev
+#pragma warning( disable : 4100 )
+
+
+
+namespace {
+
+struct delta
+{
+	delta( unsigned n ) :
+		m_n( n )
+	{}
+
+	unsigned operator()( unsigned x ) const
+	{
+		return x + m_n;
+	}
+
+private:
+	unsigned m_n;
+};
+
+}
 
 
 
@@ -22,7 +47,6 @@ void Integrator::Integrate
 ( 
 	Volume & volume,
 	util::vector2d< float > const & frame,
-	int footPrint,
 
 	util::float4 const & eye,
 	util::float4 const & forward,
@@ -31,58 +55,42 @@ void Integrator::Integrate
 	util::float4x4 const & viewToWorld
 )
 {
-	assert( footPrint == 2 || footPrint == 4 );
+	m_tmpPointCloud.reserve( frame.size() );
+	m_tmpScratchPad.reserve( frame.size() );
 
-	m_splattedChunks.reserve( frame.size() );
-	m_scratchPad.reserve( 4 * frame.size() );
+	DepthMap2PointCloud( volume, frame, viewToWorld, m_tmpPointCloud );
 
-	util::chrono::stop_watch t;
+	util::radix_sort( m_tmpPointCloud.data(), m_tmpPointCloud.data() + m_tmpPointCloud.size(), m_tmpScratchPad.data() );
 	
-	SplatChunks( volume, frame, viewToWorld, footPrint, m_splattedChunks );
-	t.take_time( "tsplat" );
-
-	util::radix_sort( m_splattedChunks.begin(), m_splattedChunks.end(), m_scratchPad );
-	t.take_time( "tsort" );
-	
-	m_splattedChunks.resize( 
+	m_tmpPointCloud.resize( 
 		std::distance( 
-			m_splattedChunks.begin(), 
-			std::unique( m_splattedChunks.begin(), m_splattedChunks.end() ) 
+			m_tmpPointCloud.begin(), 
+			std::unique( m_tmpPointCloud.begin(), m_tmpPointCloud.end() ) 
 		)
 	);
-	t.take_time( "tdups" );
 
-	ExpandChunks( m_splattedChunks, m_scratchPad );
-	t.take_time( "texpand" );
-
-	ChunksToBricks( m_splattedChunks, footPrint, m_scratchPad );
-	t.take_time( "tchunk2brick" );
-
+	ExpandChunks( m_tmpPointCloud, m_tmpScratchPad );
+	
 	volume.Data().merge_unique(
-		m_splattedChunks.data(), m_splattedChunks.data() + m_splattedChunks.size(), Brick() 
+		m_tmpPointCloud.data(), m_tmpPointCloud.data() + m_tmpPointCloud.size(), 0 
 	);
-	t.take_time( "tmerge" );
 
 	UpdateVoxels( volume, frame, eye, forward, viewProjection );
-	t.take_time( "tupdate" );
-
-	//t.print();
 }
 
 
 
 // static 
-void Integrator::SplatChunks
+void Integrator::DepthMap2PointCloud
 (
 	Volume const & volume,
 	util::vector2d< float > const & frame,
 	util::float4x4 const & viewToWorld,
-	int footPrint,
 
-	std::vector< unsigned > & outChunkIndices
+	std::vector< unsigned > & outPointCloud
 )
 {
-	outChunkIndices.clear();
+	outPointCloud.clear();
 
 	util::mat _viewToWorld = util::load( viewToWorld );
 
@@ -101,16 +109,16 @@ void Integrator::SplatChunks
 		if( 0.0f == depth )
 			continue;
 
-		int y = (int) ( i / frame.width() );
-		int x = (int) ( i % frame.width() );
+		int v = i / (int)frame.width();
+		int u = i - v * (int)frame.width();
 
-		float xNdc = ( x - ppX ) / halfFrameWidth;
-		float yNdc = ( ppY - y ) / halfFrameHeight;
+		float uNdc = ( u - ppX ) / halfFrameWidth;
+		float vNdc = ( ppY - v ) / halfFrameHeight;
 
 		util::float4 pxView
 		(
-			xNdc * ( halfFrameWidth / fl ) * depth,
-			yNdc * ( halfFrameHeight / fl ) * depth,
+			uNdc * ( halfFrameWidth / fl ) * depth,
+			vNdc * ( halfFrameHeight / fl ) * depth,
 			-depth,
 			1.0f
 		);
@@ -119,23 +127,24 @@ void Integrator::SplatChunks
 		util::vec _pxWorld = _pxView * _viewToWorld;
 
 		util::float4 pxWorld = util::store( _pxWorld );
-		util::float4 pxVol = volume.ChunkIndex( pxWorld, footPrint );
+		util::float4 pxVol = volume.VoxelIndex( pxWorld );
 
-		if( pxVol.x < 0.5f ||
-			pxVol.y < 0.5f ||
-			pxVol.z < 0.5f ||
+		int x, y, z;
+		x = (int) ( pxVol.x - 0.5f );
+		y = (int) ( pxVol.y - 0.5f );
+		z = (int) ( pxVol.z - 0.5f );
+		
+		int maxIndex = volume.Resolution() - 1;
+		if( x < 0 ||
+			y < 0 ||
+			z < 0 ||
 			
-			pxVol.x >= volume.NumChunksInVolume( footPrint ) - 0.5f ||
-			pxVol.y >= volume.NumChunksInVolume( footPrint ) - 0.5f ||
-			pxVol.z >= volume.NumChunksInVolume( footPrint ) - 0.5f )
+			x >= maxIndex ||
+			y >= maxIndex ||
+			z >= maxIndex )
 			continue;
 
-		outChunkIndices.push_back( util::packInts
-		(
-			(unsigned) ( pxVol.x - 0.5f ),
-			(unsigned) ( pxVol.y - 0.5f ),
-			(unsigned) ( pxVol.z - 0.5f )
-		));
+		outPointCloud.push_back( util::packInts( x, y, z ) );
 	}
 }
 
@@ -143,36 +152,12 @@ void Integrator::SplatChunks
 void Integrator::ExpandChunks
 ( 
 	std::vector< unsigned > & inOutChunkIndices,
-	std::vector< char > & tmpScratchPad
+	std::vector< unsigned > & tmpScratchPad
 )
 {
-	ExpandChunksHelper( inOutChunkIndices, util::packZ( 1 ), false, tmpScratchPad);
-	ExpandChunksHelper( inOutChunkIndices, util::packY( 1 ), false, tmpScratchPad);
-	ExpandChunksHelper( inOutChunkIndices, util::packX( 1 ), false, tmpScratchPad);
-}
-
-// static 
-void Integrator::ChunksToBricks
-(
-	std::vector< unsigned > & inOutChunkIndices,
-	int footPrint,
-
-	std::vector< char > & tmpScratchPad
-)
-{
-	if( footPrint != 4 )
-		return;
-
-	for( auto it = inOutChunkIndices.begin(); it != inOutChunkIndices.end(); ++it )
-	{
-		unsigned x, y, z;
-		util::unpackInts( * it, x, y, z );
-		* it = util::packInts( 2 * x, 2 * y, 2 * z );
-	}
-
-	ExpandChunksHelper( inOutChunkIndices, util::packZ( 1 ), true, tmpScratchPad);
-	ExpandChunksHelper( inOutChunkIndices, util::packY( 1 ), true, tmpScratchPad);
-	ExpandChunksHelper( inOutChunkIndices, util::packX( 1 ), true, tmpScratchPad);
+	ExpandChunksHelper( inOutChunkIndices, util::packZ( 1 ), tmpScratchPad);
+	ExpandChunksHelper( inOutChunkIndices, util::packY( 1 ), tmpScratchPad);
+	ExpandChunksHelper( inOutChunkIndices, util::packX( 1 ), tmpScratchPad);
 }
 
 // static
@@ -180,66 +165,49 @@ void Integrator::ExpandChunksHelper
 (
 	std::vector< unsigned > & inOutChunkIndices,
 	unsigned delta,
-	bool disjunct,
 
-	std::vector< char > & tmpScratchPad
+	std::vector< unsigned > & tmpScratchPad
 )
 {
+	if( 0 == inOutChunkIndices.size() )
+		return;
+
 	switch( delta )
 	{
 	default:
 		{
-			tmpScratchPad.resize( inOutChunkIndices.size() * sizeof( unsigned ) );
-			unsigned * tmp = reinterpret_cast< unsigned * >( tmpScratchPad.data() );
-			
-			for( auto it = std::make_pair( inOutChunkIndices.cbegin(), tmp );
-				 it.first != inOutChunkIndices.cend();
-				 ++it.first, ++it.second )
-				* it.second = * it.first + delta;
-	
-			size_t newSize = 2 * inOutChunkIndices.size();
-			if( ! disjunct )
-				newSize -= util::intersection_size
-				(
-					inOutChunkIndices.cbegin(), inOutChunkIndices.cend(),
-					tmp, tmp + inOutChunkIndices.size()
-				);
+			tmpScratchPad.resize( 2 * inOutChunkIndices.size() );
 
-			size_t oldSize = inOutChunkIndices.size();
-			inOutChunkIndices.resize( newSize );
-	
-			util::set_union_backward
+			auto tmpNewEnd = std::set_union
 			(
-				inOutChunkIndices.cbegin(), inOutChunkIndices.cbegin() + oldSize,
-				tmp, tmp + oldSize,
-		
-				inOutChunkIndices.end()
+				inOutChunkIndices.cbegin(), inOutChunkIndices.cend(),
+				util::make_map_iterator( inOutChunkIndices.cbegin(), ::delta( delta ) ), util::make_map_iterator( inOutChunkIndices.cend(), ::delta( delta ) ),
+				tmpScratchPad.data()
 			);
+
+			tmpScratchPad.resize( std::distance( tmpScratchPad.data(), tmpNewEnd ) );
+			std::swap( tmpScratchPad, inOutChunkIndices );
 		}
 		break;
 
 	case 1:
 		{
-			size_t oldSize = inOutChunkIndices.size();
-			inOutChunkIndices.resize( 2 * oldSize );
-	
-			for( size_t i = 0; i < oldSize; ++i )
+			tmpScratchPad.clear();
+			unsigned prev = inOutChunkIndices[ 0 ];
+
+			for( std::size_t i = 0; i < inOutChunkIndices.size(); ++i )
 			{
-				size_t ii = oldSize - i - 1;
+				unsigned x = inOutChunkIndices[ i ];
+
+				if( x != prev )
+					tmpScratchPad.push_back( prev );
 				
-				unsigned tmp = inOutChunkIndices[ ii ];
-				ii *= 2;
-				inOutChunkIndices[ ii ] = tmp;
-				inOutChunkIndices[ ii + 1 ] = tmp + 1;
+				tmpScratchPad.push_back( x );
+
+				prev = x + 1;
 			}
 
-			if( ! disjunct )
-				inOutChunkIndices.resize( 
-					std::distance(
-						inOutChunkIndices.begin(),
-						std::unique( inOutChunkIndices.begin(), inOutChunkIndices.end() )
-					)
-				);
+			std::swap( tmpScratchPad, inOutChunkIndices );
 		}
 		break;
 	}
@@ -267,50 +235,32 @@ void Integrator::UpdateVoxels
 		++it.first, ++it.second
 	)
 	{
-		unsigned brickX, brickY, brickZ;
-		util::unpackInts( * it.first, brickX, brickY, brickZ );
+		unsigned x, y, z;
+		util::unpackInts( * it.first, x, y, z );
 
-		brickX *= 2;
-		brickY *= 2;
-		brickZ *= 2;
-
-		Brick & brick = * it.second;
-
-		for( int j = 0; j < brick.size(); ++j )
-		{
-			unsigned x, y, z;
-			Brick::Index1Dto3D( j, x, y, z );
-
-			x += brickX;
-			y += brickY;
-			z += brickZ;
-
-			util::float4 centerWorld = volume.VoxelCenter( x, y, z );
-			util::vec _centerWorld = util::load( centerWorld );
+		util::float4 centerWorld = volume.VoxelCenter( x, y, z );
+		util::vec _centerWorld = util::load( centerWorld );
 		
-			util::vec _centerNDC = util::homogenize( _centerWorld * _viewProj );
+		util::vec _centerNDC = util::homogenize( _centerWorld * _viewProj );
 		
-			// TODO: Remove SSE4 dependency
-			util::vec _centerScreen = _mm_macc_ps( _centerNDC, _ndcToUV, _ndcToUV );
-			util::float4 centerScreen = util::store( _centerScreen );
+		// TODO: Remove SSE4 dependency
+		util::vec _centerScreen = _mm_macc_ps( _centerNDC, _ndcToUV, _ndcToUV );
+		util::float4 centerScreen = util::store( _centerScreen );
 
-			int u = (int) centerScreen.x;
-			int v = (int) centerScreen.y;
+		int u = (int) centerScreen.x;
+		int v = (int) centerScreen.y;
 
-			float depth = 0.0f;
-			// CUDA: Clamp out of bounds access to 0 to avoid divergence
-			if( u >= 0 && u < frame.width() && v >= 0 && v < frame.height() )
-				depth = frame( u, frame.height() - v - 1 );
+		float depth = 0.0f;
+		// CUDA: Clamp out of bounds access to 0 to avoid divergence
+		if( u >= 0 && u < frame.width() && v >= 0 && v < frame.height() )
+			depth = frame( u, frame.height() - v - 1 );
 
-			bool update = ( depth != 0.0f );
-
-			float dist = util::dot( centerWorld - eye, forward );
-			float signedDist = depth - dist;
+		float dist = util::dot( centerWorld - eye, forward );
+		float signedDist = depth - dist;
 				
-			update = update && dist >= 0.8f && signedDist >= -volume.TruncationMargin();
+		int update = ( signedDist >= -volume.TruncationMargin() ) && ( depth != 0.0f ) && ( dist >= 0.8f );
 
-			brick[ j ].Update( signedDist, volume.TruncationMargin(), (int) update );
-		}
+		it.second->Update( signedDist, volume.TruncationMargin(), update );
 	}
 }
 

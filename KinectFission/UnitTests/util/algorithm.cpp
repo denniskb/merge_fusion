@@ -12,20 +12,6 @@ using namespace kifi;
 BOOST_AUTO_TEST_SUITE( util_test )
 BOOST_AUTO_TEST_SUITE( algorithm_test )
 
-BOOST_AUTO_TEST_CASE( exclusive_scan )
-{
-	int a[]             = { 1, 3, 3, 7,  0 };
-	int const scanOfA[] = { 0, 1, 4, 7, 14 };
-	
-	//util::exclusive_scan( a, a + 5 );
-	util::partial_sum_exclusive( a, a + 5, a );
-
-	for( int i = 0; i < 5; i++ )
-		BOOST_REQUIRE( scanOfA[ i ] == a[ i ] );
-}
-
-
-
 BOOST_AUTO_TEST_CASE( intersection_size )
 {
 	{
@@ -191,12 +177,12 @@ BOOST_AUTO_TEST_CASE( set_union_backward2 )
 BOOST_AUTO_TEST_CASE( radix_sort )
 {
 	std::vector< unsigned > keys( 100 );
-	std::vector< char > tmp;
+	std::vector< unsigned > tmp( keys.size() );
 
 	for( int i = 0; i < keys.size(); i++ )
 		keys[ i ] = std::rand();
 
-	util::radix_sort( keys.begin(), keys.end(), tmp );
+	util::radix_sort( keys.data(), keys.data() + keys.size(), tmp.data() );
 
 	for( int i = 0; i < keys.size() - 1; i++ )
 		BOOST_REQUIRE( keys[ i ] < keys[ i + 1 ] );
@@ -206,12 +192,12 @@ BOOST_AUTO_TEST_CASE( radix_sort2 )
 {
 	std::vector< unsigned > keys( 100 );
 	std::vector< unsigned > values( keys.size() );
-	std::vector< char > tmp;
+	std::vector< unsigned > tmp( keys.size() + values.size() );
 
 	for( int i = 0; i < keys.size(); i++ )
 		keys[ i ] = values[ i ] = std::rand();
 
-	util::radix_sort( keys.begin(), keys.end(), values.begin(), tmp );
+	util::radix_sort( keys.data(), keys.data() + keys.size(), values.data(), tmp.data() );
 
 	for( int i = 0; i < keys.size() - 1; i++ )
 		BOOST_REQUIRE( keys[ i ] < keys[ i + 1 ] );

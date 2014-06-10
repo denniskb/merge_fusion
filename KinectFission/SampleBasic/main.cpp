@@ -2,7 +2,6 @@
 #include <vector>
 
 #include <kifi/util/DirectXMathExt.h>
-#include <kifi/util/stop_watch.h>
 #include <kifi/util/vector2d.h>
 
 #include <kifi/DepthStream.h>
@@ -15,6 +14,22 @@
 
 using namespace kifi;
 using namespace kifi::util;
+
+
+
+static void mesh2obj( std::vector< float4 > const & vertices, char const * outObjFileName )
+{
+	FILE * file;
+	fopen_s( & file, outObjFileName, "w" );
+
+	for( int i = 0; i < vertices.size(); i++ )
+	{
+		auto v = vertices[ i ];
+		fprintf_s( file, "v %f %f %f\n", v.x, v.y, v.z );
+	}
+	
+	fclose( file );
+}
 
 
 
@@ -33,8 +48,6 @@ int main()
 
 	Integrator integrator;
 
-	chrono::stop_watch sw;
-
 
 
 	std::printf( "%d total frames\n", depthStreamHouse.FrameCount() );
@@ -44,24 +57,32 @@ int main()
 		depthStreamHouse.NextFrame( synthDepthFrame, view );
 		ComputeMatrices( view, eye, forward, viewProj, viewToWorld );
 
-		sw.restart();
-		integrator.Integrate( volume, synthDepthFrame, 2, eye, forward, viewProj, viewToWorld );
-		float t = sw.elapsed_milliseconds();
-
-		std::printf( "Frame %4d, nVoxels: %4dk, t: %.1fms\n", i, volume.Data().size() * 8 / 1000, t );
+		//printf( "Frame %3d:\n", i );
+		integrator.Integrate( volume, synthDepthFrame, eye, forward, viewProj, viewToWorld );
 	}
 
 	std::vector< float4 > vertices;
-	std::vector< unsigned > indices;
-
-	/*/
+	//std::vector< unsigned > indices;
+	
+	//*/
 	Splatter::Splat( volume, vertices );
 	/*/
 	Mesher mesher;
 	mesher.Triangulate( volume, vertices, indices );
 	//*/
+	
+	//Mesher::Mesh2Obj( vertices, indices, "C:/TEMP/house.obj" );
 
-	Mesher::Mesh2Obj( vertices, indices, "C:/TEMP/house.obj" );
-
+	// simple point cloud for debugging visually
+	//for( auto it = volume.Data().keys_cbegin(), end = volume.Data().keys_cend(); it != end; ++it )
+	//{
+	//	unsigned x, y, z;
+	//	unpackInts( * it, x, y, z );
+	//	
+	//	vertices.push_back( float4( (float)x, (float)y, (float)z, 1.0f ) );
+	//}
+	
+	mesh2obj( vertices, "C:/TEMP/house.obj" );
+	
 	return 0;
 }

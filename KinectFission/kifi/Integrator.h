@@ -18,7 +18,6 @@ public:
 	( 
 		Volume & volume,
 		util::vector2d< float > const & frame,
-		int chunkFootPrint,
 
 		util::float4 const & eye,
 		util::float4 const & forward,
@@ -28,40 +27,30 @@ public:
 	);
 
 private:
-	std::vector< unsigned > m_splattedChunks;
-	std::vector< char > m_scratchPad;
+	std::vector< unsigned > m_tmpPointCloud;
+	std::vector< unsigned > m_tmpScratchPad;
 
-	static void SplatChunks
+	static void DepthMap2PointCloud
 	(
 		Volume const & volume,
 		util::vector2d< float > const & frame,
 		util::float4x4 const & viewToWorld,
-		int chunkFootPrint,
 
-		std::vector< unsigned > & outChunkIndices
+		std::vector< unsigned > & outPointCloud
 	);
 
 	static void ExpandChunks
 	( 
 		std::vector< unsigned > & inOutChunkIndices,
-		std::vector< char > & tmpScratchPad
-	);
-
-	static void ChunksToBricks
-	(
-		std::vector< unsigned > & inOutChunkIndices,
-		int chunkFootPrint,
-
-		std::vector< char > & tmpScratchPad
+		std::vector< unsigned > & tmpScratchPad
 	);
 
 	static void ExpandChunksHelper
 	(
 		std::vector< unsigned > & inOutChunkIndices,
 		unsigned delta,
-		bool hintDefinitlyDisjunct,
 
-		std::vector< char > & tmpScratchPad
+		std::vector< unsigned > & tmpScratchPad
 	);
 
 	static void UpdateVoxels

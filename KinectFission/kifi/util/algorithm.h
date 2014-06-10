@@ -47,41 +47,20 @@ void set_union_backward
 
 // Sorting
 
-template< class RandomAccessIterator >
+template< typename T >
 void radix_sort
 (
-	RandomAccessIterator first, RandomAccessIterator last,
-	std::vector< char > & scratchPad
+	T * first, T * last,
+	void * scratchPad
 );
 
-template< class RandomAccessIterator1, class RandomAccessIterator2 >
+template< typename T, typename U >
 void radix_sort
 (
-	RandomAccessIterator1 first, RandomAccessIterator1 last,
-	RandomAccessIterator2 tmp
-);
+	T * keys_first, T * keys_last,
+	U * values_first,
 
-template< class RandomAccessIterator1, class RandomAccessIterator2 >
-void radix_sort
-(
-	RandomAccessIterator1 keys_first, RandomAccessIterator1 keys_last,
-	RandomAccessIterator2 values_first,
-
-	std::vector< char > & scratchPad
-);
-
-template
-< 
-	class RandomAccessIterator1, class RandomAccessIterator2,
-	class RandomAccessIterator3, class RandomAccessIterator4
->
-void radix_sort
-(
-	RandomAccessIterator1 keys_first, RandomAccessIterator1 keys_last,
-	RandomAccessIterator2 keys_tmp,
-
-	RandomAccessIterator3 values_first,
-	RandomAccessIterator4 values_tmp
+	void * scratchPad
 );
 
 }} // namespace
@@ -220,52 +199,29 @@ void set_union_backward
 
 
 
-template< class RandomAccessIterator >
+template< typename T >
 void radix_sort
 (
-	RandomAccessIterator first, RandomAccessIterator last,
-	std::vector< char > & scratchPad
-)
-{
-	typedef std::iterator_traits< RandomAccessIterator > TIter;
-
-	size_t const size = last - first;
-
-	if( size <= 1 )
-		return;
-
-	scratchPad.reserve( size * sizeof( TIter::value_type ) );
-
-	radix_sort< TIter::pointer, TIter::pointer >
-	( 
-		& * first, & * first + size, 
-		reinterpret_cast< TIter::pointer >( scratchPad.data() )
-	);
-}
-
-
-
-template< class RandomAccessIterator1, class RandomAccessIterator2 >
-void radix_sort
-(
-	RandomAccessIterator1 first, RandomAccessIterator1 last,
-	RandomAccessIterator2 tmp
+	T * first, T * last,
+	void * scratchPad
 )
 {
 	using std::swap;
 
 	unsigned cnt[ 256 ];
 
+	T * tmp = reinterpret_cast< T * >( scratchPad );
+
 	for( unsigned shift = 0; shift != 32; shift += 8 )
 	{
 		std::memset( cnt, 0, sizeof( cnt ) );
 
-		for( auto it = first; it != last; ++it )
+		for( T * it = first; it != last; ++it )
 			++cnt[ ( * it >> shift ) & 0xff ];
 
 		partial_sum_exclusive( cnt, cnt + 256, cnt );
 
-		for( auto it = first; it != last; ++it )
+		for( T * it = first; it != last; ++it )
 			tmp[ cnt[ ( * it >> shift ) & 0xff ]++ ] = * it;
 
 		last = tmp + ( last - first );
@@ -275,54 +231,21 @@ void radix_sort
 
 
 
-template< class RandomAccessIterator1, class RandomAccessIterator2 >
+template< typename T, typename U >
 void radix_sort
 (
-	RandomAccessIterator1 keys_first, RandomAccessIterator1 keys_last,
-	RandomAccessIterator2 values_first,
+	T * keys_first, T * keys_last,
+	U * values_first,
 
-	std::vector< char > & scratchPad
-)
-{
-	typedef std::iterator_traits< RandomAccessIterator1 > TIterKeys;
-	typedef std::iterator_traits< RandomAccessIterator2 > TIterValues;
-
-	size_t const size = keys_last - keys_first;
-
-	if( size <= 1 )
-		return;
-
-	scratchPad.reserve( size * ( sizeof( TIterKeys::value_type ) + sizeof( TIterValues::value_type ) ) );
-
-	radix_sort< TIterKeys::pointer, TIterKeys::pointer, TIterValues::pointer, TIterValues::pointer >
-	( 
-		& * keys_first, & * keys_first + size, 
-		reinterpret_cast< TIterKeys::pointer >( scratchPad.data() ),
-
-		& * values_first,
-		reinterpret_cast< TIterValues::pointer >( scratchPad.data() + size * sizeof( TIterKeys::value_type ) )
-	);
-}
-
-
-
-template
-< 
-	class RandomAccessIterator1, class RandomAccessIterator2,
-	class RandomAccessIterator3, class RandomAccessIterator4
->
-void radix_sort
-(
-	RandomAccessIterator1 keys_first, RandomAccessIterator1 keys_last,
-	RandomAccessIterator2 keys_tmp,
-
-	RandomAccessIterator3 values_first,
-	RandomAccessIterator4 values_tmp
+	void * scratchPad
 )
 {
 	using std::swap;
 
 	unsigned cnt[ 256 ];
+
+	T * keys_tmp = reinterpret_cast< T * >( scratchPad );
+	U * values_tmp = reinterpret_cast< U * >( scratchPad ) + ( keys_last - keys_first );
 
 	for( unsigned shift = 0; shift != 32; shift += 8 )
 	{

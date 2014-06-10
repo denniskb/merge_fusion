@@ -15,7 +15,6 @@
     <ClInclude Include="util\vector2d.h" />
     <ClInclude Include="util\windows_high_resolution_clock.h" />
     <ClInclude Include="util\windows_nominmax_strict_lean.h" />
-    <ClInclude Include="Brick.h" />
     <ClInclude Include="DepthStream.h" />
     <ClInclude Include="Integrator.h" />
     <ClInclude Include="Mesher.h" />
@@ -46,6 +45,8 @@
     <ClInclude Include="cuda\Volume.h" />
     <ClInclude Include="cuda\Voxel.h" />
     <ClInclude Include="util\numeric.h" />
+    <ClInclude Include="util\iterator.h" />
+    <ClInclude Include="util\functional.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cuda\block.cuh" />
@@ -58,12 +59,9 @@
     <ClCompile Include="util\fstream.cpp" />
     <ClCompile Include="util\semaphore.cpp" />
     <ClCompile Include="util\stop_watch.cpp" />
-    <ClCompile Include="Brick.cpp" />
     <ClCompile Include="DepthStream.cpp" />
     <ClCompile Include="Integrator.cpp" />
     <ClCompile Include="util\windows_high_resolution_clock.cpp" />
-    <ClCompile Include="Mesher.cpp" />
-    <ClCompile Include="Splatter.cpp" />
     <ClCompile Include="Volume.cpp" />
     <ClCompile Include="Voxel.cpp" />
     <ClCompile Include="cuda\cuda_device.cpp" />
@@ -72,6 +70,7 @@
     <ClCompile Include="cuda\Integrator.cpp" />
     <ClCompile Include="cuda\timer.cpp" />
     <ClCompile Include="cuda\Volume.cpp" />
+    <ClCompile Include="Splatter.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="cuda\IntegratorKernels.cu" />

@@ -47,6 +47,7 @@
     <ClCompile>
       <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)..;$(BOOST_ROOT);$(CUDA_PATH)\include;$(NVCUDASAMPLES_ROOT)\common\inc</AdditionalIncludeDirectories>
       <AdditionalOptions>/D_SCL_SECURE_NO_WARNINGS %(AdditionalOptions)</AdditionalOptions>
+      <FloatingPointExceptions>true</FloatingPointExceptions>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(BOOST_LIB_X64);$(CUDA_PATH)\lib\x64</AdditionalLibraryDirectories>
@@ -58,6 +59,8 @@
     <Link />
     <ClCompile>
       <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)..;$(BOOST_ROOT);$(CUDA_PATH)\include;$(NVCUDASAMPLES_ROOT)\common\inc</AdditionalIncludeDirectories>
+      <FloatingPointExceptions>false</FloatingPointExceptions>
+      <FloatingPointModel>Fast</FloatingPointModel>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(BOOST_LIB_X64);$(CUDA_PATH)\lib\x64</AdditionalLibraryDirectories>
@@ -73,7 +76,6 @@
     <ClCompile Include="DepthStream.cpp" />
     <ClCompile Include="Integrator.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Mesher.cpp" />
     <ClCompile Include="Splatter.cpp" />
     <ClCompile Include="util\algorithm.cpp" />
     <ClCompile Include="util\array3d.cpp" />
@@ -82,6 +84,8 @@
     <ClCompile Include="util\DirectXMathExt.cpp" />
     <ClCompile Include="util\flat_map.cpp" />
     <ClCompile Include="util\fstream.cpp" />
+    <ClCompile Include="util\functional.cpp" />
+    <ClCompile Include="util\iterator.cpp" />
     <ClCompile Include="util\numeric.cpp" />
     <ClCompile Include="util\semaphore.cpp" />
     <ClCompile Include="util\vector2d.cpp" />

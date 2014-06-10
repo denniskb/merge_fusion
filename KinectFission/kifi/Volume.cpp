@@ -5,8 +5,6 @@
 #include <kifi/util/DirectXMathExt.h>
 #include <kifi/util/flat_map.h>
 
-#include <kifi/Brick.h>
-
 
 
 namespace kifi {
@@ -35,6 +33,11 @@ int Volume::Resolution() const
 	return m_res;
 }
 
+float Volume::VoxelLength() const
+{
+	return m_sideLen / m_res;
+}
+
 float Volume::SideLength() const
 {
 	return m_sideLen;
@@ -46,16 +49,6 @@ float Volume::TruncationMargin() const
 }
 
 
-
-float Volume::VoxelLength() const
-{
-	return m_sideLen / m_res;
-}
-
-int Volume::NumChunksInVolume( int chunkRes ) const
-{
-	return m_res / chunkRes;
-}
 
 util::float4 Volume::Minimum() const
 {
@@ -103,21 +96,21 @@ util::float4 Volume::VoxelCenter( int x, int y, int z ) const
 		( Maximum() - Minimum() );
 }
 
-util::float4 Volume::ChunkIndex( util::float4 const & world, int chunkRes ) const
+util::float4 Volume::VoxelIndex( util::float4 const & world ) const
 {
 	return
 		( world - Minimum() ) / ( Maximum() - Minimum() ) *
-		util::make_float4( (float) NumChunksInVolume( chunkRes ) );
+		util::make_float4( (float) Resolution() );
 }
 
 
 
-util::flat_map< unsigned, Brick > & Volume::Data()
+util::flat_map< unsigned, Voxel > & Volume::Data()
 {
 	return m_data;
 }
 
-util::flat_map< unsigned, Brick > const & Volume::Data() const
+util::flat_map< unsigned, Voxel > const & Volume::Data() const
 {
 	return m_data;
 }

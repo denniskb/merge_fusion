@@ -19,10 +19,6 @@ BOOST_AUTO_TEST_CASE( ctor )
 	BOOST_REQUIRE( v.TruncationMargin() == 0.02f );
 	BOOST_REQUIRE( v.VoxelLength() == 2.0f / 128.0f );
 
-	BOOST_REQUIRE( v.NumChunksInVolume( 1 ) == 128 );
-	BOOST_REQUIRE( v.NumChunksInVolume( 2 ) ==  64 );
-	BOOST_REQUIRE( v.NumChunksInVolume( 4 ) ==  32 );
-
 	BOOST_REQUIRE( v.Minimum().x == -1.0f );
 	BOOST_REQUIRE( v.Maximum().y == 1.0f );
 }
@@ -32,7 +28,7 @@ BOOST_AUTO_TEST_CASE( VoxelCenter_ChunkIndex )
 	Volume v( 128, 2.0f, 0.02f );
 	
 	util::float4 vc = v.VoxelCenter( 33, 21, 92 );
-	util::float4 ci = v.ChunkIndex( vc, 1 );
+	util::float4 ci = v.VoxelIndex( vc );
 
 	BOOST_REQUIRE_CLOSE( 33.5f, ci.x, 0.1f );
 	BOOST_REQUIRE_CLOSE( 21.5f, ci.y, 0.1f );

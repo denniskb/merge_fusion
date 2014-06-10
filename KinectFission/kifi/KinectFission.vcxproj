@@ -47,6 +47,8 @@
     <Link />
     <ClCompile>
       <AdditionalIncludeDirectories>$(ProjectDir)..;$(CUDA_PATH)\include;$(NVCUDASAMPLES_ROOT)\common\inc</AdditionalIncludeDirectories>
+      <FloatingPointExceptions>true</FloatingPointExceptions>
+      <AdditionalOptions>/D_SCL_SECURE_NO_WARNINGS %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <CudaCompile>
       <Include>$(ProjectDir)..;$(CUDA_PATH)\include;$(NVCUDASAMPLES_ROOT)\common\inc</Include>
@@ -64,6 +66,7 @@
     <ClCompile>
       <AdditionalIncludeDirectories>$(ProjectDir)..;$(CUDA_PATH)\include;$(NVCUDASAMPLES_ROOT)\common\inc</AdditionalIncludeDirectories>
       <FloatingPointModel>Fast</FloatingPointModel>
+      <FloatingPointExceptions>false</FloatingPointExceptions>
     </ClCompile>
     <CudaCompile>
       <Include>$(ProjectDir)..;$(CUDA_PATH)\include;$(NVCUDASAMPLES_ROOT)\common\inc</Include>
@@ -76,7 +79,6 @@
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Brick.h" />
     <ClInclude Include="cuda\Brick.h" />
     <ClInclude Include="cuda\buffer.h" />
     <ClInclude Include="cuda\cuda_device.h" />
@@ -111,7 +113,9 @@
     <ClInclude Include="util\DirectXMathExt.h" />
     <ClInclude Include="util\flat_map.h" />
     <ClInclude Include="util\fstream.h" />
+    <ClInclude Include="util\functional.h" />
     <ClInclude Include="util\high_resolution_clock.h" />
+    <ClInclude Include="util\iterator.h" />
     <ClInclude Include="util\numeric.h" />
     <ClInclude Include="util\semaphore.h" />
     <ClInclude Include="util\std_high_resolution_clock.h" />
@@ -129,7 +133,6 @@
     <None Include="cuda\warp.cuh" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Brick.cpp" />
     <ClCompile Include="cuda\cuda_device.cpp" />
     <ClCompile Include="cuda\cuda_event.cpp" />
     <ClCompile Include="cuda\DepthFrame.cpp" />
@@ -138,7 +141,6 @@
     <ClCompile Include="cuda\Volume.cpp" />
     <ClCompile Include="DepthStream.cpp" />
     <ClCompile Include="Integrator.cpp" />
-    <ClCompile Include="Mesher.cpp" />
     <ClCompile Include="Splatter.cpp" />
     <ClCompile Include="util\barrier.cpp" />
     <ClCompile Include="util\fstream.cpp" />

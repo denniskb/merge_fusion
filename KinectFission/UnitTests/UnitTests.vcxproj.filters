@@ -13,7 +13,6 @@
     <ClCompile Include="util\vector2d.cpp" />
     <ClCompile Include="DepthStream.cpp" />
     <ClCompile Include="Integrator.cpp" />
-    <ClCompile Include="Mesher.cpp" />
     <ClCompile Include="Splatter.cpp" />
     <ClCompile Include="Volume.cpp" />
     <ClCompile Include="Voxel.cpp" />
@@ -23,6 +22,8 @@
     <ClCompile Include="cuda\reduce.cpp" />
     <ClCompile Include="cuda\scan.cpp" />
     <ClCompile Include="util\numeric.cpp" />
+    <ClCompile Include="util\functional.cpp" />
+    <ClCompile Include="util\iterator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="helper_test.h" />

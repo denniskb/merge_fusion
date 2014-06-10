@@ -39,12 +39,12 @@ BOOST_AUTO_TEST_CASE( Splat )
 	ds.NextFrame( depth, view );
 	ComputeMatrices( view, eye, forward, viewProj, viewToWorld );
 
-	i.Integrate( v, depth, 2, eye, forward, viewProj, viewToWorld );
+	i.Integrate( v, depth, eye, forward, viewProj, viewToWorld );
 
 	std::vector< util::float4 > verts;
 	Splatter::Splat( v, verts );
 
-	Mesher::Mesh2Obj( verts, std::vector< unsigned >(), "C:/TEMP/volume_splat.obj" );
+	//Mesher::Mesh2Obj( verts, std::vector< unsigned >(), "C:/TEMP/volume_splat.obj" );
 
 	BOOST_REQUIRE( true );
 }

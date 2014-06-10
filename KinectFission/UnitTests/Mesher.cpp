@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_CASE( Triangulate )
 	ds.NextFrame( depth, view );
 	ComputeMatrices( view, eye, forward, viewProj, viewToWorld );
 
-	i.Integrate( v, depth, 2, eye, forward, viewProj, viewToWorld );
+	i.Integrate( v, depth, eye, forward, viewProj, viewToWorld );
 
 	std::vector< util::float4 > VB;
 	std::vector< unsigned > IB;
