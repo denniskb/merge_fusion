@@ -244,7 +244,7 @@ void Integrator::UpdateVoxels
 		util::vec _centerNDC = util::homogenize( _centerWorld * _viewProj );
 		
 		// TODO: Remove SSE4 dependency
-		util::vec _centerScreen = _mm_macc_ps( _centerNDC, _ndcToUV, _ndcToUV );
+		util::vec _centerScreen = _centerNDC * _ndcToUV + _ndcToUV;
 		util::float4 centerScreen = util::store( _centerScreen );
 
 		int u = (int) centerScreen.x;

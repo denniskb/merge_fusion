@@ -2,6 +2,7 @@
 #include <vector>
 
 #include <kifi/util/DirectXMathExt.h>
+#include <kifi/util/stop_watch.h>
 #include <kifi/util/vector2d.h>
 
 #include <kifi/DepthStream.h>
@@ -52,13 +53,13 @@ int main()
 
 	std::printf( "%d total frames\n", depthStreamHouse.FrameCount() );
 
-	for( int i = 0; i < 200; i++ )
+	for( int i = 0; i < 100; i++ )
 	{
 		depthStreamHouse.NextFrame( synthDepthFrame, view );
 		ComputeMatrices( view, eye, forward, viewProj, viewToWorld );
 
-		//printf( "Frame %3d:\n", i );
 		integrator.Integrate( volume, synthDepthFrame, eye, forward, viewProj, viewToWorld );
+		std::printf( "Frame %d\n", i );
 	}
 
 	std::vector< float4 > vertices;

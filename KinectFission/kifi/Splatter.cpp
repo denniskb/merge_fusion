@@ -1,6 +1,5 @@
 #include <cassert>
 
-#include <kifi/util/array3d.h>
 #include <kifi/util/DirectXMathExt.h>
 #include <kifi/util/stop_watch.h>
 

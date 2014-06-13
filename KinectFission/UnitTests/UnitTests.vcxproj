@@ -78,7 +78,6 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Splatter.cpp" />
     <ClCompile Include="util\algorithm.cpp" />
-    <ClCompile Include="util\array3d.cpp" />
     <ClCompile Include="util\barrier.cpp" />
     <ClCompile Include="util\chrono.cpp" />
     <ClCompile Include="util\DirectXMathExt.cpp" />
@@ -86,6 +85,7 @@
     <ClCompile Include="util\fstream.cpp" />
     <ClCompile Include="util\functional.cpp" />
     <ClCompile Include="util\iterator.cpp" />
+    <ClCompile Include="util\math.cpp" />
     <ClCompile Include="util\numeric.cpp" />
     <ClCompile Include="util\semaphore.cpp" />
     <ClCompile Include="util\vector2d.cpp" />

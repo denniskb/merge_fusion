@@ -107,7 +107,6 @@
     <ClInclude Include="Mesher.h" />
     <ClInclude Include="Splatter.h" />
     <ClInclude Include="util\algorithm.h" />
-    <ClInclude Include="util\array3d.h" />
     <ClInclude Include="util\barrier.h" />
     <ClInclude Include="util\chrono.h" />
     <ClInclude Include="util\DirectXMathExt.h" />
@@ -116,6 +115,7 @@
     <ClInclude Include="util\functional.h" />
     <ClInclude Include="util\high_resolution_clock.h" />
     <ClInclude Include="util\iterator.h" />
+    <ClInclude Include="util\math.h" />
     <ClInclude Include="util\numeric.h" />
     <ClInclude Include="util\semaphore.h" />
     <ClInclude Include="util\std_high_resolution_clock.h" />

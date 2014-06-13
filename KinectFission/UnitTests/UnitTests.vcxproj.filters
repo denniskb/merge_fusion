@@ -3,7 +3,6 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="util\algorithm.cpp" />
-    <ClCompile Include="util\array3d.cpp" />
     <ClCompile Include="util\barrier.cpp" />
     <ClCompile Include="util\chrono.cpp" />
     <ClCompile Include="util\DirectXMathExt.cpp" />
@@ -24,6 +23,7 @@
     <ClCompile Include="util\numeric.cpp" />
     <ClCompile Include="util\functional.cpp" />
     <ClCompile Include="util\iterator.cpp" />
+    <ClCompile Include="util\math.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="helper_test.h" />
