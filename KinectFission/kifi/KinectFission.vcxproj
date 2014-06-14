@@ -115,7 +115,7 @@
     <ClInclude Include="util\functional.h" />
     <ClInclude Include="util\high_resolution_clock.h" />
     <ClInclude Include="util\iterator.h" />
-    <ClInclude Include="util\math.h" />
+    <ClInclude Include="util\flink.h" />
     <ClInclude Include="util\numeric.h" />
     <ClInclude Include="util\semaphore.h" />
     <ClInclude Include="util\std_high_resolution_clock.h" />

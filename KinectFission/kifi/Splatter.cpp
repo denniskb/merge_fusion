@@ -65,7 +65,6 @@ void Splatter::Splat( Volume const & volume, std::vector< util::float4 > & outVe
 		dtop   = top.  Distance( volume.TruncationMargin() );
 		dfront = front.Distance( volume.TruncationMargin() );
 
-		// TODO: Re-evaluate interpolation (esp. use of weights in lerp)
 		if( right.Weight() > 0 && dself * dright < 0.0f )
 		{
 			util::float4 vert = vert000;

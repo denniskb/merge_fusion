@@ -85,7 +85,6 @@
     <ClCompile Include="util\fstream.cpp" />
     <ClCompile Include="util\functional.cpp" />
     <ClCompile Include="util\iterator.cpp" />
-    <ClCompile Include="util\math.cpp" />
     <ClCompile Include="util\numeric.cpp" />
     <ClCompile Include="util\semaphore.cpp" />
     <ClCompile Include="util\vector2d.cpp" />

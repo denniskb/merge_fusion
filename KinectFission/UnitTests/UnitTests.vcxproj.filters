@@ -23,7 +23,6 @@
     <ClCompile Include="util\numeric.cpp" />
     <ClCompile Include="util\functional.cpp" />
     <ClCompile Include="util\iterator.cpp" />
-    <ClCompile Include="util\math.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="helper_test.h" />

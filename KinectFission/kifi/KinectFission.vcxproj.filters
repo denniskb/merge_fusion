@@ -46,7 +46,7 @@
     <ClInclude Include="util\numeric.h" />
     <ClInclude Include="util\iterator.h" />
     <ClInclude Include="util\functional.h" />
-    <ClInclude Include="util\math.h" />
+    <ClInclude Include="util\flink.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cuda\block.cuh" />

@@ -129,7 +129,7 @@ float lerp( float a, float b, float weightA, float weightB )
 
 bool powerOf2( int x )
 {
-	return x > 0 && ! ( x & ( x - 1 ) );
+	return x > 0 && ! (x & (x - 1));
 }
 
 
