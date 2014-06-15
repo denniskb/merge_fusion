@@ -24,7 +24,7 @@ inline __device__ float4 operator*( float4 v, float4x4 m )
 	return result;
 }
 
-inline __device__ unsigned packInts( unsigned x, unsigned y, unsigned z )
+inline __device__ unsigned pack( unsigned x, unsigned y, unsigned z )
 {
 	return x | y << 10 | z << 20;
 }

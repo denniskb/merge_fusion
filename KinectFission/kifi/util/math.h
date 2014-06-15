@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <cmath>
 
 #include <immintrin.h>
@@ -21,10 +22,64 @@ inline __m128 & operator/=( __m128 & u, __m128 v );
 
 #pragma endregion
 
-namespace flink {
+namespace kifi {
+namespace util {
 
-struct float4;
-struct float4x4;
+#pragma region float4/int4/uint4/float4x4
+
+#define _VEC4( name, T )\
+__declspec( align( 16 ) )\
+struct name\
+{\
+	T x, y, z, w;\
+\
+	inline name() {}\
+	inline explicit name( T s ) : x( s ), y( s ), z( s ), w( s ) {}\
+	inline name( T x, T y, T z, T w ) : x( x ), y( y ), z( z ), w( w ) {}\
+	inline explicit name( T const * src ) : x( src[0] ), y( src[1] ), z( src[2] ), w( src[3] ) {}\
+\
+	inline operator T *() { return & x; }\
+	inline operator T const *() const { return & x; }\
+};
+
+_VEC4( float4, float    )
+_VEC4( int4,   int      )
+_VEC4( uint4,  unsigned )
+
+
+
+struct float4x4
+{
+	float4 row0, row1, row2, row3;
+
+	inline float4x4();
+	inline float4x4
+	(
+		float m00, float m01, float m02, float m03,
+		float m10, float m11, float m12, float m13,
+		float m20, float m21, float m22, float m23,
+		float m30, float m31, float m32, float m33
+	);
+	inline float4x4( float4 row0, float4 row1, float4 row2, float4 row3 );
+
+	// src must be in row-major layout
+	inline explicit float4x4( float const * src );
+
+	inline operator float *();
+	inline operator float const *() const;
+};
+
+
+
+float4x4 const identity
+(
+	1.0f, 0.0f, 0.0f, 0.0f,
+	0.0f, 1.0f, 0.0f, 0.0f,
+	0.0f, 0.0f, 1.0f, 0.0f,
+	0.0f, 0.0f, 0.0f, 1.0f
+);
+
+#pragma endregion
 
 #pragma region Operators
 
@@ -165,55 +220,7 @@ struct FMA3
 
 #pragma endregion
 
-#pragma region float4/float4x4
-
-__declspec( align( 16 ) )
-struct float4
-{
-	float x, y, z, w;
-
-	inline float4();
-	inline explicit float4( float s );
-	inline float4( float x, float y, float z, float w );
-	inline explicit float4( float const * src );
-
-	inline operator float *();
-	inline operator float const *() const;
-};
-
-
-
-struct float4x4
-{
-	float4 row0, row1, row2, row3;
-
-	inline float4x4();
-	inline float4x4
-	(
-		float m00, float m01, float m02, float m03,
-		float m10, float m11, float m12, float m13,
-		float m20, float m21, float m22, float m23,
-		float m30, float m31, float m32, float m33
-	);
-	inline float4x4( float4 row0, float4 row1, float4 row2, float4 row3 );
-
-	// src must be in row-major layout
-	inline explicit float4x4( float const * src );
-};
-
-
-
-float4x4 const identity
-(
-	1.0f, 0.0f, 0.0f, 0.0f,
-	0.0f, 1.0f, 0.0f, 0.0f,
-	0.0f, 0.0f, 1.0f, 0.0f,
-	0.0f, 0.0f, 0.0f, 1.0f
-);
-
-#pragma endregion
-
-} // namespace
+}} // namespace
 
 
 
@@ -269,7 +276,56 @@ __m128 & operator/=( __m128 & u, __m128 v )
 
 #pragma endregion
 
-namespace flink {
+namespace kifi {
+namespace util {
+
+#pragma region float4x4
+
+float4x4::float4x4()
+{
+}
+
+float4x4::float4x4
+(
+	float m00, float m01, float m02, float m03,
+	float m10, float m11, float m12, float m13,
+	float m20, float m21, float m22, float m23,
+	float m30, float m31, float m32, float m33
+) :
+	row0( m00, m01, m02, m03 ),
+	row1( m10, m11, m12, m13 ),
+	row2( m20, m21, m22, m23 ),
+	row3( m30, m31, m32, m33 )
+{
+}
+
+float4x4::float4x4( float4 row0, float4 row1, float4 row2, float4 row3 ) :
+	row0( row0 ), 
+	row1( row1 ), 
+	row2( row2 ), 
+	row3( row3 )
+{
+}
+
+float4x4::float4x4( float const * src ) :
+	row0( & src[  0 ] ),
+	row1( & src[  4 ] ),
+	row2( & src[  8 ] ),
+	row3( & src[ 12 ] )
+{
+}
+
+float4x4::operator float *()
+{
+	return & row0.x;
+}
+
+float4x4::operator float const *() const
+{
+	return & row0.x;
+}
+
+#pragma endregion
 
 #pragma region Operators
 
@@ -444,6 +500,9 @@ float4 operator*( float4 u, float4 v )
 	);
 }
 
+#pragma warning( push )
+#pragma warning( disable : 4723 ) // potential divide by 0, needs to be handled by caller
+
 float4 operator/( float4 u, float4 v )
 {
 	return float4
@@ -454,6 +513,8 @@ float4 operator/( float4 u, float4 v )
 		u.w / v.w
 	);
 }
+
+#pragma warning( pop )
 
 
 
@@ -554,11 +615,6 @@ float dot( float4 u, float4 v )
 	return hsum( u * v );
 }
 
-float4 fma3( float4 u, float4 v, float4 w )
-{
-	return u * v + w;
-}
-
 float4 homogenize( float4 v )
 {
 	return v / v.w;
@@ -592,7 +648,9 @@ float4x4 invert_transform( float4x4 Rt )
 	R.row3 = identity.row3;
 
 	float4x4 tInv = identity;
-	tInv.row3 = -Rt.row3;
+	tInv.row3.x = -Rt.row3.x;
+	tInv.row3.y = -Rt.row3.y;
+	tInv.row3.z = -Rt.row3.z;
 
 	return tInv * transpose( R );
 }
@@ -612,17 +670,18 @@ float4x4 transpose( float4x4 m )
 
 float4x4 perspective_fov_rh( float fovYradians, float aspectWbyH, float nearZdistance, float farZdistance )
 {
-	// http://msdn.microsoft.com/en-us/library/windows/desktop/bb147302%28v=vs.85%29.aspx
+	// DirectX style (z \in [0, 1])
 
 	float h = 1.0f / std::tanf( 0.5f * fovYradians );
-	float w = h * aspectWbyH;
+	float w = h / aspectWbyH;
 	float Q = farZdistance / (farZdistance - nearZdistance);
 	
-	float4x4 result = identity;
+	float4x4 result;
+	std::memset( result, 0, 64 );
 
 	result.row0.x = w;
 	result.row1.y = h;
-	result.row2.z = Q;
+	result.row2.z = -Q;
 	result.row3.z = -Q * nearZdistance;
 	result.row2.w = -1.0f;
 
@@ -700,37 +759,42 @@ float4x4 FPU::store( matrix src )
 
 FPU::vector FPU::cross( vector u, vector v )
 {
-	return flink::cross( u, v );
+	return util::cross( u, v );
 }
 
 FPU::vector FPU::dot( vector u, vector v )
 {
-	return vector( flink::dot( u, v ) );
+	return vector( util::dot( u, v ) );
+}
+
+float4 FPU::fma3( float4 u, float4 v, float4 w )
+{
+	return u * v + w;
 }
 
 FPU::vector FPU::homogenize( vector v )
 {
-	return vector( flink::homogenize( v ) );
+	return vector( util::homogenize( v ) );
 }
 
 FPU::vector FPU::hsum( vector v )
 {
-	return vector( flink::hsum( v ) );
+	return vector( util::hsum( v ) );
 }
 
 FPU::vector FPU::len( vector v )
 {
-	return vector( flink::len( v ) );
+	return vector( util::len( v ) );
 }
 
 FPU::vector FPU::len_sq( vector v )
 {
-	return vector( flink::len_sq( v ) );
+	return vector( util::len_sq( v ) );
 }
 
 FPU::vector FPU::normalize( vector v )
 {
-	return flink::normalize( v );
+	return util::normalize( v );
 }
 
 #pragma endregion
@@ -911,75 +975,6 @@ typename SSE< FMA >::matrix SSE< FMA >::mul( matrix m, matrix n )
 
 #pragma endregion
 
-#pragma region float4/float4x4
-
-float4::float4() 
-{
-}
-
-float4::float4( float s ) : 
-	x( s ), y( s ), z( s ), w( s )
-{
-}
-
-float4::float4( float x, float y, float z, float w ) : 
-	x( x ), y( y ), z( z ), w( w ) 
-{
-}
-
-float4::float4( float const * src ) :
-	x( src[ 0 ] ), y( src[ 1 ] ), z( src[ 2 ] ), w( src[ 3 ] )
-{
-}
-
-float4::operator float *() 
-{
-	return & x;
-}
-
-float4::operator float const *() const 
-{
-	return & x;
-}
-
-
-
-float4x4::float4x4()
-{
-}
-
-float4x4::float4x4
-(
-	float m00, float m01, float m02, float m03,
-	float m10, float m11, float m12, float m13,
-	float m20, float m21, float m22, float m23,
-	float m30, float m31, float m32, float m33
-) :
-	row0( m00, m01, m02, m03 ),
-	row1( m10, m11, m12, m13 ),
-	row2( m20, m21, m22, m23 ),
-	row3( m30, m31, m32, m33 )
-{
-}
-
-float4x4::float4x4( float4 row0, float4 row1, float4 row2, float4 row3 ) :
-	row0( row0 ), 
-	row1( row1 ), 
-	row2( row2 ), 
-	row3( row3 )
-{
-}
-
-float4x4::float4x4( float const * src ) :
-	row0( & src[  0 ] ),
-	row1( & src[  4 ] ),
-	row2( & src[  8 ] ),
-	row3( & src[ 12 ] )
-{
-}
-
-#pragma endregion
-
-} // namespace
+}} // namespace
 
 #pragma endregion

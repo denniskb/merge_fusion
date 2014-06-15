@@ -80,7 +80,6 @@
     <ClCompile Include="util\algorithm.cpp" />
     <ClCompile Include="util\barrier.cpp" />
     <ClCompile Include="util\chrono.cpp" />
-    <ClCompile Include="util\DirectXMathExt.cpp" />
     <ClCompile Include="util\flat_map.cpp" />
     <ClCompile Include="util\fstream.cpp" />
     <ClCompile Include="util\functional.cpp" />

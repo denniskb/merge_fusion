@@ -4,7 +4,6 @@
     <ClInclude Include="util\algorithm.h" />
     <ClInclude Include="util\barrier.h" />
     <ClInclude Include="util\chrono.h" />
-    <ClInclude Include="util\DirectXMathExt.h" />
     <ClInclude Include="util\flat_map.h" />
     <ClInclude Include="util\fstream.h" />
     <ClInclude Include="util\high_resolution_clock.h" />
@@ -46,7 +45,7 @@
     <ClInclude Include="util\numeric.h" />
     <ClInclude Include="util\iterator.h" />
     <ClInclude Include="util\functional.h" />
-    <ClInclude Include="util\flink.h" />
+    <ClInclude Include="util\math.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cuda\block.cuh" />

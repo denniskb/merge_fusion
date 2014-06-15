@@ -3,7 +3,7 @@
 #include <boost/filesystem/operations.hpp>
 #include <boost/test/auto_unit_test.hpp>
 
-#include <kifi/util/DirectXMathExt.h>
+#include <kifi/util/math.h>
 #include <kifi/util/vector2d.h>
 
 #include <kifi/DepthStream.h>
@@ -15,6 +15,22 @@
 #include <helper_test.h>
 
 using namespace kifi;
+
+
+
+static void mesh2obj( std::vector< util::float4 > const & vertices, char const * outObjFileName )
+{
+	FILE * file;
+	fopen_s( & file, outObjFileName, "w" );
+
+	for( int i = 0; i < vertices.size(); i++ )
+	{
+		auto v = vertices[ i ];
+		fprintf_s( file, "v %f %f %f\n", v.x, v.y, v.z );
+	}
+	
+	fclose( file );
+}
 
 
 
@@ -44,7 +60,7 @@ BOOST_AUTO_TEST_CASE( Splat )
 	std::vector< util::float4 > verts;
 	Splatter::Splat( v, verts );
 
-	//Mesher::Mesh2Obj( verts, std::vector< unsigned >(), "C:/TEMP/volume_splat.obj" );
+	mesh2obj( verts, "C:/TEMP/volume_splat.obj" );
 
 	BOOST_REQUIRE( true );
 }

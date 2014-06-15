@@ -44,7 +44,7 @@ static __global__ void _SplatChunksKernel
 
 	float4 pxWorld = pxView * viewToWorld;
 	float4 pxVol = volume.ChunkIndex( pxWorld, footPrint );
-	unsigned chunkIndex = packInts
+	unsigned chunkIndex = pack
 	(
 		(unsigned) ( pxVol.x - 0.5f ),
 		(unsigned) ( pxVol.y - 0.5f ),

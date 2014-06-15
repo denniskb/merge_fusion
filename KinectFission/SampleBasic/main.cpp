@@ -1,7 +1,7 @@
 #include <cstdio>
 #include <vector>
 
-#include <kifi/util/DirectXMathExt.h>
+#include <kifi/util/math.h>
 #include <kifi/util/stop_watch.h>
 #include <kifi/util/vector2d.h>
 
@@ -78,7 +78,7 @@ int main()
 	//for( auto it = volume.Data().keys_cbegin(), end = volume.Data().keys_cend(); it != end; ++it )
 	//{
 	//	unsigned x, y, z;
-	//	unpackInts( * it, x, y, z );
+	//	unpack( * it, x, y, z );
 	//	
 	//	vertices.push_back( float4( (float)x, (float)y, (float)z, 1.0f ) );
 	//}

@@ -4,7 +4,7 @@
 #include <vector>
 
 #include <kifi/util/algorithm.h>
-#include <kifi/util/DirectXMathExt.h>
+#include <kifi/util/math.h>
 #include <kifi/util/iterator.h>
 #include <kifi/util/vector2d.h>
 
@@ -92,8 +92,6 @@ void Integrator::DepthMap2PointCloud
 {
 	outPointCloud.clear();
 
-	util::mat _viewToWorld = util::load( viewToWorld );
-
 	float const halfFrameWidth = (float) ( frame.width() / 2 );
 	float const halfFrameHeight = (float) ( frame.height() / 2 );
 
@@ -123,10 +121,7 @@ void Integrator::DepthMap2PointCloud
 			1.0f
 		);
 
-		util::vec _pxView = util::load( pxView );
-		util::vec _pxWorld = _pxView * _viewToWorld;
-
-		util::float4 pxWorld = util::store( _pxWorld );
+		util::float4 pxWorld = pxView * viewToWorld;
 		util::float4 pxVol = volume.VoxelIndex( pxWorld );
 
 		int x, y, z;
@@ -144,7 +139,7 @@ void Integrator::DepthMap2PointCloud
 			z >= maxIndex )
 			continue;
 
-		outPointCloud.push_back( util::packInts( x, y, z ) );
+		outPointCloud.push_back( util::pack( x, y, z ) );
 	}
 }
 
@@ -155,9 +150,9 @@ void Integrator::ExpandChunks
 	std::vector< unsigned > & tmpScratchPad
 )
 {
-	ExpandChunksHelper( inOutChunkIndices, util::packZ( 1 ), tmpScratchPad);
-	ExpandChunksHelper( inOutChunkIndices, util::packY( 1 ), tmpScratchPad);
-	ExpandChunksHelper( inOutChunkIndices, util::packX( 1 ), tmpScratchPad);
+	ExpandChunksHelper( inOutChunkIndices, util::pack( 0, 0, 1 ), tmpScratchPad);
+	ExpandChunksHelper( inOutChunkIndices, util::pack( 0, 1, 0 ), tmpScratchPad);
+	ExpandChunksHelper( inOutChunkIndices, util::pack( 1, 0, 0 ), tmpScratchPad);
 }
 
 // static
@@ -224,8 +219,7 @@ void Integrator::UpdateVoxels
 	util::float4x4 const & viewProjection
 )
 {
-	util::mat _viewProj = util::load( viewProjection );
-	util::vec _ndcToUV = util::set( frame.width() / 2.0f, frame.height() / 2.0f, 0, 0 );
+	util::float4 ndcToUV( frame.width() * 0.5f, frame.height() * 0.5f, 0.0f, 0.0f );
 
 	auto end = volume.Data().keys_cend();
 	for
@@ -236,16 +230,11 @@ void Integrator::UpdateVoxels
 	)
 	{
 		unsigned x, y, z;
-		util::unpackInts( * it.first, x, y, z );
+		util::unpack( * it.first, x, y, z );
 
 		util::float4 centerWorld = volume.VoxelCenter( x, y, z );
-		util::vec _centerWorld = util::load( centerWorld );
-		
-		util::vec _centerNDC = util::homogenize( _centerWorld * _viewProj );
-		
-		// TODO: Remove SSE4 dependency
-		util::vec _centerScreen = _centerNDC * _ndcToUV + _ndcToUV;
-		util::float4 centerScreen = util::store( _centerScreen );
+		util::float4 centerNDC = util::homogenize( centerWorld * viewProjection );
+		util::float4 centerScreen = centerNDC * ndcToUV + ndcToUV;
 
 		int u = (int) centerScreen.x;
 		int v = (int) centerScreen.y;

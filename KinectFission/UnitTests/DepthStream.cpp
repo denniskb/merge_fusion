@@ -3,7 +3,7 @@
 
 #include <boost/test/auto_unit_test.hpp>
 
-#include <kifi/util/DirectXMathExt.h>
+#include <kifi/util/math.h>
 #include <kifi/util/vector2d.h>
 
 #include <kifi/DepthStream.h>
@@ -72,8 +72,8 @@ BOOST_AUTO_TEST_CASE( NextFrame_v1 )
 	BOOST_CHECK( 0 == depth( 0, 0 ) );
 	BOOST_CHECK_CLOSE( 0.057f, depth( 71, 103 ), 0.1f );
 
-	BOOST_CHECK( 0.0f == view._11 );
-	BOOST_CHECK( 0.271f == view._24 );
+	BOOST_CHECK( 0.0f == view.row0.x );
+	BOOST_CHECK( 0.271f == view.row1.w );
 
 	BOOST_CHECK( ! ds.NextFrame( depth, view ) );
 
@@ -111,8 +111,8 @@ BOOST_AUTO_TEST_CASE( NextFrame_v2_short )
 	BOOST_CHECK( 0 == depth( 0, 0 ) );
 	BOOST_CHECK_CLOSE( 0.057f, depth( 71, 103 ), 0.1f );
 
-	BOOST_CHECK( 0.0f == view._11 );
-	BOOST_CHECK( 0.271f == view._24 );
+	BOOST_CHECK( 0.0f == view.row0.x );
+	BOOST_CHECK( 0.271f == view.row1.w );
 
 	BOOST_CHECK( ! ds.NextFrame( depth, view ) );
 
@@ -150,8 +150,8 @@ BOOST_AUTO_TEST_CASE( NextFrame_v2_float )
 	BOOST_CHECK( 0 == depth( 0, 0 ) );
 	BOOST_CHECK_CLOSE( 0.057f, depth( 71, 103 ), 0.1f );
 
-	BOOST_CHECK( 0.0f == view._11 );
-	BOOST_CHECK( 0.271f == view._24 );
+	BOOST_CHECK( 0.0f == view.row0.x );
+	BOOST_CHECK( 0.271f == view.row1.w );
 
 	BOOST_CHECK( ! ds.NextFrame( depth, view ) );
 

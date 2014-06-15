@@ -1,6 +1,6 @@
 #include <boost/test/auto_unit_test.hpp>
 
-#include <kifi/util/DirectXMathExt.h>
+#include <kifi/util/math.h>
 
 #include <kifi/Volume.h>
 

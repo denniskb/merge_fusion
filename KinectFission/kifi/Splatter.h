@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include <kifi/util/DirectXMathExt.h>
+#include <kifi/util/math.h>
 
 
 

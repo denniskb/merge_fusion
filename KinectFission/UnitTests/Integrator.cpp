@@ -3,7 +3,7 @@
 #include <boost/filesystem/operations.hpp>
 #include <boost/test/auto_unit_test.hpp>
 
-#include <kifi/util/DirectXMathExt.h>
+#include <kifi/util/math.h>
 #include <kifi/util/vector2d.h>
 
 #include <kifi/DepthStream.h>
@@ -43,11 +43,10 @@ BOOST_AUTO_TEST_CASE( Integrate )
 	FILE * debug;
 	fopen_s( & debug, "C:/TEMP/volume_integrate.obj", "w" );
 
-	// TODO: Adapt code to work with bricks
 	for( auto it = v.Data().keys_cbegin(), end = v.Data().keys_cend(); it != end; ++it )
 	{
 		unsigned x, y, z;
-		util::unpackInts( * it, x, y, z );
+		util::unpack( * it, x, y, z );
 		
 		util::float4 pos = v.VoxelCenter( x, y, z );
 		

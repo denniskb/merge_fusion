@@ -3,7 +3,7 @@
 #include <fstream>
 #include <string>
 
-#include <kifi/util/DirectXMathExt.h>
+#include <kifi/util/math.h>
 #include <kifi/util/vector2d.h>
 
 

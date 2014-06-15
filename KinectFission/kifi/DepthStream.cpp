@@ -2,7 +2,7 @@
 #include <fstream>
 #include <string>
 
-#include <kifi/util/DirectXMathExt.h>
+#include <kifi/util/math.h>
 #include <kifi/util/fstream.h>
 #include <kifi/util/vector2d.h>
 
@@ -65,7 +65,7 @@ bool DepthStream::NextFrame
 	if( m_iFrame >= m_nFrames )
 		return false;
 
-	m_file.read( reinterpret_cast< char * >( & outView.m ), 64 );
+	m_file.read( reinterpret_cast< char * >( (float*) outView ), 64 );
 
 	outFrame.resize( m_frameWidth, m_frameHeight );
 

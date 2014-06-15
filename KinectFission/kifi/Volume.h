@@ -1,6 +1,6 @@
 #pragma once
 
-#include <kifi/util/DirectXMathExt.h>
+#include <kifi/util/math.h>
 #include <kifi/util/flat_map.h>
 
 #include <kifi/Voxel.h>

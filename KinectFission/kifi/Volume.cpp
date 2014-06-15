@@ -2,7 +2,7 @@
 
 #include <cassert>
 
-#include <kifi/util/DirectXMathExt.h>
+#include <kifi/util/math.h>
 #include <kifi/util/flat_map.h>
 
 
@@ -100,7 +100,7 @@ util::float4 Volume::VoxelIndex( util::float4 const & world ) const
 {
 	return
 		( world - Minimum() ) / ( Maximum() - Minimum() ) *
-		util::make_float4( (float) Resolution() );
+		util::float4( (float) Resolution() );
 }
 
 

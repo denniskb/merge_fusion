@@ -7,7 +7,7 @@
 #include <kifi/cuda/Integrator.h>
 #include <kifi/cuda/Volume.h>
 
-#include <kifi/util/DirectXMathExt.h>
+#include <kifi/util/math.h>
 #include <kifi/util/vector2d.h>
 
 #include <kifi/DepthStream.h>

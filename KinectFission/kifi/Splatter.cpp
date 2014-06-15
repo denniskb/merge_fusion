@@ -1,6 +1,6 @@
 #include <cassert>
 
-#include <kifi/util/DirectXMathExt.h>
+#include <kifi/util/math.h>
 #include <kifi/util/stop_watch.h>
 
 #include <kifi/Splatter.h>
@@ -13,7 +13,7 @@ namespace kifi {
 // static
 void Splatter::Splat( Volume const & volume, std::vector< util::float4 > & outVertices )
 {
-	assert( 1 == util::packX( 1 ) );
+	assert( 1 == util::pack( 1, 0, 0 ) );
 
 	outVertices.reserve( 1 << 16 );
 	outVertices.clear();
@@ -21,7 +21,12 @@ void Splatter::Splat( Volume const & volume, std::vector< util::float4 > & outVe
 	util::chrono::stop_watch t;
 
 	// self, right, top, front
-	unsigned deltas[] = { 0, util::packX( 1 ), util::packY( 1 ), util::packZ( 1 ) };
+	unsigned deltas[] = { 
+		0, 
+		util::pack( 1, 0, 0 ),
+		util::pack( 0, 1, 0 ),
+		util::pack( 0, 0, 1 )
+	};
 
 	util::flat_map< unsigned, Voxel >::const_key_iterator voxels[ 4 ];
 	std::fill( voxels, voxels + 4, volume.Data().keys_cbegin() );
@@ -55,7 +60,7 @@ void Splatter::Splat( Volume const & volume, std::vector< util::float4 > & outVe
 			values[ std::distance( volume.Data().keys_cbegin(), voxels[ 3 ] ) ] : 0;
 
 		unsigned x, y, z;
-		util::unpackInts( * voxels[ 0 ], x, y, z );
+		util::unpack( * voxels[ 0 ], x, y, z );
 
 		util::float4 vert000 = volume.VoxelCenter( x, y, z );
 
@@ -68,7 +73,7 @@ void Splatter::Splat( Volume const & volume, std::vector< util::float4 > & outVe
 		if( right.Weight() > 0 && dself * dright < 0.0f )
 		{
 			util::float4 vert = vert000;
-			vert.x += util::lerp( 0.0f, volume.VoxelLength(), abs( dright ), abs( dself ) );
+			vert.x += util::lerp( 0.0f, volume.VoxelLength(), abs(dself) / (abs(dself) + abs(dright)) );
 
 			outVertices.push_back( vert );
 		}
@@ -76,7 +81,7 @@ void Splatter::Splat( Volume const & volume, std::vector< util::float4 > & outVe
 		if( top.Weight() > 0 && dself * dtop < 0.0f )
 		{
 			util::float4 vert = vert000;
-			vert.y += util::lerp( 0.0f, volume.VoxelLength(), abs( dtop ), abs( dself ) );
+			vert.y += util::lerp( 0.0f, volume.VoxelLength(), abs(dself) / (abs(dself) + abs(dtop)) );
 
 			outVertices.push_back( vert );
 		}
@@ -84,7 +89,7 @@ void Splatter::Splat( Volume const & volume, std::vector< util::float4 > & outVe
 		if( front.Weight() > 0 && dself * dfront < 0.0f )
 		{
 			util::float4 vert = vert000;
-			vert.z += util::lerp( 0.0f, volume.VoxelLength(), abs( dfront ), abs( dself ) );
+			vert.z += util::lerp( 0.0f, volume.VoxelLength(), abs(dself) / (abs(dself) + abs(dfront)) );
 
 			outVertices.push_back( vert );
 		}
