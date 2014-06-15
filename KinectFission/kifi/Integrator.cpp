@@ -14,11 +14,6 @@
 
 
 
-// HACK during dev
-#pragma warning( disable : 4100 )
-
-
-
 namespace {
 
 struct delta
@@ -40,6 +35,11 @@ private:
 
 
 
+// HACK
+#include <kifi/util/stop_watch.h>
+
+
+
 namespace kifi {
 
 // static 
@@ -55,33 +55,40 @@ void Integrator::Integrate
 	util::float4x4 const & viewToWorld
 )
 {
-	m_tmpPointCloud.reserve( frame.size() );
+	m_tmpPointCloud.resize ( frame.size() );
 	m_tmpScratchPad.reserve( frame.size() );
 
-	DepthMap2PointCloud( volume, frame, viewToWorld, m_tmpPointCloud );
+	util::chrono::stop_watch sw;
+	size_t nSplats = DepthMap2PointCloud( volume, frame, viewToWorld, m_tmpPointCloud );
+	//sw.take_time( "tsplat" );
 
-	util::radix_sort( m_tmpPointCloud.data(), m_tmpPointCloud.data() + m_tmpPointCloud.size(), m_tmpScratchPad.data() );
-	
-	m_tmpPointCloud.resize( 
+	util::radix_sort( m_tmpPointCloud.data(), m_tmpPointCloud.data() + nSplats, m_tmpScratchPad.data() );
+	//sw.take_time( "tsort" );
+
+	m_tmpPointCloud.resize(
 		std::distance( 
 			m_tmpPointCloud.begin(), 
-			std::unique( m_tmpPointCloud.begin(), m_tmpPointCloud.end() ) 
+			std::unique( m_tmpPointCloud.begin(), m_tmpPointCloud.begin() + nSplats ) 
 		)
 	);
 
 	ExpandChunks( m_tmpPointCloud, m_tmpScratchPad );
 	
 	volume.Data().merge_unique(
-		m_tmpPointCloud.data(), m_tmpPointCloud.data() + m_tmpPointCloud.size(), 0 
+		m_tmpPointCloud.data(), m_tmpPointCloud.data() + m_tmpPointCloud.size(), Voxel()
 	);
 
+	//sw.restart();
 	UpdateVoxels( volume, frame, eye, forward, viewProjection );
+	sw.take_time( "tintegrate" );
+
+	sw.print_times();
 }
 
 
 
 // static 
-void Integrator::DepthMap2PointCloud
+size_t Integrator::DepthMap2PointCloud
 (
 	Volume const & volume,
 	util::vector2d< float > const & frame,
@@ -90,57 +97,52 @@ void Integrator::DepthMap2PointCloud
 	std::vector< unsigned > & outPointCloud
 )
 {
-	outPointCloud.clear();
-
-	float const halfFrameWidth = (float) ( frame.width() / 2 );
-	float const halfFrameHeight = (float) ( frame.height() / 2 );
-
-	float const ppX = halfFrameWidth - 0.5f;
-	float const ppY = halfFrameHeight - 0.5f;
-
 	// TODO: Encapsulate in CameraParams struct!
-	float const fl = 585.0f;
+	float const flInv = 1.0f / 585.0f;
+	float const nppxOverFl = -((frame.width()  / 2) - 0.5f) * flInv;
+	float const  ppyOverFl =  ((frame.height() / 2) - 0.5f) * flInv;
+	int const maxIndex = volume.Resolution() - 1;
 
-	for( int i = 0; i < frame.size(); ++i )
-	{
-		float depth = frame[ i ];
-		if( 0.0f == depth )
-			continue;
+	size_t nSplats = 0;
 
-		int v = i / (int)frame.width();
-		int u = i - v * (int)frame.width();
+	for( size_t v = 0; v < frame.height(); v++ )
+		for( size_t u = 0; u < frame.width(); u++ )
+		{
+			float depth = frame( u, v );
+			if( 0.0f == depth )
+				continue;
 
-		float uNdc = ( u - ppX ) / halfFrameWidth;
-		float vNdc = ( ppY - v ) / halfFrameHeight;
+			util::float4 pxView
+			(
+				( (float)u * flInv + nppxOverFl) * depth,
+				(-(float)v * flInv +  ppyOverFl) * depth,
+				-depth,
+				1.0f
+			);
 
-		util::float4 pxView
-		(
-			uNdc * ( halfFrameWidth / fl ) * depth,
-			vNdc * ( halfFrameHeight / fl ) * depth,
-			-depth,
-			1.0f
-		);
+			util::float4 pxWorld = pxView * viewToWorld;
+			util::float4 pxVol = volume.VoxelIndex( pxWorld );
 
-		util::float4 pxWorld = pxView * viewToWorld;
-		util::float4 pxVol = volume.VoxelIndex( pxWorld );
+			pxVol -= 0.5f;
 
-		int x, y, z;
-		x = (int) ( pxVol.x - 0.5f );
-		y = (int) ( pxVol.y - 0.5f );
-		z = (int) ( pxVol.z - 0.5f );
+			int x, y, z;
+			x = (int) pxVol.x;
+			y = (int) pxVol.y;
+			z = (int) pxVol.z;
 		
-		int maxIndex = volume.Resolution() - 1;
-		if( x < 0 ||
-			y < 0 ||
-			z < 0 ||
+			if( x < 0 ||
+				y < 0 ||
+				z < 0 ||
 			
-			x >= maxIndex ||
-			y >= maxIndex ||
-			z >= maxIndex )
-			continue;
+				x >= maxIndex ||
+				y >= maxIndex ||
+				z >= maxIndex )
+				continue;
+		
+			outPointCloud[ nSplats++ ] = util::pack( x, y, z );
+		}
 
-		outPointCloud.push_back( util::pack( x, y, z ) );
-	}
+	return nSplats;
 }
 
 // static 
@@ -239,17 +241,16 @@ void Integrator::UpdateVoxels
 		int u = (int) centerScreen.x;
 		int v = (int) centerScreen.y;
 
-		float depth = 0.0f;
-		// CUDA: Clamp out of bounds access to 0 to avoid divergence
-		if( u >= 0 && u < frame.width() && v >= 0 && v < frame.height() )
-			depth = frame( u, frame.height() - v - 1 );
+		if( u < 0 || u >= frame.width() || v < 0 || v >= frame.height() )
+			continue;
 
 		float dist = util::dot( centerWorld - eye, forward );
+		float depth = frame( u, frame.height() - v - 1 );
 		float signedDist = depth - dist;
 				
-		int update = ( signedDist >= -volume.TruncationMargin() ) && ( depth != 0.0f ) && ( dist >= 0.8f );
+		int update = ( signedDist >= -volume.TruncationMargin() && 0.0f != depth && dist >= 0.8f );
 
-		it.second->Update( signedDist, volume.TruncationMargin(), update );
+		it.second->Update( std::min(signedDist, volume.TruncationMargin()), update );
 	}
 }
 

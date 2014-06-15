@@ -23,7 +23,7 @@ BOOST_AUTO_TEST_CASE( ctor )
 	BOOST_REQUIRE( v.Maximum().y == 1.0f );
 }
 
-BOOST_AUTO_TEST_CASE( VoxelCenter_ChunkIndex )
+BOOST_AUTO_TEST_CASE( VoxelCenter_VoxelIndex )
 {
 	Volume v( 128, 2.0f, 0.02f );
 	

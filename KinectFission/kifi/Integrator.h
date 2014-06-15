@@ -30,7 +30,7 @@ private:
 	std::vector< unsigned > m_tmpPointCloud;
 	std::vector< unsigned > m_tmpScratchPad;
 
-	static void DepthMap2PointCloud
+	static size_t DepthMap2PointCloud
 	(
 		Volume const & volume,
 		util::vector2d< float > const & frame,

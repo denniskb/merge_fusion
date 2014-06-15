@@ -24,6 +24,10 @@ Volume::Volume
 	assert( truncMargin > 0.0f );
 
 	assert( util::powerOf2( resolution ) );
+
+	m_tmpMin = Minimum();
+	m_tmpResOverSize = (float)resolution / (Maximum() - Minimum());
+	m_tmpResOverSize.w = 1.0f;
 }
 
 
@@ -94,13 +98,6 @@ util::float4 Volume::VoxelCenter( int x, int y, int z ) const
 			1.0f
 		) *
 		( Maximum() - Minimum() );
-}
-
-util::float4 Volume::VoxelIndex( util::float4 const & world ) const
-{
-	return
-		( world - Minimum() ) / ( Maximum() - Minimum() ) *
-		util::float4( (float) Resolution() );
 }
 
 

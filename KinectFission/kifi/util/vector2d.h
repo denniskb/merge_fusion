@@ -32,6 +32,7 @@ public:
 
 private:
 	size_t m_width;
+	size_t m_height;
 };
 
 }}
@@ -50,7 +51,8 @@ namespace util {
 template< typename T, class Alloc >
 vector2d< T, Alloc >::vector2d( Alloc const & allocator ) :
 	std::vector< T, Alloc >( allocator ),
-	m_width( 0 )
+	m_width( 0 ),
+	m_height( 0 )
 {
 }
 
@@ -62,7 +64,8 @@ vector2d< T, Alloc >::vector2d
 	Alloc const & allocator 
 ) :
 	std::vector< T, Alloc >( width * height, val, allocator ),
-	m_width( width )
+	m_width( width ),
+	m_height( height )
 {
 }
 
@@ -77,7 +80,7 @@ size_t vector2d< T, Alloc >::width() const
 template< typename T, class Alloc >
 size_t vector2d< T, Alloc >::height() const
 {
-	return width() ? size() / width() : 0;
+	return m_height;
 }
 
 
@@ -88,7 +91,7 @@ T & vector2d< T, Alloc >::operator()( size_t x, size_t y )
 	assert( x < width() );
 	assert( y < height() );
 
-	return (*this)[ x + y * width() ];
+	return (*this)[ y * width() + x ];
 }
 
 template< typename T, class Alloc >
@@ -97,7 +100,7 @@ T const & vector2d< T, Alloc >::operator()( size_t x, size_t y ) const
 	assert( x < width() );
 	assert( y < height() );
 
-	return (*this)[ x + y * width() ];
+	return (*this)[ y * width() + x ];
 }
 
 
@@ -106,6 +109,7 @@ template< typename T, class Alloc >
 void vector2d< T, Alloc >::resize( size_t width, size_t height, T const & val )
 {
 	m_width = width;
+	m_height = height;
 
 	std::vector< T, Alloc >::resize( width * height, val );
 }

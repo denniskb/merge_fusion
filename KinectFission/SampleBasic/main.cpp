@@ -51,22 +51,22 @@ int main()
 
 
 
-	std::printf( "%d total frames\n", depthStreamHouse.FrameCount() );
+	//std::printf( "%d total frames\n", depthStreamHouse.FrameCount() );
 
-	for( int i = 0; i < 100; i++ )
-	{
-		depthStreamHouse.NextFrame( synthDepthFrame, view );
-		ComputeMatrices( view, eye, forward, viewProj, viewToWorld );
-
+	for( int i = 0; i < 100; i++ ) {
+	depthStreamHouse.NextFrame( synthDepthFrame, view );
+	ComputeMatrices( view, eye, forward, viewProj, viewToWorld );
+	//for( int i = 0; i < 100; i++ ) {
 		integrator.Integrate( volume, synthDepthFrame, eye, forward, viewProj, viewToWorld );
-		std::printf( "Frame %d\n", i );
+		
+		//std::printf( "Frame %d\n", i );
 	}
 
 	std::vector< float4 > vertices;
 	//std::vector< unsigned > indices;
 	
 	//*/
-	Splatter::Splat( volume, vertices );
+	//Splatter::Splat( volume, vertices );
 	/*/
 	Mesher mesher;
 	mesher.Triangulate( volume, vertices, indices );
@@ -75,13 +75,13 @@ int main()
 	//Mesher::Mesh2Obj( vertices, indices, "C:/TEMP/house.obj" );
 
 	// simple point cloud for debugging visually
-	//for( auto it = volume.Data().keys_cbegin(), end = volume.Data().keys_cend(); it != end; ++it )
-	//{
-	//	unsigned x, y, z;
-	//	unpack( * it, x, y, z );
-	//	
-	//	vertices.push_back( float4( (float)x, (float)y, (float)z, 1.0f ) );
-	//}
+	for( auto it = volume.Data().keys_cbegin(), end = volume.Data().keys_cend(); it != end; ++it )
+	{
+		unsigned x, y, z;
+		unpack( * it, x, y, z );
+		
+		vertices.push_back( float4( (float)x, (float)y, (float)z, 1.0f ) );
+	}
 	
 	mesh2obj( vertices, "C:/TEMP/house.obj" );
 	

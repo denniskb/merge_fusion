@@ -62,7 +62,6 @@
     <ClCompile Include="Integrator.cpp" />
     <ClCompile Include="util\windows_high_resolution_clock.cpp" />
     <ClCompile Include="Volume.cpp" />
-    <ClCompile Include="Voxel.cpp" />
     <ClCompile Include="cuda\cuda_device.cpp" />
     <ClCompile Include="cuda\cuda_event.cpp" />
     <ClCompile Include="cuda\DepthFrame.cpp" />

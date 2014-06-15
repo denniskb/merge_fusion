@@ -49,15 +49,15 @@ void Splatter::Splat( Volume const & volume, std::vector< util::float4 > & outVe
 
 		Voxel right = 
 			( * voxels[ 1 ] == * voxels[ 0 ] + deltas[ 1 ] ) ? 
-			values[ std::distance( volume.Data().keys_cbegin(), voxels[ 1 ] ) ] : 0;
+			values[ std::distance( volume.Data().keys_cbegin(), voxels[ 1 ] ) ] : Voxel();
 
 		Voxel top = 
 			( * voxels[ 2 ] == * voxels[ 0 ] + deltas[ 2 ] ) ? 
-			values[ std::distance( volume.Data().keys_cbegin(), voxels[ 2 ] ) ] : 0;
+			values[ std::distance( volume.Data().keys_cbegin(), voxels[ 2 ] ) ] : Voxel();
 
 		Voxel front = 
 			( * voxels[ 3 ] == * voxels[ 0 ] + deltas[ 3 ] ) ? 
-			values[ std::distance( volume.Data().keys_cbegin(), voxels[ 3 ] ) ] : 0;
+			values[ std::distance( volume.Data().keys_cbegin(), voxels[ 3 ] ) ] : Voxel();
 
 		unsigned x, y, z;
 		util::unpack( * voxels[ 0 ], x, y, z );
@@ -65,10 +65,10 @@ void Splatter::Splat( Volume const & volume, std::vector< util::float4 > & outVe
 		util::float4 vert000 = volume.VoxelCenter( x, y, z );
 
 		float dself, dright, dtop, dfront;
-		dself  = self. Distance( volume.TruncationMargin() );
-		dright = right.Distance( volume.TruncationMargin() );
-		dtop   = top.  Distance( volume.TruncationMargin() );
-		dfront = front.Distance( volume.TruncationMargin() );
+		dself  = self. Distance();
+		dright = right.Distance();
+		dtop   = top.  Distance();
+		dfront = front.Distance();
 
 		if( right.Weight() > 0 && dself * dright < 0.0f )
 		{

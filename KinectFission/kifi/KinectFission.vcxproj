@@ -147,7 +147,6 @@
     <ClCompile Include="util\stop_watch.cpp" />
     <ClCompile Include="util\windows_high_resolution_clock.cpp" />
     <ClCompile Include="Volume.cpp" />
-    <ClCompile Include="Voxel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="cuda\IntegratorKernels.cu" />

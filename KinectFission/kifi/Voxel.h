@@ -1,28 +1,27 @@
 #pragma once
 
+#include <kifi/util/math.h>
+
 
 
 namespace kifi {
 
-class Voxel
+struct Voxel
 {
-public:
-	Voxel( unsigned data = 0 );
-	operator unsigned() const;
+	Voxel() : m_d( 0.0f ), m_w( 0 ) {}
 
-	float Distance( float truncationMargin ) const;
-	int Weight() const;
+	float Distance() const { return m_d / m_w; }
+	int Weight() const { return m_w; }
 
-	void Update( float newDistance, float truncationMargin, int newWeight = 1 );
-
-	bool operator==( Voxel rhs ) const;
-	bool operator!=( Voxel rhs ) const;
+	void Update( float newDistance, int newWeight = 1 )
+	{
+		m_d += newDistance * newWeight;
+		m_w += newWeight;
+	}
 
 private:
-	unsigned m_data;
-
-	static unsigned PackDistance( float distance, float truncationMargin );
-	static float UnpackDistance( int distance, float truncationMargin );
+	float m_d;
+	int m_w;
 };
 
 } // namespace

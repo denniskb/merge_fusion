@@ -226,6 +226,9 @@ struct FMA3
 
 #pragma region Implementation
 
+#pragma warning( push )
+#pragma warning( disable : 4723 ) // potential divide by 0, needs to be handled by caller
+
 #pragma region Global Operators
 
 __m128 operator+( __m128 u, __m128 v )
@@ -500,9 +503,6 @@ float4 operator*( float4 u, float4 v )
 	);
 }
 
-#pragma warning( push )
-#pragma warning( disable : 4723 ) // potential divide by 0, needs to be handled by caller
-
 float4 operator/( float4 u, float4 v )
 {
 	return float4
@@ -513,8 +513,6 @@ float4 operator/( float4 u, float4 v )
 		u.w / v.w
 	);
 }
-
-#pragma warning( pop )
 
 
 
@@ -976,5 +974,7 @@ typename SSE< FMA >::matrix SSE< FMA >::mul( matrix m, matrix n )
 #pragma endregion
 
 }} // namespace
+
+#pragma warning( pop ) // 4732: potential divide by zero
 
 #pragma endregion
