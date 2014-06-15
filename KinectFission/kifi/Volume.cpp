@@ -25,9 +25,11 @@ Volume::Volume
 
 	assert( util::powerOf2( resolution ) );
 
-	m_tmpMin = Minimum();
-	m_tmpResOverSize = (float)resolution / (Maximum() - Minimum());
-	m_tmpResOverSize.w = 1.0f;
+	m_tmpVoxelLen = SideLength() / Resolution();
+	m_tmpVoxelLenOver2PlusMin = m_tmpVoxelLen * 0.5f + Minimum().x;
+
+	m_tmpVoxelLenInv = 1.0f / m_tmpVoxelLen;
+	m_tmpNegVoxelLenInvTimesMin = m_tmpVoxelLenInv * -Minimum().x;
 }
 
 
@@ -78,26 +80,6 @@ util::float4 Volume::Maximum() const
 		maximum,
 		1.0f
 	);
-}
-
-
-
-util::float4 Volume::VoxelCenter( int x, int y, int z ) const
-{
-	assert( x >= 0 && x < Resolution() );
-	assert( y >= 0 && y < Resolution() );
-	assert( z >= 0 && z < Resolution() );
-
-	return 
-		Minimum() +
-		util::float4
-		( 
-			( x + 0.5f ) / Resolution(), 
-			( y + 0.5f ) / Resolution(), 
-			( z + 0.5f ) / Resolution(), 
-			1.0f
-		) *
-		( Maximum() - Minimum() );
 }
 
 

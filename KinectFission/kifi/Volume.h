@@ -22,15 +22,18 @@ public:
 	util::float4 Minimum() const;
 	util::float4 Maximum() const;
 
-	util::float4 VoxelCenter( int x, int y, int z ) const;
+	inline util::float4 VoxelCenter( util::float4 index ) const;
 	inline util::float4 VoxelIndex( util::float4 world ) const;
 
 	util::flat_map< unsigned, Voxel > & Data();
 	util::flat_map< unsigned, Voxel > const & Data() const;
 
 private:
-	util::float4 m_tmpMin;
-	util::float4 m_tmpResOverSize;
+	float m_tmpVoxelLen;
+	float m_tmpVoxelLenOver2PlusMin;
+
+	float m_tmpVoxelLenInv;
+	float m_tmpNegVoxelLenInvTimesMin;
 
 	int m_res;
 	float m_sideLen;
@@ -45,9 +48,20 @@ private:
 
 #pragma region Implementation of Inline Functions
 
-kifi::util::float4 kifi::Volume::VoxelIndex( util::float4 world ) const
+namespace kifi {
+
+// result.w is undefined!
+util::float4 Volume::VoxelCenter( util::float4 index ) const
 {
-	return (world - m_tmpMin) * m_tmpResOverSize;
+	return index * m_tmpVoxelLen + m_tmpVoxelLenOver2PlusMin;
 }
+
+// result.w is undefined!
+util::float4 Volume::VoxelIndex( util::float4 world ) const
+{
+	return world * m_tmpVoxelLenInv + m_tmpNegVoxelLenInvTimesMin;
+}
+
+} // namespace
 
 #pragma endregion

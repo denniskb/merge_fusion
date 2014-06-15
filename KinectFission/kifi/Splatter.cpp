@@ -62,7 +62,7 @@ void Splatter::Splat( Volume const & volume, std::vector< util::float4 > & outVe
 		unsigned x, y, z;
 		util::unpack( * voxels[ 0 ], x, y, z );
 
-		util::float4 vert000 = volume.VoxelCenter( x, y, z );
+		util::float4 vert000 = volume.VoxelCenter( util::float4( (float)x, (float)y, (float)z, 0.0f ) );
 
 		float dself, dright, dtop, dfront;
 		dself  = self. Distance();

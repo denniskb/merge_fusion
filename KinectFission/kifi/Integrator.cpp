@@ -60,7 +60,7 @@ void Integrator::Integrate
 
 	util::chrono::stop_watch sw;
 	size_t nSplats = DepthMap2PointCloud( volume, frame, viewToWorld, m_tmpPointCloud );
-	//sw.take_time( "tsplat" );
+	sw.take_time( "tsplat" );
 
 	util::radix_sort( m_tmpPointCloud.data(), m_tmpPointCloud.data() + nSplats, m_tmpScratchPad.data() );
 	//sw.take_time( "tsort" );
@@ -78,9 +78,9 @@ void Integrator::Integrate
 		m_tmpPointCloud.data(), m_tmpPointCloud.data() + m_tmpPointCloud.size(), Voxel()
 	);
 
-	//sw.restart();
+	sw.restart();
 	UpdateVoxels( volume, frame, eye, forward, viewProjection );
-	sw.take_time( "tintegrate" );
+	sw.take_time( "tupdate" );
 
 	sw.print_times();
 }
@@ -123,12 +123,10 @@ size_t Integrator::DepthMap2PointCloud
 			util::float4 pxWorld = pxView * viewToWorld;
 			util::float4 pxVol = volume.VoxelIndex( pxWorld );
 
-			pxVol -= 0.5f;
-
 			int x, y, z;
-			x = (int) pxVol.x;
-			y = (int) pxVol.y;
-			z = (int) pxVol.z;
+			x = (int) (pxVol.x - 0.5f);
+			y = (int) (pxVol.y - 0.5f);
+			z = (int) (pxVol.z - 0.5f);
 		
 			if( x < 0 ||
 				y < 0 ||
@@ -234,7 +232,8 @@ void Integrator::UpdateVoxels
 		unsigned x, y, z;
 		util::unpack( * it.first, x, y, z );
 
-		util::float4 centerWorld = volume.VoxelCenter( x, y, z );
+		util::float4 centerWorld = volume.VoxelCenter( util::float4( (float)x, (float)y, (float)z, 0.0f ) );
+		centerWorld.w = 1.0f;
 		util::float4 centerNDC = util::homogenize( centerWorld * viewProjection );
 		util::float4 centerScreen = centerNDC * ndcToUV + ndcToUV;
 
@@ -250,7 +249,7 @@ void Integrator::UpdateVoxels
 				
 		int update = ( signedDist >= -volume.TruncationMargin() && 0.0f != depth && dist >= 0.8f );
 
-		it.second->Update( std::min(signedDist, volume.TruncationMargin()), update );
+		it.second->Update( std::min(signedDist, volume.TruncationMargin()), (float)update );
 	}
 }
 

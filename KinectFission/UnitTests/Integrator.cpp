@@ -48,7 +48,7 @@ BOOST_AUTO_TEST_CASE( Integrate )
 		unsigned x, y, z;
 		util::unpack( * it, x, y, z );
 		
-		util::float4 pos = v.VoxelCenter( x, y, z );
+		util::float4 pos = v.VoxelCenter( util::float4( (float)x, (float)y, (float)z, 0.0f ) );
 		
 		fprintf_s( debug, "v %f %f %f\n", pos.x, pos.y, pos.z );
 	}

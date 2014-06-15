@@ -66,7 +66,7 @@ int main()
 	//std::vector< unsigned > indices;
 	
 	//*/
-	//Splatter::Splat( volume, vertices );
+	Splatter::Splat( volume, vertices );
 	/*/
 	Mesher mesher;
 	mesher.Triangulate( volume, vertices, indices );
@@ -75,13 +75,13 @@ int main()
 	//Mesher::Mesh2Obj( vertices, indices, "C:/TEMP/house.obj" );
 
 	// simple point cloud for debugging visually
-	for( auto it = volume.Data().keys_cbegin(), end = volume.Data().keys_cend(); it != end; ++it )
-	{
-		unsigned x, y, z;
-		unpack( * it, x, y, z );
-		
-		vertices.push_back( float4( (float)x, (float)y, (float)z, 1.0f ) );
-	}
+	//for( auto it = volume.Data().keys_cbegin(), end = volume.Data().keys_cend(); it != end; ++it )
+	//{
+	//	unsigned x, y, z;
+	//	unpack( * it, x, y, z );
+	//	
+	//	vertices.push_back( float4( (float)x, (float)y, (float)z, 1.0f ) );
+	//}
 	
 	mesh2obj( vertices, "C:/TEMP/house.obj" );
 	

@@ -11,9 +11,9 @@ struct Voxel
 	Voxel() : m_d( 0.0f ), m_w( 0 ) {}
 
 	float Distance() const { return m_d / m_w; }
-	int Weight() const { return m_w; }
+	float Weight() const { return m_w; }
 
-	void Update( float newDistance, int newWeight = 1 )
+	void Update( float newDistance, float newWeight = 1.0f )
 	{
 		m_d += newDistance * newWeight;
 		m_w += newWeight;
@@ -21,7 +21,7 @@ struct Voxel
 
 private:
 	float m_d;
-	int m_w;
+	float m_w;
 };
 
 } // namespace
