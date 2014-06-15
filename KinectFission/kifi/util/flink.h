@@ -3,7 +3,7 @@
 #include <cmath>
 
 #include <immintrin.h>
-#include <tmmintrin.h>
+#include <xmmintrin.h>
 
 
 
@@ -113,19 +113,13 @@ struct FPU
 	static inline vector normalize ( vector v );
 };
 
-// FPU::vector operator*( FPU::vector, FPU::matrix )
-// FPU::matrix operator*( FPU::matrix, FPU::matrix )
-
-// FPU::vector & operator*=( FPU::vector &, FPU::matrix )
-// FPU::matrix & operator*=( FPU::matrix &, FPU::matrix )
-
 #pragma endregion
 
-#pragma region SSE3 Backend
+#pragma region SSE Backend
 
-struct SSE_FMA;
-template< class FMA = SSE_FMA >
-struct SSE3
+struct FMA3_SSE_EMU;
+template< class FMA = FMA3_SSE_EMU >
+struct SSE
 {
 	typedef __m128 vector;	
 	struct matrix { vector row0, row1, row2, row3; };
@@ -146,24 +140,25 @@ struct SSE3
 	static inline vector len       ( vector v );
 	static inline vector len_sq    ( vector v );
 	static inline vector normalize ( vector v );
+
+	// TODO: Find out how to define these in the implementation region
+	inline friend vector operator*( vector v, matrix m ) { return mul(v, m); }
+	inline friend matrix operator*( matrix m, matrix n ) { return mul(m, n); }
+
+	inline friend vector & operator*=( vector & v, matrix m ) { v = mul(v, m); return v; }
+	inline friend matrix & operator*=( matrix & m, matrix n ) { m = mul(m, n); return m; }
+
+private:
+	static inline vector mul( vector v, matrix m );
+	static inline matrix mul( matrix m, matrix n );
 };
 
-template< class FMA >
-inline typename SSE3< FMA >::vector operator*( typename SSE3< FMA >::vector v, typename SSE3< FMA >::matrix m );
-template< class FMA >
-inline typename SSE3< FMA >::matrix operator*( typename SSE3< FMA >::matrix m, typename SSE3< FMA >::matrix n );
-
-template< class FMA >
-inline typename SSE3< FMA >::vector & operator*=( typename SSE3< FMA >::vector & v, typename SSE3< FMA >::matrix m );
-template< class FMA >
-inline typename SSE3< FMA >::matrix & operator*=( typename SSE3< FMA >::matrix & m, typename SSE3< FMA >::matrix n );
-
-struct SSE_FMA
+struct FMA3_SSE_EMU
 {
 	static inline __m128 fma3( __m128 a, __m128 b, __m128 c );
 };
 
-struct AVX_FMA
+struct FMA3
 {
 	static inline __m128 fma3( __m128 a, __m128 b, __m128 c );
 };
@@ -528,11 +523,7 @@ float4 & operator*=( float4 & v, float4x4 m )
 
 float4x4 & operator*=( float4x4 & m, float4x4 n )
 {
-	m.row0 *= n;
-	m.row1 *= n;
-	m.row2 *= n;
-	m.row3 *= n;
-
+	m = m * n;
 	return m;
 }
 
@@ -580,7 +571,7 @@ float hsum( float4 v )
 
 float len( float4 v )
 {
-	return std::sqrt( len_sq( v ) );
+	return std::sqrtf( len_sq( v ) );
 }
 
 float len_sq( float4 v )
@@ -598,7 +589,7 @@ float4 normalize( float4 v )
 float4x4 invert_transform( float4x4 Rt )
 {
 	float4x4 R = Rt;
-	R.row3 = float4( 0.0f, 0.0f, 0.0f, 1.0f );
+	R.row3 = identity.row3;
 
 	float4x4 tInv = identity;
 	tInv.row3 = -Rt.row3;
@@ -619,7 +610,24 @@ float4x4 transpose( float4x4 m )
 
 
 
-//float4x4 perspective_fov_rh( float fovYradians, float aspectWbyH, float nearZdistance, float farZdistance ){...}
+float4x4 perspective_fov_rh( float fovYradians, float aspectWbyH, float nearZdistance, float farZdistance )
+{
+	// http://msdn.microsoft.com/en-us/library/windows/desktop/bb147302%28v=vs.85%29.aspx
+
+	float h = 1.0f / std::tanf( 0.5f * fovYradians );
+	float w = h * aspectWbyH;
+	float Q = farZdistance / (farZdistance - nearZdistance);
+	
+	float4x4 result = identity;
+
+	result.row0.x = w;
+	result.row1.y = h;
+	result.row2.z = Q;
+	result.row3.z = -Q * nearZdistance;
+	result.row2.w = -1.0f;
+
+	return result;
+}
 
 
 
@@ -727,28 +735,28 @@ FPU::vector FPU::normalize( vector v )
 
 #pragma endregion
 
-#pragma region SSE3 Backend
+#pragma region SSE Backend
 
 template< class FMA >
-typename SSE3< FMA >::vector SSE3< FMA >::set( float s )
+typename SSE< FMA >::vector SSE< FMA >::set( float s )
 {
 	return load( float4( s ) );
 }
 
 template< class FMA >
-typename SSE3< FMA >::vector SSE3< FMA >::set( float x, float y, float z, float w )
+typename SSE< FMA >::vector SSE< FMA >::set( float x, float y, float z, float w )
 {
 	return load( float4( x, y, z, w ) );
 }
 
 template< class FMA >
-typename SSE3< FMA >::vector SSE3< FMA >::load( float4 src )
+typename SSE< FMA >::vector SSE< FMA >::load( float4 src )
 {
 	return _mm_load_ps( src );
 }
 
 template< class FMA >
-float4 SSE3< FMA >::store( vector src )
+float4 SSE< FMA >::store( vector src )
 {
 	float4 result;
 
@@ -760,7 +768,7 @@ float4 SSE3< FMA >::store( vector src )
 
 
 template< class FMA >
-typename SSE3< FMA >::matrix SSE3< FMA >::load ( float4x4 src )
+typename SSE< FMA >::matrix SSE< FMA >::load ( float4x4 src )
 {
 	matrix result;
 
@@ -773,7 +781,7 @@ typename SSE3< FMA >::matrix SSE3< FMA >::load ( float4x4 src )
 }
 
 template< class FMA >
-float4x4 SSE3< FMA >::store( matrix src )
+float4x4 SSE< FMA >::store( matrix src )
 {
 	float4x4 result;
 
@@ -788,7 +796,7 @@ float4x4 SSE3< FMA >::store( matrix src )
 
 
 template< class FMA >
-typename SSE3< FMA >::vector SSE3< FMA >::cross( vector u, vector v )
+typename SSE< FMA >::vector SSE< FMA >::cross( vector u, vector v )
 {
 	vector urot = _mm_shuffle_ps( u, u, _MM_SHUFFLE( 3, 0, 2, 1 ) );
 	vector vrot = _mm_shuffle_ps( v, v, _MM_SHUFFLE( 3, 0, 2, 1 ) );
@@ -802,25 +810,25 @@ typename SSE3< FMA >::vector SSE3< FMA >::cross( vector u, vector v )
 }
 
 template< class FMA >
-typename SSE3< FMA >::vector SSE3< FMA >::dot( vector u, vector v )
+typename SSE< FMA >::vector SSE< FMA >::dot( vector u, vector v )
 {
 	return hsum( u * v );
 }
 
 template< class FMA >
-typename SSE3< FMA >::vector SSE3< FMA >::fma3( vector u, vector v, vector w )
+typename SSE< FMA >::vector SSE< FMA >::fma3( vector u, vector v, vector w )
 {
 	return FMA::fma3( u, v, w );
 }
 
 template< class FMA >
-typename SSE3< FMA >::vector SSE3< FMA >::homogenize( vector v )
+typename SSE< FMA >::vector SSE< FMA >::homogenize( vector v )
 {
 	return v / _mm_shuffle_ps( v, v, _MM_SHUFFLE( 3, 3, 3, 3 ) );
 }
 
 template< class FMA >
-typename SSE3< FMA >::vector SSE3< FMA >::hsum( vector v )
+typename SSE< FMA >::vector SSE< FMA >::hsum( vector v )
 {
 	// v == xyzw
 	vector rotl1 = _mm_shuffle_ps( v, v, _MM_SHUFFLE( 0, 3, 2, 1 ) ); // yzwx
@@ -834,29 +842,41 @@ typename SSE3< FMA >::vector SSE3< FMA >::hsum( vector v )
 }
 
 template< class FMA >
-typename SSE3< FMA >::vector SSE3< FMA >::len( vector v )
+typename SSE< FMA >::vector SSE< FMA >::len( vector v )
 {
 	return _mm_sqrt_ps( len_sq( v ) );
 }
 
 template< class FMA >
-typename SSE3< FMA >::vector SSE3< FMA >::len_sq( vector v )
+typename SSE< FMA >::vector SSE< FMA >::len_sq( vector v )
 {
 	return dot( v, v );
 }
 
 template< class FMA >
-typename SSE3< FMA >::vector SSE3< FMA >::normalize( vector v )
+typename SSE< FMA >::vector SSE< FMA >::normalize( vector v )
 {
 	return v / len( v );
 }
 
 
 
-template< class FMA >
-inline typename SSE3< FMA >::vector operator*( typename SSE3< FMA >::vector v, typename SSE3< FMA >::matrix m )
+__m128 FMA3_SSE_EMU::fma3( __m128 a, __m128 b, __m128 c )
 {
-	typedef SSE3< FMA >::vector vec;
+	return a * b + c;
+}
+
+__m128 FMA3::fma3( __m128 a, __m128 b, __m128 c )
+{
+	return _mm_fmadd_ps( a, b, c );
+}
+
+
+
+template< class FMA >
+typename SSE< FMA >::vector SSE< FMA >::mul( vector v, matrix m )
+{
+	typedef SSE<>::vector vec;
 
 	vec tmp0 = _mm_shuffle_ps( v, v, _MM_SHUFFLE( 0, 0, 0, 0 ) );
 	vec tmp1 = _mm_shuffle_ps( v, v, _MM_SHUFFLE( 1, 1, 1, 1 ) );
@@ -875,9 +895,9 @@ inline typename SSE3< FMA >::vector operator*( typename SSE3< FMA >::vector v, t
 }
 
 template< class FMA >
-inline typename SSE3< FMA >::matrix operator*( typename SSE3< FMA >::matrix m, typename SSE3< FMA >::matrix n )
+typename SSE< FMA >::matrix SSE< FMA >::mul( matrix m, matrix n )
 {
-	typedef SSE3< FMA >::matrix mat;
+	typedef SSE< FMA >::matrix mat;
 
 	mat result;
 
@@ -887,36 +907,6 @@ inline typename SSE3< FMA >::matrix operator*( typename SSE3< FMA >::matrix m, t
 	result.row3 = m.row3 * n;
 
 	return result;
-}
-
-template< class FMA >
-inline typename SSE3< FMA >::vector & operator*=( typename SSE3< FMA >::vector & v, typename SSE3< FMA >::matrix m )
-{
-	v = v * m;
-	return v;
-}
-
-template< class FMA >
-inline typename SSE3< FMA >::matrix & operator*=( typename SSE3< FMA >::matrix & m, typename SSE3< FMA >::matrix n )
-{
-	m.row0 *= n;
-	m.row1 *= n;
-	m.row2 *= n;
-	m.row3 *= n;
-
-	return m;
-}
-
-
-
-__m128 SSE_FMA::fma3( __m128 a, __m128 b, __m128 c )
-{
-	return a * b + c;
-}
-
-__m128 AVX_FMA::fma3( __m128 a, __m128 b, __m128 c )
-{
-	return _mm_fmadd_ps( a, b, c );
 }
 
 #pragma endregion
