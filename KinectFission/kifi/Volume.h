@@ -19,11 +19,11 @@ public:
 	float SideLength() const;
 	float TruncationMargin() const;
 
-	util::float4 Minimum() const;
-	util::float4 Maximum() const;
+	util::vec3 Minimum() const;
+	util::vec3 Maximum() const;
 
-	inline util::float4 VoxelCenter( util::float4 index ) const;
-	inline util::float4 VoxelIndex( util::float4 world ) const;
+	inline util::vec3 VoxelCenter( int x, int y, int z ) const;
+	inline util::vec3 VoxelIndex( util::vec3 world ) const;
 
 	util::flat_map< unsigned, Voxel > & Data();
 	util::flat_map< unsigned, Voxel > const & Data() const;
@@ -51,13 +51,13 @@ private:
 namespace kifi {
 
 // result.w is undefined!
-util::float4 Volume::VoxelCenter( util::float4 index ) const
+util::vec3 Volume::VoxelCenter( int x, int y, int z ) const
 {
-	return index * m_tmpVoxelLen + m_tmpVoxelLenOver2PlusMin;
+	return util::vec3( (float) x, (float) y, (float) z ) * m_tmpVoxelLen + m_tmpVoxelLenOver2PlusMin;
 }
 
 // result.w is undefined!
-util::float4 Volume::VoxelIndex( util::float4 world ) const
+util::vec3 Volume::VoxelIndex( util::vec3 world ) const
 {
 	return world * m_tmpVoxelLenInv + m_tmpNegVoxelLenInvTimesMin;
 }

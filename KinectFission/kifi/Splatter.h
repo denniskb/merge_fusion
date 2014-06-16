@@ -13,7 +13,7 @@ class Volume;
 class Splatter
 {
 public:
-	static void Splat( Volume const & volume, std::vector< util::float4 > & outVertices );
+	static void Splat( Volume const & volume, std::vector< util::vec3 > & outVertices );
 };
 
 } // namespace

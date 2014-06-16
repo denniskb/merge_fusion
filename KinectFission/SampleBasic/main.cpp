@@ -18,7 +18,7 @@ using namespace kifi::util;
 
 
 
-static void mesh2obj( std::vector< float4 > const & vertices, char const * outObjFileName )
+static void mesh2obj( std::vector< vec3 > const & vertices, char const * outObjFileName )
 {
 	FILE * file;
 	fopen_s( & file, outObjFileName, "w" );
@@ -39,11 +39,10 @@ int main()
 	DepthStream depthStreamHouse( "C:/TEMP/house.depth" );
 	vector2d< float > synthDepthFrame;
 	
-	float4   eye;
-	float4   forward;
-	float4x4 view;
-	float4x4 viewProj;
-	float4x4 viewToWorld;
+	vec3      eye;
+	vec3      forward;
+	matrix4x3 view, viewToWorld;
+	matrix    viewProj;
 
 	Volume volume( 512, 4.0f, 0.02f );
 
@@ -51,38 +50,31 @@ int main()
 
 
 
-	//std::printf( "%d total frames\n", depthStreamHouse.FrameCount() );
-
-	for( int i = 0; i < 100; i++ ) {
 	depthStreamHouse.NextFrame( synthDepthFrame, view );
 	ComputeMatrices( view, eye, forward, viewProj, viewToWorld );
-	//for( int i = 0; i < 100; i++ ) {
+	
+	for( int i = 0; i < 100; i++ ) 
+	{
+		//depthStreamHouse.NextFrame( synthDepthFrame, view );
+		//ComputeMatrices( view, eye, forward, viewProj, viewToWorld );
+
 		integrator.Integrate( volume, synthDepthFrame, eye, forward, viewProj, viewToWorld );
-		
-		//std::printf( "Frame %d\n", i );
 	}
 
-	std::vector< float4 > vertices;
-	//std::vector< unsigned > indices;
+	std::vector< vec3 > vertices;
 	
-	//*/
+#if 1
 	Splatter::Splat( volume, vertices );
-	/*/
-	Mesher mesher;
-	mesher.Triangulate( volume, vertices, indices );
-	//*/
-	
-	//Mesher::Mesh2Obj( vertices, indices, "C:/TEMP/house.obj" );
+#else
+	for( auto it = volume.Data().keys_cbegin(), end = volume.Data().keys_cend(); it != end; ++it )
+	{
+		unsigned x, y, z;
+		unpack( * it, x, y, z );
+		
+		vertices.push_back( vec3( (float) x, (float) y, (float) z ) );
+	}
+#endif
 
-	// simple point cloud for debugging visually
-	//for( auto it = volume.Data().keys_cbegin(), end = volume.Data().keys_cend(); it != end; ++it )
-	//{
-	//	unsigned x, y, z;
-	//	unpack( * it, x, y, z );
-	//	
-	//	vertices.push_back( float4( (float)x, (float)y, (float)z, 1.0f ) );
-	//}
-	
 	mesh2obj( vertices, "C:/TEMP/house.obj" );
 	
 	return 0;

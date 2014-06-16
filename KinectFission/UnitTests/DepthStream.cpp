@@ -48,7 +48,7 @@ BOOST_AUTO_TEST_CASE( NextFrame_v1 )
 	char * fileName = _tempnam( nullptr, nullptr );
 
 	float viewMatrix[ 16 ] = { 0.0f };
-	viewMatrix[ 3 + 1 * 4 ] = 0.271f;
+	viewMatrix[ 2 + 1 * 4 ] = 0.271f;
 
 	std::vector< short > depthData( FRAME_RES );
 	depthData[ 71 + 103 * 640 ] = 57;
@@ -62,7 +62,7 @@ BOOST_AUTO_TEST_CASE( NextFrame_v1 )
 
 	fclose( file );
 
-	util::float4x4 view;
+	util::matrix4x3 view;
 	util::vector2d< float > depth;
 
 	DepthStream ds( fileName );
@@ -72,8 +72,8 @@ BOOST_AUTO_TEST_CASE( NextFrame_v1 )
 	BOOST_CHECK( 0 == depth( 0, 0 ) );
 	BOOST_CHECK_CLOSE( 0.057f, depth( 71, 103 ), 0.1f );
 
-	BOOST_CHECK( 0.0f == view.row0.x );
-	BOOST_CHECK( 0.271f == view.row1.w );
+	BOOST_CHECK( 0.0f == view.m00 );
+	BOOST_CHECK( 0.271f == view.m12 );
 
 	BOOST_CHECK( ! ds.NextFrame( depth, view ) );
 
@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE( NextFrame_v2_short )
 	char * fileName = _tempnam( nullptr, nullptr );
 
 	float viewMatrix[ 16 ] = { 0.0f };
-	viewMatrix[ 3 + 1 * 4 ] = 0.271f;
+	viewMatrix[ 2 + 1 * 4 ] = 0.271f;
 
 	std::vector< short > depthData( FRAME_RES );
 	depthData[ 71 + 103 * 640 ] = 57;
@@ -101,7 +101,7 @@ BOOST_AUTO_TEST_CASE( NextFrame_v2_short )
 
 	fclose( file );
 
-	util::float4x4 view;
+	util::matrix4x3 view;
 	util::vector2d< float > depth;
 
 	DepthStream ds( fileName );
@@ -111,8 +111,8 @@ BOOST_AUTO_TEST_CASE( NextFrame_v2_short )
 	BOOST_CHECK( 0 == depth( 0, 0 ) );
 	BOOST_CHECK_CLOSE( 0.057f, depth( 71, 103 ), 0.1f );
 
-	BOOST_CHECK( 0.0f == view.row0.x );
-	BOOST_CHECK( 0.271f == view.row1.w );
+	BOOST_CHECK( 0.0f == view.m00 );
+	BOOST_CHECK( 0.271f == view.m12 );
 
 	BOOST_CHECK( ! ds.NextFrame( depth, view ) );
 
@@ -126,7 +126,7 @@ BOOST_AUTO_TEST_CASE( NextFrame_v2_float )
 	char * fileName = _tempnam( nullptr, nullptr );
 
 	float viewMatrix[ 16 ] = { 0.0f };
-	viewMatrix[ 3 + 1 * 4 ] = 0.271f;
+	viewMatrix[ 2 + 1 * 4 ] = 0.271f;
 
 	std::vector< float > depthData( FRAME_RES );
 	depthData[ 71 + 103 * 640 ] = 0.057f;
@@ -140,7 +140,7 @@ BOOST_AUTO_TEST_CASE( NextFrame_v2_float )
 
 	fclose( file );
 
-	util::float4x4 view;
+	util::matrix4x3 view;
 	util::vector2d< float > depth;
 
 	DepthStream ds( fileName );
@@ -150,8 +150,8 @@ BOOST_AUTO_TEST_CASE( NextFrame_v2_float )
 	BOOST_CHECK( 0 == depth( 0, 0 ) );
 	BOOST_CHECK_CLOSE( 0.057f, depth( 71, 103 ), 0.1f );
 
-	BOOST_CHECK( 0.0f == view.row0.x );
-	BOOST_CHECK( 0.271f == view.row1.w );
+	BOOST_CHECK( 0.0f == view.m00 );
+	BOOST_CHECK( 0.271f == view.m12 );
 
 	BOOST_CHECK( ! ds.NextFrame( depth, view ) );
 

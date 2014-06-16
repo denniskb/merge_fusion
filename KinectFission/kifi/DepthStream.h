@@ -18,7 +18,7 @@ public:
 	bool NextFrame
 	(
 		util::vector2d< float > & outFrame,
-		util::float4x4 & outView
+		util::matrix4x3 & outView
 	);
 
 	int FrameCount() const;

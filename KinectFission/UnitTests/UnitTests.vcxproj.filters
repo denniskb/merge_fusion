@@ -14,11 +14,6 @@
     <ClCompile Include="Splatter.cpp" />
     <ClCompile Include="Volume.cpp" />
     <ClCompile Include="Voxel.cpp" />
-    <ClCompile Include="cuda\DepthFrame.cpp" />
-    <ClCompile Include="cuda\Integrator.cpp" />
-    <ClCompile Include="cuda\radix_sort.cpp" />
-    <ClCompile Include="cuda\reduce.cpp" />
-    <ClCompile Include="cuda\scan.cpp" />
     <ClCompile Include="util\numeric.cpp" />
     <ClCompile Include="util\functional.cpp" />
     <ClCompile Include="util\iterator.cpp" />

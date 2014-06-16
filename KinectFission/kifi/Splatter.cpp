@@ -11,7 +11,7 @@
 namespace kifi {
 
 // static
-void Splatter::Splat( Volume const & volume, std::vector< util::float4 > & outVertices )
+void Splatter::Splat( Volume const & volume, std::vector< util::vec3 > & outVertices )
 {
 	assert( 1 == util::pack( 1, 0, 0 ) );
 
@@ -62,7 +62,7 @@ void Splatter::Splat( Volume const & volume, std::vector< util::float4 > & outVe
 		unsigned x, y, z;
 		util::unpack( * voxels[ 0 ], x, y, z );
 
-		util::float4 vert000 = volume.VoxelCenter( util::float4( (float)x, (float)y, (float)z, 0.0f ) );
+		util::vec3 vert000 = volume.VoxelCenter( x, y, z );
 
 		float dself, dright, dtop, dfront;
 		dself  = self. Distance();
@@ -72,7 +72,7 @@ void Splatter::Splat( Volume const & volume, std::vector< util::float4 > & outVe
 
 		if( right.Weight() > 0 && dself * dright < 0.0f )
 		{
-			util::float4 vert = vert000;
+			util::vec3 vert = vert000;
 			vert.x += util::lerp( 0.0f, volume.VoxelLength(), abs(dself) / (abs(dself) + abs(dright)) );
 
 			outVertices.push_back( vert );
@@ -80,7 +80,7 @@ void Splatter::Splat( Volume const & volume, std::vector< util::float4 > & outVe
 				
 		if( top.Weight() > 0 && dself * dtop < 0.0f )
 		{
-			util::float4 vert = vert000;
+			util::vec3 vert = vert000;
 			vert.y += util::lerp( 0.0f, volume.VoxelLength(), abs(dself) / (abs(dself) + abs(dtop)) );
 
 			outVertices.push_back( vert );
@@ -88,7 +88,7 @@ void Splatter::Splat( Volume const & volume, std::vector< util::float4 > & outVe
 				
 		if( front.Weight() > 0 && dself * dfront < 0.0f )
 		{
-			util::float4 vert = vert000;
+			util::vec3 vert = vert000;
 			vert.z += util::lerp( 0.0f, volume.VoxelLength(), abs(dself) / (abs(dself) + abs(dfront)) );
 
 			outVertices.push_back( vert );

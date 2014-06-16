@@ -56,30 +56,14 @@ float Volume::TruncationMargin() const
 
 
 
-util::float4 Volume::Minimum() const
+util::vec3 Volume::Minimum() const
 {
-	float minimum = -m_sideLen * 0.5f;
-
-	return util::float4
-	(
-		minimum,
-		minimum,
-		minimum,
-		1.0f
-	);
+	return util::vec3( -0.5f * m_sideLen );
 }
 
-util::float4 Volume::Maximum() const
+util::vec3 Volume::Maximum() const
 {
-	float maximum = 0.5f * m_sideLen;
-
-	return util::float4
-	(
-		maximum,
-		maximum,
-		maximum,
-		1.0f
-	);
+	return util::vec3( 0.5f * m_sideLen );
 }
 
 

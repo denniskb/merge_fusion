@@ -19,11 +19,11 @@ public:
 		Volume & volume,
 		util::vector2d< float > const & frame,
 
-		util::float4 const & eye,
-		util::float4 const & forward,
+		util::vec3 eye,
+		util::vec3 forward,
 
-		util::float4x4 const & viewProjection,
-		util::float4x4 const & viewToWorld
+		util::matrix const & viewProjection,
+		util::matrix4x3 const & viewToWorld
 	);
 
 private:
@@ -34,7 +34,7 @@ private:
 	(
 		Volume const & volume,
 		util::vector2d< float > const & frame,
-		util::float4x4 const & viewToWorld,
+		util::matrix4x3 const & viewToWorld,
 
 		std::vector< unsigned > & outPointCloud
 	);
@@ -58,9 +58,9 @@ private:
 		Volume & volume,
 		util::vector2d< float > const & frame,
 
-		util::float4 const & eye,
-		util::float4 const & forward,
-		util::float4x4 const & viewProjection
+		util::vec3 eye,
+		util::vec3 forward,
+		util::matrix const & viewProjection
 	);
 };
 

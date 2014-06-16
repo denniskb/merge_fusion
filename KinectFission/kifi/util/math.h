@@ -1,77 +1,85 @@
 #pragma once
 
-#include <algorithm>
 #include <cmath>
-
-#include <immintrin.h>
-#include <xmmintrin.h>
-
+#include <cstdint>
+#include <cstring>
 
 
-#pragma region Global Operators
-
-inline __m128 operator+( __m128 u, __m128 v );
-inline __m128 operator-( __m128 u, __m128 v );
-inline __m128 operator*( __m128 u, __m128 v );
-inline __m128 operator/( __m128 u, __m128 v );
-	   
-inline __m128 & operator+=( __m128 & u, __m128 v );
-inline __m128 & operator-=( __m128 & u, __m128 v );
-inline __m128 & operator*=( __m128 & u, __m128 v );
-inline __m128 & operator/=( __m128 & u, __m128 v );
-
-#pragma endregion
 
 namespace kifi {
 namespace util {
 
-#pragma region float4/int4/uint4/float4x4
+#pragma region vec3/matrix
 
-#define _VEC4( name, T )\
-__declspec( align( 16 ) )\
-struct name\
-{\
-	T x, y, z, w;\
-\
-	inline name() {}\
-	inline explicit name( T s ) : x( s ), y( s ), z( s ), w( s ) {}\
-	inline name( T x, T y, T z, T w ) : x( x ), y( y ), z( z ), w( w ) {}\
-	inline explicit name( T const * src ) : x( src[0] ), y( src[1] ), z( src[2] ), w( src[3] ) {}\
-\
-	inline operator T *() { return & x; }\
-	inline operator T const *() const { return & x; }\
+__declspec( deprecated )
+struct uint4
+{
+	std::uint32_t x, y, z, w;
 };
 
-_VEC4( float4, float    )
-_VEC4( int4,   int      )
-_VEC4( uint4,  unsigned )
-
-
-
-struct float4x4
+__declspec( deprecated )
+struct tmpfloat4
 {
-	float4 row0, row1, row2, row3;
+	float x, y, z, w;
+};
 
-	inline float4x4();
-	inline float4x4
+struct vec3
+{
+	float x, y, z;
+
+	inline vec3();
+	inline explicit vec3( float s );
+	inline vec3( float x, float y, float z );
+};
+
+
+
+struct matrix4x3
+{
+	// stored in column-major order
+	float 
+		m00, m10, m20, m30,
+		m01, m11, m21, m31,
+		m02, m12, m22, m32;
+
+	inline matrix4x3();
+	inline matrix4x3
+	(
+		float m00, float m01, float m02, float m03,
+		float m10, float m11, float m12, float m13,
+		float m20, float m21, float m22, float m23
+	);
+};
+
+
+
+struct matrix
+{
+	// stored in column-major order
+	float 
+		m00, m10, m20, m30,
+		m01, m11, m21, m31,
+		m02, m12, m22, m32,
+		m03, m13, m23, m33;
+
+	inline matrix();
+	inline matrix
 	(
 		float m00, float m01, float m02, float m03,
 		float m10, float m11, float m12, float m13,
 		float m20, float m21, float m22, float m23,
 		float m30, float m31, float m32, float m33
 	);
-	inline float4x4( float4 row0, float4 row1, float4 row2, float4 row3 );
+	inline explicit matrix( matrix4x3 const & m );
+	// src must be in row-major order
+	inline explicit matrix( float const * src );
 
-	// src must be in row-major layout
-	inline explicit float4x4( float const * src );
-
-	inline operator float *();
-	inline operator float const *() const;
+	inline operator matrix4x3() const;
 };
 
 
 
-float4x4 const identity
+matrix const identity
 (
 	1.0f, 0.0f, 0.0f, 0.0f,
 	0.0f, 1.0f, 0.0f, 0.0f,
@@ -83,140 +91,53 @@ float4x4 const identity
 
 #pragma region Operators
 
-inline float4 operator+( float s, float4 v );
-inline float4 operator-( float s, float4 v );
-inline float4 operator*( float s, float4 v );
-inline float4 operator/( float s, float4 v );
+inline vec3 operator+( vec3 v, float s );
+inline vec3 operator-( vec3 v, float s );
+inline vec3 operator*( vec3 v, float s );
+inline vec3 operator/( vec3 v, float s );
 
-inline float4 operator+( float4 v, float s );
-inline float4 operator-( float4 v, float s );
-inline float4 operator*( float4 v, float s );
-inline float4 operator/( float4 v, float s );
+inline vec3 operator+( float s, vec3 v );
+inline vec3 operator-( float s, vec3 v );
+inline vec3 operator*( float s, vec3 v );
+inline vec3 operator/( float s, vec3 v );
 
-inline float4 & operator+=( float4 & v, float s );
-inline float4 & operator-=( float4 & v, float s );
-inline float4 & operator*=( float4 & v, float s );
-inline float4 & operator/=( float4 & v, float s );
+inline vec3 operator+( vec3 u, vec3 v );
+inline vec3 operator-( vec3 u, vec3 v );
+inline vec3 operator*( vec3 u, vec3 v );
+inline vec3 operator/( vec3 u, vec3 v );
 
-inline float4 operator+( float4 u, float4 v );
-inline float4 operator-( float4 u, float4 v );
-inline float4 operator*( float4 u, float4 v );
-inline float4 operator/( float4 u, float4 v );
+inline vec3 & operator+=( vec3 & v, float s );
+inline vec3 & operator-=( vec3 & v, float s );
+inline vec3 & operator*=( vec3 & v, float s );
+inline vec3 & operator/=( vec3 & v, float s );
 
-inline float4 & operator+=( float4 & u, float4 v );
-inline float4 & operator-=( float4 & u, float4 v );
-inline float4 & operator*=( float4 & u, float4 v );
-inline float4 & operator/=( float4 & u, float4 v );
+inline vec3 & operator+=( vec3 & u, vec3 v );
+inline vec3 & operator-=( vec3 & u, vec3 v );
+inline vec3 & operator*=( vec3 & u, vec3 v );
+inline vec3 & operator/=( vec3 & u, vec3 v );
 
-inline float4   operator*( float4   v, float4x4 m );
-inline float4x4 operator*( float4x4 m, float4x4 n );
-
-inline float4   & operator*=( float4   & v, float4x4 m );
-inline float4x4 & operator*=( float4x4 & m, float4x4 n );
-
-inline float4 operator- ( float4 v );
+inline matrix operator*( matrix m, matrix n );
 
 #pragma endregion
 
 #pragma region Functions
 
-inline float4 cross     ( float4 u, float4 v );
-inline float  dot       ( float4 u, float4 v );
-inline float4 homogenize( float4 v );
-inline float  hsum      ( float4 v );
-inline float  len       ( float4 v );
-inline float  len_sq    ( float4 v );
-inline float4 normalize ( float4 v );
-	
-inline float4x4 invert_transform( float4x4 Rt );
-inline float4x4 transpose       ( float4x4 m );
-
-inline float4x4 perspective_fov_rh( float fovYradians, float aspectWbyH, float nearZdistance, float farZdistance );
-
 template< typename T >
-inline T        clamp   ( T x, T a, T b );
+T               clamp   ( T x, T a, T b );
+inline float    dot     ( vec3 u, vec3 v );
 template< typename T >
-inline T        lerp    ( T a, T b, T weightB );
-inline unsigned pack    ( unsigned x, unsigned y, unsigned z );
+T               lerp    ( T a, T b, T weightB );
+inline uint32_t pack    ( uint32_t x, uint32_t y, uint32_t z );
 inline bool     powerOf2( unsigned x );
-inline void     unpack  ( unsigned v, unsigned & outX, unsigned & outY, unsigned & outZ );
+inline void     unpack  ( uint32_t v, uint32_t & outX, uint32_t & outY, uint32_t & outZ );
 
-#pragma endregion
-
-#pragma region FPU Backend
-
-struct FPU
-{
-	typedef float4   vector;
-	typedef float4x4 matrix;
-
-	static inline vector set  ( float s );
-	static inline vector set  ( float x, float y, float z, float w );
-	static inline vector load ( float4 src );
-	static inline float4 store( vector src );
-	
-	static inline matrix   load ( float4x4 src );
-	static inline float4x4 store( matrix   src );
-
-	static inline vector cross     ( vector u, vector v );
-	static inline vector dot       ( vector u, vector v );
-	static inline vector fma3      ( vector u, vector v, vector w );
-	static inline vector homogenize( vector v );
-	static inline vector hsum      ( vector v );
-	static inline vector len       ( vector v );
-	static inline vector len_sq    ( vector v );
-	static inline vector normalize ( vector v );
-};
-
-#pragma endregion
-
-#pragma region SSE Backend
-
-struct FMA3_SSE_EMU;
-template< class FMA = FMA3_SSE_EMU >
-struct SSE
-{
-	typedef __m128 vector;	
-	struct matrix { vector row0, row1, row2, row3; };
-
-	static inline vector set  ( float s );
-	static inline vector set  ( float x, float y, float z, float w );
-	static inline vector load ( float4 src );
-	static inline float4 store( vector src );
-	
-	static inline matrix   load ( float4x4 src );
-	static inline float4x4 store( matrix   src );
-
-	static inline vector cross     ( vector u, vector v );
-	static inline vector dot       ( vector u, vector v );
-	static inline vector fma3      ( vector u, vector v, vector w );
-	static inline vector homogenize( vector v );
-	static inline vector hsum      ( vector v );
-	static inline vector len       ( vector v );
-	static inline vector len_sq    ( vector v );
-	static inline vector normalize ( vector v );
-
-	// TODO: Find out how to define these in the implementation region
-	inline friend vector operator*( vector v, matrix m ) { return mul(v, m); }
-	inline friend matrix operator*( matrix m, matrix n ) { return mul(m, n); }
-
-	inline friend vector & operator*=( vector & v, matrix m ) { v = mul(v, m); return v; }
-	inline friend matrix & operator*=( matrix & m, matrix n ) { m = mul(m, n); return m; }
-
-private:
-	static inline vector mul( vector v, matrix m );
-	static inline matrix mul( matrix m, matrix n );
-};
-
-struct FMA3_SSE_EMU
-{
-	static inline __m128 fma3( __m128 a, __m128 b, __m128 c );
-};
-
-struct FMA3
-{
-	static inline __m128 fma3( __m128 a, __m128 b, __m128 c );
-};
+inline matrix4x3 invert_transform  ( matrix4x3 const & Rt );
+inline matrix    perspective_fov_rh( float fovYradians, float aspectWbyH, float nearZdistance, float farZdistance );
+// TODO: Try const &
+inline vec3      project           ( vec3 v, matrix const & m );    // w == 1, homogenization
+inline vec3      transform_point   ( vec3 v, matrix4x3 const & m ); // w == 1, no homogenization
+inline vec3      transform_vector  ( vec3 v, matrix4x3 const & m ); // w == 0, no homogenization
+inline matrix    transpose         ( matrix const & m );
 
 #pragma endregion
 
@@ -224,474 +145,391 @@ struct FMA3
 
 
 
-#pragma region Implementation
-
-#pragma warning( push )
-#pragma warning( disable : 4723 ) // potential divide by 0, needs to be handled by caller
-
-#pragma region Global Operators
-
-__m128 operator+( __m128 u, __m128 v )
-{
-	return _mm_add_ps( u, v );
-}
-
-__m128 operator-( __m128 u, __m128 v )
-{
-	return _mm_sub_ps( u, v );
-}
-
-__m128 operator*( __m128 u, __m128 v )
-{
-	return _mm_mul_ps( u, v );
-}
-
-__m128 operator/( __m128 u, __m128 v )
-{
-	return _mm_div_ps( u, v );
-}
-	   
-
-
-__m128 & operator+=( __m128 & u, __m128 v )
-{
-	u = u + v;
-	return u;
-}
-
-__m128 & operator-=( __m128 & u, __m128 v )
-{
-	u = u - v;
-	return u;
-}
-
-__m128 & operator*=( __m128 & u, __m128 v )
-{
-	u = u * v;
-	return u;
-}
-
-__m128 & operator/=( __m128 & u, __m128 v )
-{
-	u = u / v;
-	return u;
-}
-
-#pragma endregion
+#pragma region implementation
 
 namespace kifi {
 namespace util {
 
-#pragma region float4x4
+#pragma region vec3/matrix
 
-float4x4::float4x4()
-{
-}
+vec3::vec3() {}
+vec3::vec3( float s ) : x( s ), y( s ), z( s ) {}
+vec3::vec3( float x, float y, float z ) : x( x ), y( y ), z( z ) {}
 
-float4x4::float4x4
+
+
+matrix::matrix() {}
+
+matrix::matrix
 (
 	float m00, float m01, float m02, float m03,
 	float m10, float m11, float m12, float m13,
 	float m20, float m21, float m22, float m23,
 	float m30, float m31, float m32, float m33
 ) :
-	row0( m00, m01, m02, m03 ),
-	row1( m10, m11, m12, m13 ),
-	row2( m20, m21, m22, m23 ),
-	row3( m30, m31, m32, m33 )
+	m00( m00 ), m10( m10 ), m20( m20 ), m30( m30 ),
+	m01( m01 ), m11( m11 ), m21( m21 ), m31( m31 ),
+	m02( m02 ), m12( m12 ), m22( m22 ), m32( m32 ),
+	m03( m03 ), m13( m13 ), m23( m23 ), m33( m33 )
+{}
+
+matrix::matrix( matrix4x3 const & m )
 {
-}
-
-float4x4::float4x4( float4 row0, float4 row1, float4 row2, float4 row3 ) :
-	row0( row0 ), 
-	row1( row1 ), 
-	row2( row2 ), 
-	row3( row3 )
-{
-}
-
-float4x4::float4x4( float const * src ) :
-	row0( & src[  0 ] ),
-	row1( & src[  4 ] ),
-	row2( & src[  8 ] ),
-	row3( & src[ 12 ] )
-{
-}
-
-float4x4::operator float *()
-{
-	return & row0.x;
-}
-
-float4x4::operator float const *() const
-{
-	return & row0.x;
-}
-
-#pragma endregion
-
-#pragma region Operators
-
-float4 operator+( float s, float4 v )
-{
-	return float4
-	(
-		s + v.x,
-		s + v.y,
-		s + v.z,
-		s + v.w
-	);
-}
-
-float4 operator-( float s, float4 v )
-{
-	return float4
-	(
-		s - v.x,
-		s - v.y,
-		s - v.z,
-		s - v.w
-	);
-}
-
-float4 operator*( float s, float4 v )
-{
-	return float4
-	(
-		s * v.x,
-		s * v.y,
-		s * v.z,
-		s * v.w
-	);
-}
-
-float4 operator/( float s, float4 v )
-{
-	return float4
-	(
-		s / v.x,
-		s / v.y,
-		s / v.z,
-		s / v.w
-	);
-}
-
-
-
-float4 operator+( float4 v, float s )
-{
-	return float4
-	(
-		v.x + s,
-		v.y + s,
-		v.z + s,
-		v.w + s
-	);
-}
-
-float4 operator-( float4 v, float s )
-{
-	return float4
-	(
-		v.x - s,
-		v.y - s,
-		v.z - s,
-		v.w - s
-	);
-}
-
-float4 operator*( float4 v, float s )
-{
-	return float4
-	(
-		v.x * s,
-		v.y * s,
-		v.z * s,
-		v.w * s
-	);
-}
-
-float4 operator/( float4 v, float s )
-{
-	float const sInv = 1.0f / s;
-
-	return float4
-	(
-		v.x * sInv,
-		v.y * sInv,
-		v.z * sInv,
-		v.w * sInv
-	);
-}
-
-
-
-float4 & operator+=( float4 & v, float s )
-{
-	v.x += s;
-	v.y += s;
-	v.z += s;
-	v.w += s;
-
-	return v;
-}
-
-float4 & operator-=( float4 & v, float s )
-{
-	v.x -= s;
-	v.y -= s;
-	v.z -= s;
-	v.w -= s;
-
-	return v;
-}
-
-float4 & operator*=( float4 & v, float s )
-{
-	v.x *= s;
-	v.y *= s;
-	v.z *= s;
-	v.w *= s;
-
-	return v;
-}
-
-float4 & operator/=( float4 & v, float s )
-{
-	float const sInv = 1.0f / s;
-
-	v.x *= sInv;
-	v.y *= sInv;
-	v.z *= sInv;
-	v.w *= sInv;
-
-	return v;
-}
-
-
-
-float4 operator+( float4 u, float4 v )
-{
-	return float4
-	(
-		u.x + v.x,
-		u.y + v.y,
-		u.z + v.z,
-		u.w + v.w
-	);
-}
-
-float4 operator-( float4 u, float4 v )
-{
-	return float4
-	(
-		u.x - v.x,
-		u.y - v.y,
-		u.z - v.z,
-		u.w - v.w
-	);
-}
-
-float4 operator*( float4 u, float4 v )
-{
-	return float4
-	(
-		u.x * v.x,
-		u.y * v.y,
-		u.z * v.z,
-		u.w * v.w
-	);
-}
-
-float4 operator/( float4 u, float4 v )
-{
-	return float4
-	(
-		u.x / v.x,
-		u.y / v.y,
-		u.z / v.z,
-		u.w / v.w
-	);
-}
-
-
-
-float4 & operator+=( float4 & u, float4 v )
-{
-	u.x += v.x;
-	u.y += v.y;
-	u.z += v.z;
-	u.w += v.w;
-
-	return u;
-}
-
-float4 & operator-=( float4 & u, float4 v )
-{
-	u.x -= v.x;
-	u.y -= v.y;
-	u.z -= v.z;
-	u.w -= v.w;
-
-	return u;
-}
-
-float4 & operator*=( float4 & u, float4 v )
-{
-	u.x *= v.x;
-	u.y *= v.y;
-	u.z *= v.z;
-	u.w *= v.w;
-
-	return u;
-}
-
-float4 & operator/=( float4 & u, float4 v )
-{
-	u.x /= v.x;
-	u.y /= v.y;
-	u.z /= v.z;
-	u.w /= v.w;
-
-	return u;
-}
-
-
-
-float4 operator*( float4 v, float4x4 m )
-{
-	return ( v.x * m.row0 + v.y * m.row1 ) + ( v.z * m.row2 + v.w * m.row3 );
-}
-
-float4x4 operator*( float4x4 m, float4x4 n )
-{
-	return float4x4
-	(
-		m.row0 * n,
-		m.row1 * n,
-		m.row2 * n,
-		m.row3 * n
-	);
-}
-
-float4 & operator*=( float4 & v, float4x4 m )
-{
-	v = v * m;
-	return v;
-}
-
-float4x4 & operator*=( float4x4 & m, float4x4 n )
-{
-	m = m * n;
-	return m;
-}
-
-
-
-float4 operator-( float4 v )
-{
-	return float4( -v.x, -v.y, -v.z, -v.w );
-}
-
-#pragma endregion
-
-#pragma region Functions
-
-float4 cross( float4 u, float4 v )
-{
-	return float4
-	(
-		u.y * v.z - u.z * v.y,
-		u.z * v.x - u.x * v.z,
-		u.x * v.y - u.y * v.x,
-		0.0f
-	);
-}
-
-float dot( float4 u, float4 v )
-{
-	return hsum( u * v );
-}
-
-float4 homogenize( float4 v )
-{
-	return v / v.w;
-}
-
-float hsum( float4 v )
-{
-	return ( v.x + v.y ) + ( v.z + v.w );
-}
-
-float len( float4 v )
-{
-	return std::sqrtf( len_sq( v ) );
-}
-
-float len_sq( float4 v )
-{
-	return dot( v, v );
-}
-
-float4 normalize( float4 v )
-{
-	return v / len( v );
-}
-
-
-
-float4x4 invert_transform( float4x4 Rt )
-{
-	float4x4 R = Rt;
-	R.row3 = identity.row3;
-
-	float4x4 tInv = identity;
-	tInv.row3.x = -Rt.row3.x;
-	tInv.row3.y = -Rt.row3.y;
-	tInv.row3.z = -Rt.row3.z;
-
-	return tInv * transpose( R );
-}
-
-float4x4 transpose( float4x4 m )
-{
-	return float4x4
-	(
-		m.row0.x, m.row1.x, m.row2.x, m.row3.x,
-		m.row0.y, m.row1.y, m.row2.y, m.row3.y,
-		m.row0.z, m.row1.z, m.row2.z, m.row3.z,
-		m.row0.w, m.row1.w, m.row2.w, m.row3.w
-	);
-}
-
-
-
-float4x4 perspective_fov_rh( float fovYradians, float aspectWbyH, float nearZdistance, float farZdistance )
-{
-	// DirectX style (z \in [0, 1])
-
-	float h = 1.0f / std::tanf( 0.5f * fovYradians );
-	float w = h / aspectWbyH;
-	float Q = farZdistance / (farZdistance - nearZdistance);
+	std::memcpy( & m00, & m.m00, 48 );
 	
-	float4x4 result;
-	std::memset( result, 0, 64 );
+	m03 = 0.0f;
+	m13 = 0.0f;
+	m23 = 0.0f;
+	m33 = 1.0f;
+}
 
-	result.row0.x = w;
-	result.row1.y = h;
-	result.row2.z = -Q;
-	result.row3.z = -Q * nearZdistance;
-	result.row2.w = -1.0f;
+matrix::matrix( float const * src )
+{
+	std::memcpy( & m00, src, 64 );
+	* this = transpose( * this );
+}
+
+matrix::operator matrix4x3() const
+{
+	matrix4x3 result;
+
+	std::memcpy( & result.m00, & m00, 48 );
 
 	return result;
 }
 
 
 
+matrix4x3::matrix4x3() {}
+
+matrix4x3::matrix4x3
+(
+	float m00, float m01, float m02,
+	float m10, float m11, float m12,
+	float m20, float m21, float m22,
+	float m30, float m31, float m32
+) :
+	m00( m00 ), m10( m10 ), m20( m20 ), m30( m30 ),
+	m01( m01 ), m11( m11 ), m21( m21 ), m31( m31 ),
+	m02( m02 ), m12( m12 ), m22( m22 ), m32( m32 )
+{}
+
+#pragma endregion
+
+#pragma region Operators
+
+vec3 operator+( vec3 v, float s )
+{
+	return vec3
+	(
+		v.x + s,
+		v.y + s,
+		v.z + s
+	);
+}
+
+vec3 operator-( vec3 v, float s )
+{
+	return vec3
+	(
+		v.x - s,
+		v.y - s,
+		v.z - s
+	);
+}
+
+vec3 operator*( vec3 v, float s )
+{
+	return vec3
+	(
+		v.x * s,
+		v.y * s,
+		v.z * s
+	);
+}
+
+vec3 operator/( vec3 v, float s )
+{
+	float const sInv = 1.0f / s;
+
+	return vec3
+	(
+		v.x * sInv,
+		v.y * sInv,
+		v.z * sInv
+	);
+}
+
+
+
+vec3 operator+( float s, vec3 v )
+{
+	return vec3
+	(
+		s + v.x,
+		s + v.y,
+		s + v.z
+	);
+}
+
+vec3 operator-( float s, vec3 v )
+{
+	return vec3
+	(
+		s - v.x,
+		s - v.y,
+		s - v.z
+	);
+}
+
+vec3 operator*( float s, vec3 v )
+{
+	return vec3
+	(
+		s * v.x,
+		s * v.y,
+		s * v.z
+	);
+}
+
+vec3 operator/( float s, vec3 v )
+{
+	return vec3
+	(
+		s / v.x,
+		s / v.y,
+		s / v.z
+	);
+}
+
+
+
+vec3 operator+( vec3 u, vec3 v )
+{
+	return vec3
+	(
+		u.x + v.x,
+		u.y + v.y,
+		u.z + v.z
+	);
+}
+
+vec3 operator-( vec3 u, vec3 v )
+{
+	return vec3
+	(
+		u.x - v.x,
+		u.y - v.y,
+		u.z - v.z
+	);
+}
+
+vec3 operator*( vec3 u, vec3 v )
+{
+	return vec3
+	(
+		u.x * v.x,
+		u.y * v.y,
+		u.z * v.z
+	);
+}
+
+vec3 operator/( vec3 u, vec3 v )
+{
+	return vec3
+	(
+		u.x / v.x,
+		u.y / v.y,
+		u.z / v.z
+	);
+}
+
+
+
+vec3 & operator+=( vec3 & v, float s )
+{
+	v.x += s;
+	v.y += s;
+	v.z += s;
+
+	return v;
+}
+
+vec3 & operator-=( vec3 & v, float s )
+{
+	v.x -= s;
+	v.y -= s;
+	v.z -= s;
+
+	return v;
+}
+
+vec3 & operator*=( vec3 & v, float s )
+{
+	v.x *= s;
+	v.y *= s;
+	v.z *= s;
+
+	return v;
+}
+
+vec3 & operator/=( vec3 & v, float s )
+{
+	float const sInv = 1.0f / s;
+
+	v.x *= sInv;
+	v.y *= sInv;
+	v.z *= sInv;
+
+	return v;
+}
+
+
+
+vec3 & operator+=( vec3 & u, vec3 v )
+{
+	u.x += v.x;
+	u.y += v.y;
+	u.z += v.z;
+
+	return u;
+}
+
+vec3 & operator-=( vec3 & u, vec3 v )
+{
+	u.x -= v.x;
+	u.y -= v.y;
+	u.z -= v.z;
+
+	return u;
+}
+
+vec3 & operator*=( vec3 & u, vec3 v )
+{
+	u.x *= v.x;
+	u.y *= v.y;
+	u.z *= v.z;
+
+	return u;
+}
+
+vec3 & operator/=( vec3 & u, vec3 v )
+{
+	u.x /= v.x;
+	u.y /= v.y;
+	u.z /= v.z;
+
+	return u;
+}
+
+
+
+matrix operator*( matrix m, matrix n )
+{
+	matrix result;
+
+	result.m00 =  n.m00 * m.m00;
+	result.m10 =  n.m00 * m.m10;
+	result.m20 =  n.m00 * m.m20;
+	result.m30 =  n.m00 * m.m30;
+
+	result.m00 += n.m10 * m.m01;
+	result.m10 += n.m10 * m.m11;
+	result.m20 += n.m10 * m.m21;
+	result.m30 += n.m10 * m.m31;
+
+	result.m00 += n.m20 * m.m02;
+	result.m10 += n.m20 * m.m12;
+	result.m20 += n.m20 * m.m22;
+	result.m30 += n.m20 * m.m32;
+
+	result.m00 += n.m30 * m.m03;
+	result.m10 += n.m30 * m.m13;
+	result.m20 += n.m30 * m.m23;
+	result.m30 += n.m30 * m.m33;
+
+
+
+	result.m01 =  n.m01 * m.m00;
+	result.m11 =  n.m01 * m.m10;
+	result.m21 =  n.m01 * m.m20;
+	result.m31 =  n.m01 * m.m30;
+
+	result.m01 += n.m11 * m.m01;
+	result.m11 += n.m11 * m.m11;
+	result.m21 += n.m11 * m.m21;
+	result.m31 += n.m11 * m.m31;
+
+	result.m01 += n.m21 * m.m02;
+	result.m11 += n.m21 * m.m12;
+	result.m21 += n.m21 * m.m22;
+	result.m31 += n.m21 * m.m32;
+
+	result.m01 += n.m31 * m.m03;
+	result.m11 += n.m31 * m.m13;
+	result.m21 += n.m31 * m.m23;
+	result.m31 += n.m31 * m.m33;
+
+
+
+	result.m02 =  n.m02 * m.m00;
+	result.m12 =  n.m02 * m.m10;
+	result.m22 =  n.m02 * m.m20;
+	result.m32 =  n.m02 * m.m30;
+
+	result.m02 += n.m12 * m.m01;
+	result.m12 += n.m12 * m.m11;
+	result.m22 += n.m12 * m.m21;
+	result.m32 += n.m12 * m.m31;
+
+	result.m02 += n.m22 * m.m02;
+	result.m12 += n.m22 * m.m12;
+	result.m22 += n.m22 * m.m22;
+	result.m32 += n.m22 * m.m32;
+
+	result.m02 += n.m32 * m.m03;
+	result.m12 += n.m32 * m.m13;
+	result.m22 += n.m32 * m.m23;
+	result.m32 += n.m32 * m.m33;
+
+
+
+	result.m03 =  n.m03 * m.m00;
+	result.m13 =  n.m03 * m.m10;
+	result.m23 =  n.m03 * m.m20;
+	result.m33 =  n.m03 * m.m30;
+
+	result.m03 += n.m13 * m.m01;
+	result.m13 += n.m13 * m.m11;
+	result.m23 += n.m13 * m.m21;
+	result.m33 += n.m13 * m.m31;
+
+	result.m03 += n.m23 * m.m02;
+	result.m13 += n.m23 * m.m12;
+	result.m23 += n.m23 * m.m22;
+	result.m33 += n.m23 * m.m32;
+
+	result.m03 += n.m33 * m.m03;
+	result.m13 += n.m33 * m.m13;
+	result.m23 += n.m33 * m.m23;
+	result.m33 += n.m33 * m.m33;
+
+	return result;
+}
+
+#pragma endregion
+
+#pragma region Functions
+
 template< typename T >
 T clamp( T x, T a, T b )
 {
 	return std::max( a, std::min( x, b ) );
+}
+
+float dot( vec3 u, vec3 v )
+{
+	return (u.x * v.x + u.y * v.y) + (u.z * v.z);
 }
 
 template< typename T >
@@ -700,7 +538,7 @@ T lerp( T a, T b, T weightB )
 	return a + (b-a) * weightB;
 }
 
-unsigned pack( unsigned x, unsigned y, unsigned z )
+uint32_t pack( uint32_t x, uint32_t y, uint32_t z )
 {
 	return z << 20 | y << 10 | x;
 }
@@ -710,271 +548,95 @@ bool powerOf2( unsigned x )
 	return x > 0 && ! (x & (x - 1));
 }
 
-void unpack( unsigned v, unsigned & outX, unsigned & outY, unsigned & outZ )
+void unpack( uint32_t v, uint32_t & outX, uint32_t & outY, uint32_t & outZ )
 {
 	outX = v & 0x3ff;
 	outY = v >> 10 & 0x3ff;
 	outZ = v >> 20;
 }
 
-#pragma endregion
 
-#pragma region FPU Backend
 
-FPU::vector FPU::set( float s )
+matrix4x3 invert_transform( matrix4x3 const & Rt )
 {
-	return vector( s );
+	matrix R( Rt );
+	R.m30 = 0.0f;
+	R.m31 = 0.0f;
+	R.m32 = 0.0f;
+
+	matrix tInv = identity;
+	tInv.m30 = -Rt.m30;
+	tInv.m31 = -Rt.m31;
+	tInv.m32 = -Rt.m32;
+
+	return tInv * transpose( R );
 }
 
-FPU::vector FPU::set( float x, float y, float z, float w )
+matrix perspective_fov_rh( float fovYradians, float aspectWbyH, float nearZdistance, float farZdistance )
 {
-	return vector( x, y, z, w );
-}
-
-FPU::vector FPU::load( float4 src )
-{
-	return src;
-}
-
-float4 FPU::store( vector src )
-{
-	return src;
-}
-
-
-
-FPU::matrix FPU::load( float4x4 src )
-{
-	return src;
-}
-
-float4x4 FPU::store( matrix src )
-{
-	return src;
-}
-
-
-
-FPU::vector FPU::cross( vector u, vector v )
-{
-	return util::cross( u, v );
-}
-
-FPU::vector FPU::dot( vector u, vector v )
-{
-	return vector( util::dot( u, v ) );
-}
-
-float4 FPU::fma3( float4 u, float4 v, float4 w )
-{
-	return u * v + w;
-}
-
-FPU::vector FPU::homogenize( vector v )
-{
-	return vector( util::homogenize( v ) );
-}
-
-FPU::vector FPU::hsum( vector v )
-{
-	return vector( util::hsum( v ) );
-}
-
-FPU::vector FPU::len( vector v )
-{
-	return vector( util::len( v ) );
-}
-
-FPU::vector FPU::len_sq( vector v )
-{
-	return vector( util::len_sq( v ) );
-}
-
-FPU::vector FPU::normalize( vector v )
-{
-	return util::normalize( v );
-}
-
-#pragma endregion
-
-#pragma region SSE Backend
-
-template< class FMA >
-typename SSE< FMA >::vector SSE< FMA >::set( float s )
-{
-	return load( float4( s ) );
-}
-
-template< class FMA >
-typename SSE< FMA >::vector SSE< FMA >::set( float x, float y, float z, float w )
-{
-	return load( float4( x, y, z, w ) );
-}
-
-template< class FMA >
-typename SSE< FMA >::vector SSE< FMA >::load( float4 src )
-{
-	return _mm_load_ps( src );
-}
-
-template< class FMA >
-float4 SSE< FMA >::store( vector src )
-{
-	float4 result;
-
-	_mm_store_ps( result, src );
-
-	return result;
-}
-
-
-
-template< class FMA >
-typename SSE< FMA >::matrix SSE< FMA >::load ( float4x4 src )
-{
+	float h = 1.0f / std::tanf( 0.5f * fovYradians );
+	float w = h / aspectWbyH;
+	float Q = farZdistance / (farZdistance - nearZdistance);
+	
 	matrix result;
+	std::memset( & result.m00, 0, 64 );
 
-	result.row0 = load( src.row0 );
-	result.row1 = load( src.row1 );
-	result.row2 = load( src.row2 );
-	result.row3 = load( src.row3 );
-
-	return result;
-}
-
-template< class FMA >
-float4x4 SSE< FMA >::store( matrix src )
-{
-	float4x4 result;
-
-	result.row0 = store( src.row0 );
-	result.row1 = store( src.row1 );
-	result.row2 = store( src.row2 );
-	result.row3 = store( src.row3 );
+	result.m00 = w;
+	result.m11 = h;
+	result.m22 = -Q;
+	result.m32 = -Q * nearZdistance;
+	result.m23 = -1.0f;
 
 	return result;
 }
 
-
-
-template< class FMA >
-typename SSE< FMA >::vector SSE< FMA >::cross( vector u, vector v )
+vec3 project( vec3 v, matrix const & m )
 {
-	vector urot = _mm_shuffle_ps( u, u, _MM_SHUFFLE( 3, 0, 2, 1 ) );
-	vector vrot = _mm_shuffle_ps( v, v, _MM_SHUFFLE( 3, 0, 2, 1 ) );
-
-	urot = u * vrot;
-	vrot = v * urot;
-
-	urot = urot - vrot;
-
-	return _mm_shuffle_ps( urot, urot, _MM_SHUFFLE( 3, 0, 2, 1 ) );
+	vec3 result;
+	
+	result.x = ( v.x * m.m00 + v.y * m.m10 ) + ( v.z * m.m20 + m.m30 );
+	result.y = ( v.x * m.m01 + v.y * m.m11 ) + ( v.z * m.m21 + m.m31 );
+	result.z = ( v.x * m.m02 + v.y * m.m12 ) + ( v.z * m.m22 + m.m32 );
+	float w  = ( v.x * m.m03 + v.y * m.m13 ) + ( v.z * m.m23 + m.m33 );
+	
+	return result / w;
 }
 
-template< class FMA >
-typename SSE< FMA >::vector SSE< FMA >::dot( vector u, vector v )
+vec3 transform_point( vec3 v, matrix4x3 const & m )
 {
-	return hsum( u * v );
-}
-
-template< class FMA >
-typename SSE< FMA >::vector SSE< FMA >::fma3( vector u, vector v, vector w )
-{
-	return FMA::fma3( u, v, w );
-}
-
-template< class FMA >
-typename SSE< FMA >::vector SSE< FMA >::homogenize( vector v )
-{
-	return v / _mm_shuffle_ps( v, v, _MM_SHUFFLE( 3, 3, 3, 3 ) );
-}
-
-template< class FMA >
-typename SSE< FMA >::vector SSE< FMA >::hsum( vector v )
-{
-	// v == xyzw
-	vector rotl1 = _mm_shuffle_ps( v, v, _MM_SHUFFLE( 0, 3, 2, 1 ) ); // yzwx
-	vector rotl2 = _mm_shuffle_ps( v, v, _MM_SHUFFLE( 1, 0, 3, 2 ) ); // zwxy
-	vector rotl3 = _mm_shuffle_ps( v, v, _MM_SHUFFLE( 2, 1, 0, 3 ) ); // wxyz
-
-	v     = v     + rotl1;
-	rotl2 = rotl2 + rotl3;
-
-	return v + rotl2;
-}
-
-template< class FMA >
-typename SSE< FMA >::vector SSE< FMA >::len( vector v )
-{
-	return _mm_sqrt_ps( len_sq( v ) );
-}
-
-template< class FMA >
-typename SSE< FMA >::vector SSE< FMA >::len_sq( vector v )
-{
-	return dot( v, v );
-}
-
-template< class FMA >
-typename SSE< FMA >::vector SSE< FMA >::normalize( vector v )
-{
-	return v / len( v );
-}
-
-
-
-__m128 FMA3_SSE_EMU::fma3( __m128 a, __m128 b, __m128 c )
-{
-	return a * b + c;
-}
-
-__m128 FMA3::fma3( __m128 a, __m128 b, __m128 c )
-{
-	return _mm_fmadd_ps( a, b, c );
-}
-
-
-
-template< class FMA >
-typename SSE< FMA >::vector SSE< FMA >::mul( vector v, matrix m )
-{
-	typedef SSE<>::vector vec;
-
-	vec tmp0 = _mm_shuffle_ps( v, v, _MM_SHUFFLE( 0, 0, 0, 0 ) );
-	vec tmp1 = _mm_shuffle_ps( v, v, _MM_SHUFFLE( 1, 1, 1, 1 ) );
-	vec tmp2 = _mm_shuffle_ps( v, v, _MM_SHUFFLE( 2, 2, 2, 2 ) );
-	vec tmp3 = _mm_shuffle_ps( v, v, _MM_SHUFFLE( 3, 3, 3, 3 ) );
-
-	tmp0 = tmp0 * m.row0;
-	tmp1 = tmp1 * m.row1;
-	tmp2 = tmp2 * m.row2;
-	tmp3 = tmp3 * m.row3;
-
-	tmp0 = tmp0 + tmp1;
-	tmp2 = tmp2 + tmp3;
-
-	return tmp0 + tmp2;
-}
-
-template< class FMA >
-typename SSE< FMA >::matrix SSE< FMA >::mul( matrix m, matrix n )
-{
-	typedef SSE< FMA >::matrix mat;
-
-	mat result;
-
-	result.row0 = m.row0 * n;
-	result.row1 = m.row1 * n;
-	result.row2 = m.row2 * n;
-	result.row3 = m.row3 * n;
-
+	vec3 result;
+	
+	result.x = ( v.x * m.m00 + v.y * m.m10 ) + ( v.z * m.m20 + m.m30 );
+	result.y = ( v.x * m.m01 + v.y * m.m11 ) + ( v.z * m.m21 + m.m31 );
+	result.z = ( v.x * m.m02 + v.y * m.m12 ) + ( v.z * m.m22 + m.m32 );
+	
 	return result;
+}
+
+vec3 transform_vector( vec3 v, matrix4x3 const & m )
+{
+	vec3 result;
+	
+	result.x = ( v.x * m.m00 + v.y * m.m10 ) + ( v.z * m.m20 );
+	result.y = ( v.x * m.m01 + v.y * m.m11 ) + ( v.z * m.m21 );
+	result.z = ( v.x * m.m02 + v.y * m.m12 ) + ( v.z * m.m22 );
+	
+	return result;
+}
+
+matrix transpose( matrix const & m )
+{
+	return matrix
+	(
+		m.m00, m.m10, m.m20, m.m30,
+		m.m01, m.m11, m.m21, m.m31,
+		m.m02, m.m12, m.m22, m.m32,
+		m.m03, m.m13, m.m23, m.m33
+	);
 }
 
 #pragma endregion
 
 }} // namespace
-
-#pragma warning( pop ) // 4732: potential divide by zero
 
 #pragma endregion

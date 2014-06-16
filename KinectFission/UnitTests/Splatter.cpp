@@ -18,7 +18,7 @@ using namespace kifi;
 
 
 
-static void mesh2obj( std::vector< util::float4 > const & vertices, char const * outObjFileName )
+static void mesh2obj( std::vector< util::vec3 > const & vertices, char const * outObjFileName )
 {
 	FILE * file;
 	fopen_s( & file, outObjFileName, "w" );
@@ -49,15 +49,16 @@ BOOST_AUTO_TEST_CASE( Splat )
 	DepthStream ds( ( boost::filesystem::current_path() / "../content/imrod_v2.depth" ).string().c_str() );
 
 	util::vector2d< float > depth;
-	util::float4x4 view, viewProj, viewToWorld;
-	util::float4 eye, forward;
+	util::matrix4x3 view, viewToWorld;
+	util::matrix viewProj;
+	util::vec3 eye, forward;
 
 	ds.NextFrame( depth, view );
 	ComputeMatrices( view, eye, forward, viewProj, viewToWorld );
 
 	i.Integrate( v, depth, eye, forward, viewProj, viewToWorld );
 
-	std::vector< util::float4 > verts;
+	std::vector< util::vec3 > verts;
 	Splatter::Splat( v, verts );
 
 	mesh2obj( verts, "C:/TEMP/volume_splat.obj" );

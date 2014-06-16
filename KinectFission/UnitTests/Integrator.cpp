@@ -32,8 +32,9 @@ BOOST_AUTO_TEST_CASE( Integrate )
 	DepthStream ds( ( boost::filesystem::current_path() / "../content/imrod_v2.depth" ).string().c_str() );
 
 	util::vector2d< float > depth;
-	util::float4x4 view, viewProj, viewToWorld;
-	util::float4 eye, forward;
+	util::matrix4x3 view, viewToWorld;
+	util::matrix viewProj;
+	util::vec3 eye, forward;
 
 	ds.NextFrame( depth, view );
 	ComputeMatrices( view, eye, forward, viewProj, viewToWorld );
@@ -45,10 +46,10 @@ BOOST_AUTO_TEST_CASE( Integrate )
 
 	for( auto it = v.Data().keys_cbegin(), end = v.Data().keys_cend(); it != end; ++it )
 	{
-		unsigned x, y, z;
+		std::uint32_t x, y, z;
 		util::unpack( * it, x, y, z );
 		
-		util::float4 pos = v.VoxelCenter( util::float4( (float)x, (float)y, (float)z, 0.0f ) );
+		util::vec3 pos = v.VoxelCenter( x, y, z );
 		
 		fprintf_s( debug, "v %f %f %f\n", pos.x, pos.y, pos.z );
 	}

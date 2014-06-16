@@ -68,11 +68,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="cuda\DepthFrame.cpp" />
-    <ClCompile Include="cuda\Integrator.cpp" />
-    <ClCompile Include="cuda\radix_sort.cpp" />
-    <ClCompile Include="cuda\reduce.cpp" />
-    <ClCompile Include="cuda\scan.cpp" />
     <ClCompile Include="DepthStream.cpp" />
     <ClCompile Include="Integrator.cpp" />
     <ClCompile Include="main.cpp" />

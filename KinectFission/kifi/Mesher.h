@@ -18,13 +18,13 @@ public:
 	(
 		Volume const & volume,
 
-		std::vector< util::float4 > & outVertices,
+		std::vector< util::tmpfloat4 > & outVertices,
 		std::vector< unsigned > & outIndices
 	);
 
 	static void Mesh2Obj
 	(
-		std::vector< util::float4 > const & vertices,
+		std::vector< util::tmpfloat4 > const & vertices,
 		std::vector< unsigned > const & indices,
 
 		char const * outObjFileName
@@ -42,7 +42,7 @@ private:
 	(
 		Volume const & volume,
 
-		std::vector< util::float4 > & outVertices,
+		std::vector< util::tmpfloat4 > & outVertices,
 		std::vector< unsigned > & outVertexIDs,
 		std::vector< unsigned > & outIndices
 	);

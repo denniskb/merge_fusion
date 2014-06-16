@@ -48,11 +48,11 @@ void Integrator::Integrate
 	Volume & volume,
 	util::vector2d< float > const & frame,
 
-	util::float4 const & eye,
-	util::float4 const & forward,
+	util::vec3 eye,
+	util::vec3 forward,
 
-	util::float4x4 const & viewProjection,
-	util::float4x4 const & viewToWorld
+	util::matrix const & viewProjection,
+	util::matrix4x3 const & viewToWorld
 )
 {
 	m_tmpPointCloud.resize ( frame.size() );
@@ -63,7 +63,7 @@ void Integrator::Integrate
 	sw.take_time( "tsplat" );
 
 	util::radix_sort( m_tmpPointCloud.data(), m_tmpPointCloud.data() + nSplats, m_tmpScratchPad.data() );
-	//sw.take_time( "tsort" );
+	sw.take_time( "tsort" );
 
 	m_tmpPointCloud.resize(
 		std::distance( 
@@ -71,14 +71,16 @@ void Integrator::Integrate
 			std::unique( m_tmpPointCloud.begin(), m_tmpPointCloud.begin() + nSplats ) 
 		)
 	);
+	sw.take_time( "unique" );
 
 	ExpandChunks( m_tmpPointCloud, m_tmpScratchPad );
+	sw.take_time( "expand" );
 	
 	volume.Data().merge_unique(
 		m_tmpPointCloud.data(), m_tmpPointCloud.data() + m_tmpPointCloud.size(), Voxel()
 	);
+	sw.take_time( "merge" );
 
-	sw.restart();
 	UpdateVoxels( volume, frame, eye, forward, viewProjection );
 	sw.take_time( "tupdate" );
 
@@ -92,7 +94,7 @@ size_t Integrator::DepthMap2PointCloud
 (
 	Volume const & volume,
 	util::vector2d< float > const & frame,
-	util::float4x4 const & viewToWorld,
+	util::matrix4x3 const & viewToWorld,
 
 	std::vector< unsigned > & outPointCloud
 )
@@ -112,21 +114,20 @@ size_t Integrator::DepthMap2PointCloud
 			if( 0.0f == depth )
 				continue;
 
-			util::float4 pxView
+			util::vec3 pxView
 			(
-				( (float)u * flInv + nppxOverFl) * depth,
-				(-(float)v * flInv +  ppyOverFl) * depth,
-				-depth,
-				1.0f
+				(   (float) u  * flInv + nppxOverFl ) * depth,
+				( -((float) v) * flInv +  ppyOverFl ) * depth,
+				-depth
 			);
 
-			util::float4 pxWorld = pxView * viewToWorld;
-			util::float4 pxVol = volume.VoxelIndex( pxWorld );
+			util::vec3 pxWorld = util::transform_point( pxView, viewToWorld );
+			util::vec3 pxVolume = volume.VoxelIndex( pxWorld ) - 0.5f;
 
 			int x, y, z;
-			x = (int) (pxVol.x - 0.5f);
-			y = (int) (pxVol.y - 0.5f);
-			z = (int) (pxVol.z - 0.5f);
+			x = (int) pxVolume.x;
+			y = (int) pxVolume.y;
+			z = (int) pxVolume.z;
 		
 			if( x < 0 ||
 				y < 0 ||
@@ -136,7 +137,7 @@ size_t Integrator::DepthMap2PointCloud
 				y >= maxIndex ||
 				z >= maxIndex )
 				continue;
-		
+			
 			outPointCloud[ nSplats++ ] = util::pack( x, y, z );
 		}
 
@@ -214,12 +215,13 @@ void Integrator::UpdateVoxels
 	Volume & volume,
 	util::vector2d< float > const & frame,
 
-	util::float4 const & eye,
-	util::float4 const & forward,
-	util::float4x4 const & viewProjection
+	util::vec3 eye,
+	util::vec3 forward,
+	util::matrix const & viewProjection
 )
 {
-	util::float4 ndcToUV( frame.width() * 0.5f, frame.height() * 0.5f, 0.0f, 0.0f );
+	float const ndcToUVx = frame.width() * 0.5f;
+	float const ndcToUVy = frame.height() * 0.5f;
 
 	auto end = volume.Data().keys_cend();
 	for
@@ -229,21 +231,19 @@ void Integrator::UpdateVoxels
 		++it.first, ++it.second
 	)
 	{
-		unsigned x, y, z;
+		uint32_t x, y, z;
 		util::unpack( * it.first, x, y, z );
 
-		util::float4 centerWorld = volume.VoxelCenter( util::float4( (float)x, (float)y, (float)z, 0.0f ) );
-		centerWorld.w = 1.0f;
-		util::float4 centerNDC = util::homogenize( centerWorld * viewProjection );
-		util::float4 centerScreen = centerNDC * ndcToUV + ndcToUV;
+		util::vec3 centerWorld = volume.VoxelCenter( x, y, z );
+		float dist = util::dot( centerWorld - eye, forward );
 
-		int u = (int) centerScreen.x;
-		int v = (int) centerScreen.y;
-
+		util::vec3 centerNDC = util::project( centerWorld, viewProjection );
+		int u = (int) ( centerNDC.x * ndcToUVx + ndcToUVx );
+		int v = (int) ( centerNDC.y * ndcToUVy + ndcToUVy );
+		
 		if( u < 0 || u >= frame.width() || v < 0 || v >= frame.height() )
 			continue;
 
-		float dist = util::dot( centerWorld - eye, forward );
 		float depth = frame( u, frame.height() - v - 1 );
 		float signedDist = depth - dist;
 				

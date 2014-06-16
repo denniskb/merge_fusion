@@ -27,8 +27,8 @@ BOOST_AUTO_TEST_CASE( VoxelCenter_VoxelIndex )
 {
 	Volume v( 128, 2.0f, 0.02f );
 	
-	util::float4 vc = v.VoxelCenter( util::float4( 33, 21, 92, 0.0f ) );
-	util::float4 ci = v.VoxelIndex( vc );
+	util::vec3 vc = v.VoxelCenter( 33, 21, 92 );
+	util::vec3 ci = v.VoxelIndex( vc );
 
 	BOOST_REQUIRE_CLOSE( 33.5f, ci.x, 0.1f );
 	BOOST_REQUIRE_CLOSE( 21.5f, ci.y, 0.1f );
