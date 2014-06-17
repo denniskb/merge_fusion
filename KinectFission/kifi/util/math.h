@@ -4,12 +4,14 @@
 #include <cstdint>
 #include <cstring>
 
+#include <xmmintrin.h>
+
 
 
 namespace kifi {
 namespace util {
 
-#pragma region vec3/matrix
+#pragma region vec3/matrix4x3/matrix/float4/float4x4
 
 __declspec( deprecated )
 struct uint4
@@ -51,8 +53,6 @@ struct matrix4x3
 	);
 };
 
-
-
 struct matrix
 {
 	// stored in column-major order
@@ -77,8 +77,6 @@ struct matrix
 	inline operator matrix4x3() const;
 };
 
-
-
 matrix const identity
 (
 	1.0f, 0.0f, 0.0f, 0.0f,
@@ -86,6 +84,11 @@ matrix const identity
 	0.0f, 0.0f, 1.0f, 0.0f,
 	0.0f, 0.0f, 0.0f, 1.0f
 );
+
+
+
+typedef __m128 float4;
+struct float4x4 { float4 row0, row1, row2, row3; };
 
 #pragma endregion
 
@@ -118,6 +121,9 @@ inline vec3 & operator/=( vec3 & u, vec3 v );
 
 inline matrix operator*( matrix m, matrix n );
 
+inline float4   operator* ( float4 v  , float4x4 m );
+inline float4 & operator*=( float4 & v, float4x4 m );
+
 #pragma endregion
 
 #pragma region Functions
@@ -127,25 +133,64 @@ T               clamp   ( T x, T a, T b );
 inline float    dot     ( vec3 u, vec3 v );
 template< typename T >
 T               lerp    ( T a, T b, T weightB );
-inline uint32_t pack    ( uint32_t x, uint32_t y, uint32_t z );
 inline bool     powerOf2( unsigned x );
+inline uint32_t pack    ( uint32_t x, uint32_t y, uint32_t z );
 inline void     unpack  ( uint32_t v, uint32_t & outX, uint32_t & outY, uint32_t & outZ );
 
 inline matrix4x3 invert_transform  ( matrix4x3 const & Rt );
 inline matrix    perspective_fov_rh( float fovYradians, float aspectWbyH, float nearZdistance, float farZdistance );
-// TODO: Try const &
 inline vec3      project           ( vec3 v, matrix const & m );    // w == 1, homogenization
 inline vec3      transform_point   ( vec3 v, matrix4x3 const & m ); // w == 1, no homogenization
 inline vec3      transform_vector  ( vec3 v, matrix4x3 const & m ); // w == 0, no homogenization
 inline matrix    transpose         ( matrix const & m );
 
+inline int      all      ( float4 v );
+inline int      any      ( float4 v );
+inline int      none     ( float4 v );
+template< int index >
+inline float4   broadcast( float4 v );
+inline float4   load     ( float const * src );
+inline float4   loadu    ( float const * src );
+inline float4   set      ( float s );
+inline float4   set      ( float x, float y, float z, float w );
+inline float4   set      ( vec3 v, float w );
+inline float4x4 set      ( matrix m );
+inline float4x4 set      ( matrix4x3 m );
+inline void     store    ( float * dst, float4 src );
+inline void     storeu   ( float * dst, float4 src );
+inline float4   zero     ();
+
 #pragma endregion
 
 }} // namespace
 
+#pragma region Global Operators
+
+inline __m128 operator+( __m128 u, __m128 v );
+inline __m128 operator-( __m128 u, __m128 v );
+inline __m128 operator*( __m128 u, __m128 v );
+inline __m128 operator/( __m128 u, __m128 v );
+	   
+inline __m128 & operator+=( __m128 & u, __m128 v );
+inline __m128 & operator-=( __m128 & u, __m128 v );
+inline __m128 & operator*=( __m128 & u, __m128 v );
+inline __m128 & operator/=( __m128 & u, __m128 v );
+
+inline __m128 operator==( __m128 u, __m128 v );
+inline __m128 operator!=( __m128 u, __m128 v );
+inline __m128 operator< ( __m128 u, __m128 v );
+inline __m128 operator<=( __m128 u, __m128 v );
+inline __m128 operator> ( __m128 u, __m128 v );
+inline __m128 operator>=( __m128 u, __m128 v );
+
+inline __m128 operator|( __m128 u, __m128 v );
+inline __m128 operator&( __m128 u, __m128 v );
+
+#pragma endregion
 
 
-#pragma region implementation
+
+#pragma region Implementation
 
 namespace kifi {
 namespace util {
@@ -517,6 +562,32 @@ matrix operator*( matrix m, matrix n )
 	return result;
 }
 
+
+
+float4 operator*( float4 v, float4x4 m )
+{
+	float4 vx = broadcast< 0 >( v );
+	float4 vy = broadcast< 1 >( v );
+	float4 vz = broadcast< 2 >( v );
+	float4 vw = broadcast< 3 >( v );
+
+	vx *= m.row0;
+	vy *= m.row1;
+	vz *= m.row2;
+	vw *= m.row3;
+
+	vx += vy;
+	vz += vw;
+
+	return vx + vz;
+}
+
+float4 & operator*=( float4 & v, float4x4 m )
+{
+	v = v * m;
+	return v;
+}
+
 #pragma endregion
 
 #pragma region Functions
@@ -538,14 +609,14 @@ T lerp( T a, T b, T weightB )
 	return a + (b-a) * weightB;
 }
 
-uint32_t pack( uint32_t x, uint32_t y, uint32_t z )
-{
-	return z << 20 | y << 10 | x;
-}
-
 bool powerOf2( unsigned x )
 {
 	return x > 0 && ! (x & (x - 1));
+}
+
+uint32_t pack( uint32_t x, uint32_t y, uint32_t z )
+{
+	return z << 20 | y << 10 | x;
 }
 
 void unpack( uint32_t v, uint32_t & outX, uint32_t & outY, uint32_t & outZ )
@@ -635,8 +706,182 @@ matrix transpose( matrix const & m )
 	);
 }
 
+
+
+int all( float4 v )
+{
+	return ( 0xf == _mm_movemask_ps( v ) );
+}
+
+int any( float4 v )
+{
+	return _mm_movemask_ps( v );
+}
+
+int none( float4 v )
+{
+	return ( 0 == _mm_movemask_ps( v ) );
+}
+
+template< int index >
+float4 broadcast( float4 v )
+{
+	return _mm_shuffle_ps( v, v, _MM_SHUFFLE( index, index, index, index ) );
+}
+
+float4 load( float const * src )
+{
+	return _mm_load_ps( src );
+}
+
+float4 loadu( float const * src )
+{
+	return _mm_loadu_ps( src );
+}
+
+float4 set( float s )
+{
+	return _mm_set1_ps( s );
+}
+
+float4 set( float x, float y, float z, float w )
+{
+	return _mm_set_ps( w, z, y, x );
+}
+
+float4 set( vec3 v, float w )
+{
+	return set( v.x, v.y, v.z, w );
+}
+
+float4x4 set( matrix m )
+{
+	float4x4 result;
+
+	result.row0 = set( m.m00, m.m01, m.m02, m.m03 );
+	result.row1 = set( m.m10, m.m11, m.m12, m.m13 );
+	result.row2 = set( m.m20, m.m21, m.m22, m.m23 );
+	result.row3 = set( m.m30, m.m31, m.m32, m.m33 );
+
+	return result;
+}
+
+float4x4 set ( matrix4x3 m )
+{
+	return set( matrix( m ) );
+}
+
+void store( float * dst, float4 src )
+{
+	_mm_store_ps( dst, src );
+}
+
+void storeu( float * dst, float4 src )
+{
+	_mm_storeu_ps( dst, src );
+}
+
+float4 zero()
+{
+	return _mm_setzero_ps();
+}
+
 #pragma endregion
 
 }} // namespace
+
+#pragma region Global Operators
+
+__m128 operator+( __m128 u, __m128 v )
+{
+	return _mm_add_ps( u, v );
+}
+
+__m128 operator-( __m128 u, __m128 v )
+{
+	return _mm_sub_ps( u, v );
+}
+
+__m128 operator*( __m128 u, __m128 v )
+{
+	return _mm_mul_ps( u, v );
+}
+
+__m128 operator/( __m128 u, __m128 v )
+{
+	return _mm_div_ps( u, v );
+}
+	   
+
+
+__m128 & operator+=( __m128 & u, __m128 v )
+{
+	u = u + v;
+	return u;
+}
+
+__m128 & operator-=( __m128 & u, __m128 v )
+{
+	u = u - v;
+	return u;
+}
+
+__m128 & operator*=( __m128 & u, __m128 v )
+{
+	u = u * v;
+	return u;
+}
+
+__m128 & operator/=( __m128 & u, __m128 v )
+{
+	u = u / v;
+	return u;
+}
+
+
+
+__m128 operator==( __m128 u, __m128 v )
+{
+	return _mm_cmpeq_ps( u, v );
+}
+
+__m128 operator!=( __m128 u, __m128 v )
+{
+	return _mm_cmpneq_ps( u, v );
+}
+
+__m128 operator<( __m128 u, __m128 v )
+{
+	return _mm_cmplt_ps( u, v );
+}
+
+__m128 operator<=( __m128 u, __m128 v )
+{
+	return _mm_cmple_ps( u, v );
+}
+
+__m128 operator>( __m128 u, __m128 v )
+{
+	return _mm_cmpgt_ps( u, v );
+}
+
+__m128 operator>=( __m128 u, __m128 v )
+{
+	return _mm_cmpge_ps( u, v );
+}
+
+
+
+__m128 operator|( __m128 u, __m128 v )
+{
+	return _mm_or_ps( u, v );
+}
+
+__m128 operator&( __m128 u, __m128 v )
+{
+	return _mm_and_ps( u, v );
+}
+
+#pragma endregion
 
 #pragma endregion

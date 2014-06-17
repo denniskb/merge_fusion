@@ -10,20 +10,11 @@
 
 #pragma region Global Operators
 
-inline __m128 operator+( __m128 u, __m128 v );
-inline __m128 operator-( __m128 u, __m128 v );
-inline __m128 operator*( __m128 u, __m128 v );
-inline __m128 operator/( __m128 u, __m128 v );
-	   
-inline __m128 & operator+=( __m128 & u, __m128 v );
-inline __m128 & operator-=( __m128 & u, __m128 v );
-inline __m128 & operator*=( __m128 & u, __m128 v );
-inline __m128 & operator/=( __m128 & u, __m128 v );
+
 
 #pragma endregion
 
-namespace kifi {
-namespace util {
+namespace flink {
 
 #pragma region float4/int4/uint4/float4x4
 
@@ -220,7 +211,7 @@ struct FMA3
 
 #pragma endregion
 
-}} // namespace
+} // namespace
 
 
 
@@ -231,56 +222,11 @@ struct FMA3
 
 #pragma region Global Operators
 
-__m128 operator+( __m128 u, __m128 v )
-{
-	return _mm_add_ps( u, v );
-}
 
-__m128 operator-( __m128 u, __m128 v )
-{
-	return _mm_sub_ps( u, v );
-}
-
-__m128 operator*( __m128 u, __m128 v )
-{
-	return _mm_mul_ps( u, v );
-}
-
-__m128 operator/( __m128 u, __m128 v )
-{
-	return _mm_div_ps( u, v );
-}
-	   
-
-
-__m128 & operator+=( __m128 & u, __m128 v )
-{
-	u = u + v;
-	return u;
-}
-
-__m128 & operator-=( __m128 & u, __m128 v )
-{
-	u = u - v;
-	return u;
-}
-
-__m128 & operator*=( __m128 & u, __m128 v )
-{
-	u = u * v;
-	return u;
-}
-
-__m128 & operator/=( __m128 & u, __m128 v )
-{
-	u = u / v;
-	return u;
-}
 
 #pragma endregion
 
-namespace kifi {
-namespace util {
+namespace flink {
 
 #pragma region float4x4
 
@@ -757,12 +703,12 @@ float4x4 FPU::store( matrix src )
 
 FPU::vector FPU::cross( vector u, vector v )
 {
-	return util::cross( u, v );
+	return flink::cross( u, v );
 }
 
 FPU::vector FPU::dot( vector u, vector v )
 {
-	return vector( util::dot( u, v ) );
+	return vector( flink::dot( u, v ) );
 }
 
 float4 FPU::fma3( float4 u, float4 v, float4 w )
@@ -772,27 +718,27 @@ float4 FPU::fma3( float4 u, float4 v, float4 w )
 
 FPU::vector FPU::homogenize( vector v )
 {
-	return vector( util::homogenize( v ) );
+	return vector( flink::homogenize( v ) );
 }
 
 FPU::vector FPU::hsum( vector v )
 {
-	return vector( util::hsum( v ) );
+	return vector( flink::hsum( v ) );
 }
 
 FPU::vector FPU::len( vector v )
 {
-	return vector( util::len( v ) );
+	return vector( flink::len( v ) );
 }
 
 FPU::vector FPU::len_sq( vector v )
 {
-	return vector( util::len_sq( v ) );
+	return vector( flink::len_sq( v ) );
 }
 
 FPU::vector FPU::normalize( vector v )
 {
-	return util::normalize( v );
+	return flink::normalize( v );
 }
 
 #pragma endregion
@@ -973,7 +919,7 @@ typename SSE< FMA >::matrix SSE< FMA >::mul( matrix m, matrix n )
 
 #pragma endregion
 
-}} // namespace
+} // namespace
 
 #pragma warning( pop ) // 4732: potential divide by zero
 

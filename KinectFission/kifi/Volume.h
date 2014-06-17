@@ -28,7 +28,7 @@ public:
 	util::flat_map< unsigned, Voxel > & Data();
 	util::flat_map< unsigned, Voxel > const & Data() const;
 
-private:
+public:
 	float m_tmpVoxelLen;
 	float m_tmpVoxelLenOver2PlusMin;
 

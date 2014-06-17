@@ -12,25 +12,18 @@
 #include <kifi/Volume.h>
 #include <kifi/Voxel.h>
 
+using namespace kifi;
+using namespace kifi::util;
+
 
 
 namespace {
-
-struct delta
-{
-	delta( unsigned n ) :
-		m_n( n )
-	{}
-
-	unsigned operator()( unsigned x ) const
+	struct add_delta
 	{
-		return x + m_n;
-	}
-
-private:
-	unsigned m_n;
-};
-
+		unsigned delta;
+		add_delta( unsigned n ) : delta( n ) {}
+		unsigned operator()( unsigned x ) const	{ return x + delta; }
+	};
 }
 
 
@@ -40,30 +33,28 @@ private:
 
 
 
-namespace kifi {
-
 // static 
 void Integrator::Integrate
 ( 
 	Volume & volume,
-	util::vector2d< float > const & frame,
+	vector2d< float > const & frame,
 
-	util::vec3 eye,
-	util::vec3 forward,
+	vec3 eye,
+	vec3 forward,
 
-	util::matrix const & viewProjection,
-	util::matrix4x3 const & viewToWorld
+	matrix const & viewProjection,
+	matrix4x3 const & viewToWorld
 )
 {
 	m_tmpPointCloud.resize ( frame.size() );
 	m_tmpScratchPad.reserve( frame.size() );
 
-	util::chrono::stop_watch sw;
+	chrono::stop_watch sw;
 	size_t nSplats = DepthMap2PointCloud( volume, frame, viewToWorld, m_tmpPointCloud );
 	sw.take_time( "tsplat" );
 
-	util::radix_sort( m_tmpPointCloud.data(), m_tmpPointCloud.data() + nSplats, m_tmpScratchPad.data() );
-	sw.take_time( "tsort" );
+	radix_sort( m_tmpPointCloud.data(), m_tmpPointCloud.data() + nSplats, m_tmpScratchPad.data() );
+	//sw.take_time( "tsort" );
 
 	m_tmpPointCloud.resize(
 		std::distance( 
@@ -71,18 +62,18 @@ void Integrator::Integrate
 			std::unique( m_tmpPointCloud.begin(), m_tmpPointCloud.begin() + nSplats ) 
 		)
 	);
-	sw.take_time( "unique" );
+	//sw.take_time( "unique" );
 
 	ExpandChunks( m_tmpPointCloud, m_tmpScratchPad );
-	sw.take_time( "expand" );
+	//sw.take_time( "expand" );
 	
 	volume.Data().merge_unique(
 		m_tmpPointCloud.data(), m_tmpPointCloud.data() + m_tmpPointCloud.size(), Voxel()
 	);
-	sw.take_time( "merge" );
+	//sw.take_time( "merge" );
 
 	UpdateVoxels( volume, frame, eye, forward, viewProjection );
-	sw.take_time( "tupdate" );
+	//sw.take_time( "tupdate" );
 
 	sw.print_times();
 }
@@ -93,52 +84,103 @@ void Integrator::Integrate
 size_t Integrator::DepthMap2PointCloud
 (
 	Volume const & volume,
-	util::vector2d< float > const & frame,
-	util::matrix4x3 const & viewToWorld,
+	vector2d< float > const & frame,
+	matrix4x3 const & viewToWorld,
 
 	std::vector< unsigned > & outPointCloud
 )
 {
+	assert( 0 == frame.width() % 4 );
+
+	float4x4 _viewToWorld = set( viewToWorld );
+
 	// TODO: Encapsulate in CameraParams struct!
-	float const flInv = 1.0f / 585.0f;
-	float const nppxOverFl = -((frame.width()  / 2) - 0.5f) * flInv;
-	float const  ppyOverFl =  ((frame.height() / 2) - 0.5f) * flInv;
-	int const maxIndex = volume.Resolution() - 1;
+	float4 flInv = set( 1.0f / 585.0f, 1.0f / 585.0f, 1.0f, 1.0f );
+	float4 ppOverFl = set
+	(
+		-((frame.width()  / 2) - 0.5f) / 585.0f, 
+		 ((frame.height() / 2) - 0.5f) / 585.0f, 
+		0.0f, 
+		0.0f
+	);
+	float4 maxIndex = set( (float) (volume.Resolution() - 1 ) );
+
+	float4 mask0001 = set( 0.0f, 0.0f, 0.0f, 1.0f );
+
+	float4 tmp0 = set( vec3( volume.m_tmpVoxelLenInv ), 0.0f );
+	float4 tmp1 = set( vec3( volume.m_tmpNegVoxelLenInvTimesMin - 0.5f ), 0.0f );
 
 	size_t nSplats = 0;
 
 	for( size_t v = 0; v < frame.height(); v++ )
-		for( size_t u = 0; u < frame.width(); u++ )
+		for( size_t u = 0; u < frame.width(); u += 4 )
 		{
-			float depth = frame( u, v );
-			if( 0.0f == depth )
+			float4 depths = loadu( & frame( u, v ) );
+
+			int depthsValid = any( depths > zero() );
+			if( ! depthsValid )
 				continue;
 
-			util::vec3 pxView
-			(
-				(   (float) u  * flInv + nppxOverFl ) * depth,
-				( -((float) v) * flInv +  ppyOverFl ) * depth,
-				-depth
-			);
+			float4 point0 = set( (float) u + 0.0f, - (float) v, -1.0f, 0.0f );
+			float4 point1 = set( (float) u + 1.0f, - (float) v, -1.0f, 0.0f );
+			float4 point2 = set( (float) u + 2.0f, - (float) v, -1.0f, 0.0f );
+			float4 point3 = set( (float) u + 3.0f, - (float) v, -1.0f, 0.0f );
 
-			util::vec3 pxWorld = util::transform_point( pxView, viewToWorld );
-			util::vec3 pxVolume = volume.VoxelIndex( pxWorld ) - 0.5f;
+			point0 = point0 * flInv + ppOverFl;
+			point1 = point1 * flInv + ppOverFl;
+			point2 = point2 * flInv + ppOverFl;
+			point3 = point3 * flInv + ppOverFl;
+			
+			float4 depthx = broadcast< 0 >( depths );
+			float4 depthy = broadcast< 1 >( depths );
+			float4 depthz = broadcast< 2 >( depths );
+			float4 depthw = broadcast< 3 >( depths );
 
-			int x, y, z;
-			x = (int) pxVolume.x;
-			y = (int) pxVolume.y;
-			z = (int) pxVolume.z;
-		
-			if( x < 0 ||
-				y < 0 ||
-				z < 0 ||
-			
-				x >= maxIndex ||
-				y >= maxIndex ||
-				z >= maxIndex )
-				continue;
-			
-			outPointCloud[ nSplats++ ] = util::pack( x, y, z );
+			point0 = point0 * depthx + mask0001;
+			point1 = point1 * depthy + mask0001;
+			point2 = point2 * depthz + mask0001;
+			point3 = point3 * depthw + mask0001;
+
+			point0 *= _viewToWorld;
+			point1 *= _viewToWorld;
+			point2 *= _viewToWorld;
+			point3 *= _viewToWorld;
+
+			point0 = point0 * tmp0 + tmp1;
+			point1 = point1 * tmp0 + tmp1;
+			point2 = point2 * tmp0 + tmp1;
+			point3 = point3 * tmp0 + tmp1;
+
+			int point0Valid = (depthsValid & 0x1) && none( ( point0 < zero() ) | ( point0 >= maxIndex ) );
+			int point1Valid = (depthsValid & 0x2) && none( ( point1 < zero() ) | ( point1 >= maxIndex ) );
+			int point2Valid = (depthsValid & 0x4) && none( ( point2 < zero() ) | ( point2 >= maxIndex ) );
+			int point3Valid = (depthsValid & 0x8) && none( ( point3 < zero() ) | ( point3 >= maxIndex ) );
+
+			float tmp[4];
+
+			if( point0Valid )
+			{
+				storeu( tmp, point0 );
+				outPointCloud[ nSplats++ ] = pack( (uint32_t) tmp[0], (uint32_t) tmp[1], (uint32_t) tmp[2] );
+			}
+
+			if( point1Valid )
+			{
+				storeu( tmp, point1 );
+				outPointCloud[ nSplats++ ] = pack( (uint32_t) tmp[0], (uint32_t) tmp[1], (uint32_t) tmp[2] );
+			}
+
+			if( point2Valid )
+			{
+				storeu( tmp, point2 );
+				outPointCloud[ nSplats++ ] = pack( (uint32_t) tmp[0], (uint32_t) tmp[1], (uint32_t) tmp[2] );
+			}
+
+			if( point3Valid )
+			{
+				util::storeu( tmp, point3 );
+				outPointCloud[ nSplats++ ] = pack( (uint32_t) tmp[0], (uint32_t) tmp[1], (uint32_t) tmp[2] );
+			}
 		}
 
 	return nSplats;
@@ -151,9 +193,9 @@ void Integrator::ExpandChunks
 	std::vector< unsigned > & tmpScratchPad
 )
 {
-	ExpandChunksHelper( inOutChunkIndices, util::pack( 0, 0, 1 ), tmpScratchPad);
-	ExpandChunksHelper( inOutChunkIndices, util::pack( 0, 1, 0 ), tmpScratchPad);
-	ExpandChunksHelper( inOutChunkIndices, util::pack( 1, 0, 0 ), tmpScratchPad);
+	ExpandChunksHelper( inOutChunkIndices, pack( 0, 0, 1 ), tmpScratchPad);
+	ExpandChunksHelper( inOutChunkIndices, pack( 0, 1, 0 ), tmpScratchPad);
+	ExpandChunksHelper( inOutChunkIndices, pack( 1, 0, 0 ), tmpScratchPad);
 }
 
 // static
@@ -177,7 +219,7 @@ void Integrator::ExpandChunksHelper
 			auto tmpNewEnd = std::set_union
 			(
 				inOutChunkIndices.cbegin(), inOutChunkIndices.cend(),
-				util::make_map_iterator( inOutChunkIndices.cbegin(), ::delta( delta ) ), util::make_map_iterator( inOutChunkIndices.cend(), ::delta( delta ) ),
+				make_map_iterator( inOutChunkIndices.cbegin(), add_delta( delta ) ), make_map_iterator( inOutChunkIndices.cend(), add_delta( delta ) ),
 				tmpScratchPad.data()
 			);
 
@@ -213,11 +255,11 @@ void Integrator::ExpandChunksHelper
 void Integrator::UpdateVoxels
 (
 	Volume & volume,
-	util::vector2d< float > const & frame,
+	vector2d< float > const & frame,
 
-	util::vec3 eye,
-	util::vec3 forward,
-	util::matrix const & viewProjection
+	vec3 eye,
+	vec3 forward,
+	matrix const & viewProjection
 )
 {
 	float const ndcToUVx = frame.width() * 0.5f;
@@ -232,12 +274,12 @@ void Integrator::UpdateVoxels
 	)
 	{
 		uint32_t x, y, z;
-		util::unpack( * it.first, x, y, z );
+		unpack( * it.first, x, y, z );
 
-		util::vec3 centerWorld = volume.VoxelCenter( x, y, z );
-		float dist = util::dot( centerWorld - eye, forward );
+		vec3 centerWorld = volume.VoxelCenter( x, y, z );
+		float dist = dot( centerWorld - eye, forward );
 
-		util::vec3 centerNDC = util::project( centerWorld, viewProjection );
+		vec3 centerNDC = project( centerWorld, viewProjection );
 		int u = (int) ( centerNDC.x * ndcToUVx + ndcToUVx );
 		int v = (int) ( centerNDC.y * ndcToUVy + ndcToUVy );
 		
@@ -252,5 +294,3 @@ void Integrator::UpdateVoxels
 		it.second->Update( std::min(signedDist, volume.TruncationMargin()), (float)update );
 	}
 }
-
-} // namespace
