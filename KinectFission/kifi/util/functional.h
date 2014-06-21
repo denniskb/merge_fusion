@@ -11,7 +11,7 @@ struct id
 	typedef T argument_type;
 	typedef T result_type;
 
-	T operator()( T const & x ) const;
+	T const & operator()( T const & x ) const;
 };
 
 }} // namespace
@@ -26,7 +26,7 @@ namespace kifi {
 namespace util {
 
 template< typename T >
-T id< T >::operator()( T const & x ) const
+T const & id< T >::operator()( T const & x ) const
 {
 	return x;
 }

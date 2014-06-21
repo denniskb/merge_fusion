@@ -67,8 +67,9 @@ void Integrator::Integrate
 	ExpandChunks( m_tmpPointCloud, m_tmpScratchPad );
 	sw.take_time( "expand" );
 	
-	volume.Data().merge_unique(
-		m_tmpPointCloud.data(), m_tmpPointCloud.data() + m_tmpPointCloud.size(), Voxel()
+	volume.Data().insert(
+		m_tmpPointCloud.cbegin(), m_tmpPointCloud.cend(),
+		make_const_iterator( Voxel() )
 	);
 	sw.take_time( "merge" );
 
@@ -221,7 +222,7 @@ void Integrator::ExpandChunksHelper
 			auto tmpNewEnd = std::set_union
 			(
 				inOutChunkIndices.cbegin(), inOutChunkIndices.cend(),
-				make_map_iterator( inOutChunkIndices.cbegin(), add_delta( delta ) ), make_map_iterator( inOutChunkIndices.cend(), add_delta( delta ) ),
+				make_transform_iterator( inOutChunkIndices.cbegin(), add_delta( delta ) ), make_transform_iterator( inOutChunkIndices.cend(), add_delta( delta ) ),
 				tmpScratchPad.data()
 			);
 

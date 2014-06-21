@@ -8,8 +8,39 @@
 namespace kifi {
 namespace util {
 
+#pragma warning( push )
+#pragma warning( disable : 4512 ) // assignment operator could not be generated for const_iterator due to member 'm_value'
+
+template< typename T >
+class const_iterator : public std::iterator< std::input_iterator_tag, T >
+{
+public:
+	// all
+	const_iterator( T const & value ) : m_value( value ) {}
+
+	const_iterator & operator++() { return * this; }
+	const_iterator operator++( int ) { return * this; }
+
+	// input
+	bool operator==( const_iterator const & rhs ) const;
+	bool operator!=( const_iterator const & rhs ) const;
+
+	T const & operator*() const { return m_value; }
+	T const * operator->() const { return & m_value; }
+
+private:
+	T const & m_value;
+};
+
+#pragma warning( pop )
+
+template< typename T >
+const_iterator< T > make_const_iterator( T const & x ) { return const_iterator< T >( x ); }
+
+
+
 template< class Iterator, class UnaryOperation >
-class map_iterator : public std::iterator
+class transform_iterator : public std::iterator
 <
 	typename std::iterator_traits< Iterator >::iterator_category,
 	typename std::iterator_traits< Iterator >::value_type,
@@ -19,40 +50,40 @@ class map_iterator : public std::iterator
 >
 {
 public:
-	map_iterator();
-	map_iterator( Iterator it, UnaryOperation op );
+	// all
+	transform_iterator( Iterator it, UnaryOperation op );
 
-	map_iterator & operator++();
-	map_iterator operator++( int );
-	map_iterator & operator--();
-	map_iterator operator--( int );
+	transform_iterator & operator++();
+	transform_iterator operator++( int );
 
-	bool operator==( map_iterator const & rhs ) const;
-	bool operator!=( map_iterator const & rhs ) const;
+	// input
+	bool operator==( transform_iterator const & rhs ) const;
+	bool operator!=( transform_iterator const & rhs ) const;
 
 	value_type operator*() const;
 
-	bool operator<( map_iterator const & rhs ) const;
-	bool operator>( map_iterator const & rhs ) const;
-	bool operator<=( map_iterator const & rhs ) const;
-	bool operator>=( map_iterator const & rhs ) const;
+	// output
 
-	difference_type operator-( map_iterator const & rhs );
+	// forward
+	transform_iterator();
 
-	friend map_iterator 
-	operator+( map_iterator const &, difference_type );
+	// bidirectional
+	transform_iterator & operator--();
+	transform_iterator operator--( int );
 
-	friend map_iterator 
-	operator-( map_iterator const &, difference_type );
+	// random access
+	       transform_iterator operator+( difference_type n );
+	friend transform_iterator operator+( difference_type n, transform_iterator const & a );
+	       transform_iterator operator-( difference_type n );
+		   difference_type    operator-( transform_iterator const & rhs );
 
-	friend map_iterator 
-	operator+( difference_type, map_iterator const & );
+	bool operator<( transform_iterator const & rhs ) const;
+	bool operator>( transform_iterator const & rhs ) const;
+	bool operator<=( transform_iterator const & rhs ) const;
+	bool operator>=( transform_iterator const & rhs ) const;
 
-	friend map_iterator 
-	operator-( difference_type, map_iterator const & );
-
-	map_iterator & operator+=( difference_type n );
-	map_iterator & operator-=( difference_type n );
+	transform_iterator & operator+=( difference_type n );
+	transform_iterator & operator-=( difference_type n );
 
 	value_type operator[]( std::size_t n ) const;
 
@@ -61,10 +92,8 @@ private:
 	UnaryOperation m_op;
 };
 
-
-
 template< class Iterator, class UnaryOperation >
-map_iterator< Iterator, UnaryOperation > make_map_iterator( Iterator it, UnaryOperation op );
+transform_iterator< Iterator, UnaryOperation > make_transform_iterator( Iterator it, UnaryOperation op );
 
 }} // namespace
 
@@ -80,13 +109,7 @@ namespace kifi {
 namespace util {
 
 template< class Iterator, class UnaryOperation >
-map_iterator< Iterator, UnaryOperation >::map_iterator() :
-	m_it( Iterator() ),
-	m_op( id< value_type >() )
-{}
-
-template< class Iterator, class UnaryOperation >
-map_iterator< Iterator, UnaryOperation >::map_iterator( Iterator it, UnaryOperation op ) :
+transform_iterator< Iterator, UnaryOperation >::transform_iterator( Iterator it, UnaryOperation op ) :
 	m_it( it ),
 	m_op( op )
 {}
@@ -94,29 +117,61 @@ map_iterator< Iterator, UnaryOperation >::map_iterator( Iterator it, UnaryOperat
 
 
 template< class Iterator, class UnaryOperation >
-map_iterator< Iterator, UnaryOperation > & map_iterator< Iterator, UnaryOperation >::operator++()
+transform_iterator< Iterator, UnaryOperation > & transform_iterator< Iterator, UnaryOperation >::operator++()
 {
 	++m_it;
 	return * this;
 }
 
 template< class Iterator, class UnaryOperation >
-map_iterator< Iterator, UnaryOperation > map_iterator< Iterator, UnaryOperation >::operator++( int )
+transform_iterator< Iterator, UnaryOperation > transform_iterator< Iterator, UnaryOperation >::operator++( int )
 {
 	auto result = * this;
 	++(* this);
 	return result;
 }
 
+
+
 template< class Iterator, class UnaryOperation >
-map_iterator< Iterator, UnaryOperation > & map_iterator< Iterator, UnaryOperation >::operator--()
+bool transform_iterator< Iterator, UnaryOperation >::operator==( transform_iterator const & rhs ) const
+{
+	return m_it == rhs.m_it;
+}
+
+template< class Iterator, class UnaryOperation >
+bool transform_iterator< Iterator, UnaryOperation >::operator!=( transform_iterator const & rhs ) const
+{
+	return m_it != rhs.m_it;
+}
+
+
+
+template< class Iterator, class UnaryOperation >
+typename transform_iterator< Iterator, UnaryOperation >::value_type transform_iterator< Iterator, UnaryOperation >::operator*() const
+{
+	return m_op( * m_it );
+}
+
+
+
+template< class Iterator, class UnaryOperation >
+transform_iterator< Iterator, UnaryOperation >::transform_iterator() :
+	m_it( Iterator() ),
+	m_op( id< value_type >() )
+{}
+
+
+
+template< class Iterator, class UnaryOperation >
+transform_iterator< Iterator, UnaryOperation > & transform_iterator< Iterator, UnaryOperation >::operator--()
 {
 	--m_it;
 	return * this;
 }
 
 template< class Iterator, class UnaryOperation >
-map_iterator< Iterator, UnaryOperation > map_iterator< Iterator, UnaryOperation >::operator--( int )
+transform_iterator< Iterator, UnaryOperation > transform_iterator< Iterator, UnaryOperation >::operator--( int )
 {
 	auto result = * this;
 	--(* this);
@@ -126,55 +181,19 @@ map_iterator< Iterator, UnaryOperation > map_iterator< Iterator, UnaryOperation 
 
 
 template< class Iterator, class UnaryOperation >
-bool map_iterator< Iterator, UnaryOperation >::operator==( map_iterator const & rhs ) const
+transform_iterator< Iterator, UnaryOperation > transform_iterator< Iterator, UnaryOperation >::operator+( difference_type n )
 {
-	return m_it == rhs.m_it;
+	return transform_iterator( m_it + n, m_op );
 }
 
 template< class Iterator, class UnaryOperation >
-bool map_iterator< Iterator, UnaryOperation >::operator!=( map_iterator const & rhs ) const
+transform_iterator< Iterator, UnaryOperation > transform_iterator< Iterator, UnaryOperation >::operator-( difference_type n )
 {
-	return m_it != rhs.m_it;
-}
-
-
-
-template< class Iterator, class UnaryOperation >
-typename map_iterator< Iterator, UnaryOperation >::value_type map_iterator< Iterator, UnaryOperation >::operator*() const
-{
-	return m_op( * m_it );
-}
-
-
-
-template< class Iterator, class UnaryOperation >
-bool map_iterator< Iterator, UnaryOperation >::operator<( map_iterator const & rhs ) const
-{
-	return m_it < rhs.m_it;
+	return transform_iterator( m_it - n, m_op );
 }
 
 template< class Iterator, class UnaryOperation >
-bool map_iterator< Iterator, UnaryOperation >::operator>( map_iterator const & rhs ) const
-{
-	return m_it > rhs.m_it;
-}
-
-template< class Iterator, class UnaryOperation >
-bool map_iterator< Iterator, UnaryOperation >::operator<=( map_iterator const & rhs ) const
-{
-	return m_it <= rhs.m_it;
-}
-
-template< class Iterator, class UnaryOperation >
-bool map_iterator< Iterator, UnaryOperation >::operator>=( map_iterator const & rhs ) const
-{
-	return m_it >= rhs.m_it;
-}
-
-
-
-template< class Iterator, class UnaryOperation >
-typename map_iterator< Iterator, UnaryOperation >::difference_type map_iterator< Iterator, UnaryOperation >::operator-( map_iterator const & rhs )
+typename transform_iterator< Iterator, UnaryOperation >::difference_type transform_iterator< Iterator, UnaryOperation >::operator-( transform_iterator const & rhs )
 {
 	return m_it - rhs.m_it;
 }
@@ -182,14 +201,40 @@ typename map_iterator< Iterator, UnaryOperation >::difference_type map_iterator<
 
 
 template< class Iterator, class UnaryOperation >
-map_iterator< Iterator, UnaryOperation > & map_iterator< Iterator, UnaryOperation >::operator+=( difference_type n )
+bool transform_iterator< Iterator, UnaryOperation >::operator<( transform_iterator const & rhs ) const
+{
+	return m_it < rhs.m_it;
+}
+
+template< class Iterator, class UnaryOperation >
+bool transform_iterator< Iterator, UnaryOperation >::operator>( transform_iterator const & rhs ) const
+{
+	return m_it > rhs.m_it;
+}
+
+template< class Iterator, class UnaryOperation >
+bool transform_iterator< Iterator, UnaryOperation >::operator<=( transform_iterator const & rhs ) const
+{
+	return m_it <= rhs.m_it;
+}
+
+template< class Iterator, class UnaryOperation >
+bool transform_iterator< Iterator, UnaryOperation >::operator>=( transform_iterator const & rhs ) const
+{
+	return m_it >= rhs.m_it;
+}
+
+
+
+template< class Iterator, class UnaryOperation >
+transform_iterator< Iterator, UnaryOperation > & transform_iterator< Iterator, UnaryOperation >::operator+=( difference_type n )
 {
 	m_it += n;
 	return * this;
 }
 
 template< class Iterator, class UnaryOperation >
-map_iterator< Iterator, UnaryOperation > & map_iterator< Iterator, UnaryOperation >::operator-=( difference_type n )
+transform_iterator< Iterator, UnaryOperation > & transform_iterator< Iterator, UnaryOperation >::operator-=( difference_type n )
 {
 	m_it -= n;
 	return * this;
@@ -198,7 +243,7 @@ map_iterator< Iterator, UnaryOperation > & map_iterator< Iterator, UnaryOperatio
 
 
 template< class Iterator, class UnaryOperation >
-typename map_iterator< Iterator, UnaryOperation >::value_type map_iterator< Iterator, UnaryOperation >::operator[]( std::size_t n ) const
+typename transform_iterator< Iterator, UnaryOperation >::value_type transform_iterator< Iterator, UnaryOperation >::operator[]( std::size_t n ) const
 {
 	return m_op( m_it[ n ] );
 }
@@ -206,9 +251,9 @@ typename map_iterator< Iterator, UnaryOperation >::value_type map_iterator< Iter
 
 
 template< class Iterator, class UnaryOperation >
-map_iterator< Iterator, UnaryOperation > make_map_iterator( Iterator it, UnaryOperation op )
+transform_iterator< Iterator, UnaryOperation > make_transform_iterator( Iterator it, UnaryOperation op )
 {
-	return map_iterator< Iterator, UnaryOperation >( it, op );
+	return transform_iterator< Iterator, UnaryOperation >( it, op );
 }
 
 }} // namespace
@@ -216,31 +261,10 @@ map_iterator< Iterator, UnaryOperation > make_map_iterator( Iterator it, UnaryOp
 
 
 template< class Iterator, class UnaryOperation >
-kifi::util::map_iterator< Iterator, UnaryOperation > 
-operator+( kifi::util::map_iterator< Iterator, UnaryOperation > const & it, typename kifi::util::map_iterator< Iterator, UnaryOperation >::difference_type n )
-{
-	return kifi::util::map_iterator< Iterator, UnaryOperation >( it.m_it + n, it.m_op );
-}
-
-template< class Iterator, class UnaryOperation >
-kifi::util::map_iterator< Iterator, UnaryOperation > 
-operator-( kifi::util::map_iterator< Iterator, UnaryOperation > const & it, typename kifi::util::map_iterator< Iterator, UnaryOperation >::difference_type n )
-{
-	return kifi::util::map_iterator< Iterator, UnaryOperation >( it.m_it - n, it.m_op );
-}
-
-template< class Iterator, class UnaryOperation >
-kifi::util::map_iterator< Iterator, UnaryOperation > 
-operator+( typename kifi::util::map_iterator< Iterator, UnaryOperation >::difference_type n, kifi::util::map_iterator< Iterator, UnaryOperation > const & it )
+kifi::util::transform_iterator< Iterator, UnaryOperation > 
+operator+( typename kifi::util::transform_iterator< Iterator, UnaryOperation >::difference_type n, kifi::util::transform_iterator< Iterator, UnaryOperation > const & it )
 {
 	return it + n;
-}
-
-template< class Iterator, class UnaryOperation >
-kifi::util::map_iterator< Iterator, UnaryOperation > 
-operator-( typename kifi::util::map_iterator< Iterator, UnaryOperation >::difference_type n, kifi::util::map_iterator< Iterator, UnaryOperation > const & it )
-{
-	return it - n;
 }
 
 #pragma endregion

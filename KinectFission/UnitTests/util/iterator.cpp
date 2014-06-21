@@ -30,8 +30,8 @@ BOOST_AUTO_TEST_CASE( partial_sum_exclusive )
 	int const a[] = { 1, 3, 3, 7, 0 };
 	int const * pa = a;
 	
-	auto first = util::make_map_iterator( a, delta( 5 ) );
-	auto last  = util::make_map_iterator( a + 5, delta( 5 ) );
+	auto first = util::make_transform_iterator( a, delta( 5 ) );
+	auto last  = util::make_transform_iterator( a + 5, delta( 5 ) );
 
 	BOOST_REQUIRE( 5 == std::distance( first, last ) );
 
