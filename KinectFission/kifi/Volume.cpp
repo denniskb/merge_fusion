@@ -25,11 +25,13 @@ Volume::Volume
 
 	assert( util::powerOf2( resolution ) );
 
-	m_tmpVoxelLen = SideLength() / Resolution();
-	m_tmpVoxelLenOver2PlusMin = m_tmpVoxelLen * 0.5f + Minimum().x;
+	float vlen = sideLength / resolution;
+	m_tmpVoxelLen = util::set( util::vec3( vlen ), 1.0f );
+	m_tmpVoxelLenOver2PlusMin = util::set( util::vec3( vlen * 0.5f + Minimum().x ), 0.0f );
 
-	m_tmpVoxelLenInv = 1.0f / m_tmpVoxelLen;
-	m_tmpNegVoxelLenInvTimesMin = m_tmpVoxelLenInv * -Minimum().x;
+	float vlenInv = 1.0f / vlen;
+	m_tmpVoxelLenInv = util::set( util::vec3( vlenInv ), 1.0f );
+	m_tmpNegVoxelLenInvTimesMin = m_tmpVoxelLenInv * util::set( util::vec3( -Minimum().x ), 0.0f );
 }
 
 

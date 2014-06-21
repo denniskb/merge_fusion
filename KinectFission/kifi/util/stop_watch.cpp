@@ -53,7 +53,8 @@ void stop_watch::print_times()
 		total += it->first;
 	}
 
-	std::printf( "total: %.2fms\n", total );
+	if( m_times.size() > 1 )
+		std::printf( "total: %.2fms\n", total );
 }
 
 }}} // namespace

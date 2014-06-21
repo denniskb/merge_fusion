@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE( Integrate )
 	i.Integrate( v, depth, eye, forward, viewProj, viewToWorld );
 
 	FILE * debug;
-	fopen_s( & debug, "C:/TEMP/volume_integrate.obj", "w" );
+	fopen_s( & debug, TMP_DIR "/volume_integrate.obj", "w" );
 
 	for( auto it = v.Data().keys_cbegin(), end = v.Data().keys_cend(); it != end; ++it )
 	{

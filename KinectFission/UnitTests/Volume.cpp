@@ -27,12 +27,15 @@ BOOST_AUTO_TEST_CASE( VoxelCenter_VoxelIndex )
 {
 	Volume v( 128, 2.0f, 0.02f );
 	
-	util::vec3 vc = v.VoxelCenter( 33, 21, 92 );
-	util::vec3 ci = v.VoxelIndex( vc );
+	util::float4 vc = v.VoxelCenter( util::set( 33, 21, 92, 1.0f ) );
+	util::float4 vi = v.VoxelIndex( vc );
 
-	BOOST_REQUIRE_CLOSE( 33.5f, ci.x, 0.1f );
-	BOOST_REQUIRE_CLOSE( 21.5f, ci.y, 0.1f );
-	BOOST_REQUIRE_CLOSE( 92.5f, ci.z, 0.1f );
+	float tmpvi[4];
+	util::storeu( tmpvi, vi );
+
+	BOOST_REQUIRE_CLOSE( 33.5f, tmpvi[0], 0.1f );
+	BOOST_REQUIRE_CLOSE( 21.5f, tmpvi[1], 0.1f );
+	BOOST_REQUIRE_CLOSE( 92.5f, tmpvi[2], 0.1f );
 }
 
 BOOST_AUTO_TEST_SUITE_END()

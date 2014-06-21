@@ -4,7 +4,11 @@
 #include <cstdint>
 #include <cstring>
 
-#include <xmmintrin.h>
+#ifdef KIFI_USE_FMA3
+#include <immintrin.h> // AVX (only used for 'fma')
+#endif
+
+#include <xmmintrin.h> // SSE1
 
 
 
@@ -133,8 +137,8 @@ T               clamp   ( T x, T a, T b );
 inline float    dot     ( vec3 u, vec3 v );
 template< typename T >
 T               lerp    ( T a, T b, T weightB );
-inline bool     powerOf2( unsigned x );
 inline uint32_t pack    ( uint32_t x, uint32_t y, uint32_t z );
+inline bool     powerOf2( unsigned x );
 inline void     unpack  ( uint32_t v, uint32_t & outX, uint32_t & outY, uint32_t & outZ );
 
 inline matrix4x3 invert_transform  ( matrix4x3 const & Rt );
@@ -144,21 +148,27 @@ inline vec3      transform_point   ( vec3 v, matrix4x3 const & m ); // w == 1, n
 inline vec3      transform_vector  ( vec3 v, matrix4x3 const & m ); // w == 0, no homogenization
 inline matrix    transpose         ( matrix const & m );
 
-inline int      all      ( float4 v );
-inline int      any      ( float4 v );
-inline int      none     ( float4 v );
-template< int index >
-inline float4   broadcast( float4 v );
-inline float4   load     ( float const * src );
-inline float4   loadu    ( float const * src );
-inline float4   set      ( float s );
-inline float4   set      ( float x, float y, float z, float w );
-inline float4   set      ( vec3 v, float w );
-inline float4x4 set      ( matrix m );
-inline float4x4 set      ( matrix4x3 m );
-inline void     store    ( float * dst, float4 src );
-inline void     storeu   ( float * dst, float4 src );
-inline float4   zero     ();
+inline int      all       ( float4 v );
+inline int      any       ( float4 v );
+template< int index >	  
+inline float4   broadcast ( float4 v );
+inline float4   dot       ( float4 u, float4 v );
+inline float4   fma       ( float4 u, float4 v, float4 w );
+inline float4   homogenize( float4 v );
+inline float4   load      ( float const * src );
+inline float4   loadu     ( float const * src );
+inline int      none      ( float4 v );
+inline float4   set       ( float s );
+inline float4   set       ( float x, float y, float z, float w );
+inline float4   set       ( vec3 v, float w );
+inline float4x4 set       ( matrix m );
+inline float4x4 set       ( matrix4x3 m );
+template< int a0, int a1, int b0, int b1 >
+inline float4   shuffle   ( float4 a, float4 b );
+inline void     store     ( float * dst, float4 src );
+inline float    storess   ( float4 src );
+inline void     storeu    ( float * dst, float4 src );
+inline float4   zero      ();
 
 #pragma endregion
 
@@ -609,14 +619,14 @@ T lerp( T a, T b, T weightB )
 	return a + (b-a) * weightB;
 }
 
-bool powerOf2( unsigned x )
-{
-	return x > 0 && ! (x & (x - 1));
-}
-
 uint32_t pack( uint32_t x, uint32_t y, uint32_t z )
 {
 	return z << 20 | y << 10 | x;
+}
+
+bool powerOf2( unsigned x )
+{
+	return x > 0 && ! (x & (x - 1));
 }
 
 void unpack( uint32_t v, uint32_t & outX, uint32_t & outY, uint32_t & outZ )
@@ -718,15 +728,38 @@ int any( float4 v )
 	return _mm_movemask_ps( v );
 }
 
-int none( float4 v )
-{
-	return ( 0 == _mm_movemask_ps( v ) );
-}
-
-template< int index >
+template< int i >
 float4 broadcast( float4 v )
 {
-	return _mm_shuffle_ps( v, v, _MM_SHUFFLE( index, index, index, index ) );
+	return shuffle< i, i, i, i >( v, v );
+}
+
+float4 dot( float4 u, float4 v )
+{
+	float4 tmp = u * v;
+
+	float4 rotl1 = shuffle< 1, 2, 3, 0 >( tmp, tmp );
+	float4 rotl2 = shuffle< 2, 3, 0, 1 >( tmp, tmp );
+	float4 rotl3 = shuffle< 3, 0, 1, 2 >( tmp, tmp );
+
+	tmp   += rotl1;
+	rotl2 += rotl3;
+
+	return tmp + rotl2;
+}
+
+float4 fma( float4 u, float4 v, float4 w )
+{
+#ifdef KIFI_USE_FMA3
+	return _mm_fmadd_ps( u, v, w );
+#else
+	return u * v + w;
+#endif
+}
+
+float4 homogenize( float4 v )
+{
+	return v / broadcast< 3 >( v );
 }
 
 float4 load( float const * src )
@@ -738,6 +771,12 @@ float4 loadu( float const * src )
 {
 	return _mm_loadu_ps( src );
 }
+
+int none( float4 v )
+{
+	return ( 0 == _mm_movemask_ps( v ) );
+}
+
 
 float4 set( float s )
 {
@@ -771,9 +810,22 @@ float4x4 set ( matrix4x3 m )
 	return set( matrix( m ) );
 }
 
+template< int a0, int a1, int b0, int b1 >
+float4 shuffle( float4 a, float4 b )
+{
+	return _mm_shuffle_ps( a, b, _MM_SHUFFLE( b1, b0, a1, a0 ) );
+}
+
 void store( float * dst, float4 src )
 {
 	_mm_store_ps( dst, src );
+}
+
+float storess( float4 src )
+{
+	float result;
+	_mm_store_ss( & result, src );
+	return result;
 }
 
 void storeu( float * dst, float4 src )

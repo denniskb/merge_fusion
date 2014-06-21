@@ -13,10 +13,10 @@ struct Voxel
 	float Distance() const { return m_d / m_w; }
 	float Weight() const { return m_w; }
 
-	void Update( float newDistance, float newWeight = 1.0f )
+	void Update( float newDistance )
 	{
-		m_d += newDistance * newWeight;
-		m_w += newWeight;
+		m_d += newDistance;
+		m_w ++;
 	}
 
 private:

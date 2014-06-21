@@ -22,18 +22,22 @@ public:
 	util::vec3 Minimum() const;
 	util::vec3 Maximum() const;
 
-	inline util::vec3 VoxelCenter( int x, int y, int z ) const;
-	inline util::vec3 VoxelIndex( util::vec3 world ) const;
+	inline util::float4 VoxelCenter( util::float4 index ) const;
+	// TODO: Deprecated!
+	inline util::vec3   VoxelCenter( int x, int y, int z ) const;
+	inline util::float4 VoxelIndex( util::float4 world ) const;
 
 	util::flat_map< unsigned, Voxel > & Data();
 	util::flat_map< unsigned, Voxel > const & Data() const;
 
-public:
-	float m_tmpVoxelLen;
-	float m_tmpVoxelLenOver2PlusMin;
+private:
+	// for VoxelCenter
+	util::float4 m_tmpVoxelLen;
+	util::float4 m_tmpVoxelLenOver2PlusMin;
 
-	float m_tmpVoxelLenInv;
-	float m_tmpNegVoxelLenInvTimesMin;
+	// for VoxelIndex
+	util::float4 m_tmpVoxelLenInv;
+	util::float4 m_tmpNegVoxelLenInvTimesMin;
 
 	int m_res;
 	float m_sideLen;
@@ -51,15 +55,24 @@ public:
 namespace kifi {
 
 // result.w is undefined!
-util::vec3 Volume::VoxelCenter( int x, int y, int z ) const
+util::float4 Volume::VoxelCenter( util::float4 index ) const
 {
-	return util::vec3( (float) x, (float) y, (float) z ) * m_tmpVoxelLen + m_tmpVoxelLenOver2PlusMin;
+	return util::fma( index, m_tmpVoxelLen, m_tmpVoxelLenOver2PlusMin );
 }
 
 // result.w is undefined!
-util::vec3 Volume::VoxelIndex( util::vec3 world ) const
+util::vec3 Volume::VoxelCenter( int x, int y, int z ) const
 {
-	return world * m_tmpVoxelLenInv + m_tmpNegVoxelLenInvTimesMin;
+	float tmp0 = SideLength() / Resolution();
+	float tmp1 = tmp0 * 0.5f + Minimum().x;
+
+	return util::vec3( (float) x, (float) y, (float) z ) * tmp0 + tmp1;
+}
+
+// result.w is undefined!
+util::float4 Volume::VoxelIndex( util::float4 world ) const
+{
+	return util::fma( world, m_tmpVoxelLenInv, m_tmpNegVoxelLenInvTimesMin );
 }
 
 } // namespace

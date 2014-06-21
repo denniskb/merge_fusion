@@ -36,7 +36,7 @@ static void mesh2obj( std::vector< vec3 > const & vertices, char const * outObjF
 
 int main()
 {
-	DepthStream depthStreamHouse( "C:/TEMP/house.depth" );
+	DepthStream depthStreamHouse( "I:/tmp/house.depth" );
 	vector2d< float > synthDepthFrame;
 	
 	vec3      eye;
@@ -75,7 +75,7 @@ int main()
 	}
 #endif
 
-	mesh2obj( vertices, "C:/TEMP/house.obj" );
+	mesh2obj( vertices, "I:/tmp/house.obj" );
 	
 	return 0;
 }

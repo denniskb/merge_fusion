@@ -61,7 +61,7 @@ BOOST_AUTO_TEST_CASE( Splat )
 	std::vector< util::vec3 > verts;
 	Splatter::Splat( v, verts );
 
-	mesh2obj( verts, "C:/TEMP/volume_splat.obj" );
+	mesh2obj( verts, TMP_DIR "/volume_splat.obj" );
 
 	BOOST_REQUIRE( true );
 }
