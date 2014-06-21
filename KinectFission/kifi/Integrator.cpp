@@ -62,11 +62,12 @@ void Integrator::Integrate
 			std::unique( m_tmpPointCloud.begin(), m_tmpPointCloud.begin() + nSplats ) 
 		)
 	);
-	sw.take_time( "unique" );
+	//sw.take_time( "unique" );
 
 	ExpandChunks( m_tmpPointCloud, m_tmpScratchPad );
 	sw.take_time( "expand" );
 	
+	//sw.restart();
 	volume.Data().insert(
 		m_tmpPointCloud.cbegin(), m_tmpPointCloud.cend(),
 		make_const_iterator( Voxel() )
@@ -114,6 +115,9 @@ size_t Integrator::DepthMap2PointCloud
 	size_t nSplats = 0;
 
 	for( size_t v = 0; v < frame.height(); v++ )
+	{
+		float4 point = set( 0.0f, - (float) v, -1.0f, 0.0f );
+
 		for( size_t u = 0; u < frame.width(); u += 4 )
 		{
 			float4 depths = loadu( & frame( u, v ) );
@@ -122,10 +126,10 @@ size_t Integrator::DepthMap2PointCloud
 			if( ! depthsValid )
 				continue;
 
-			float4 point0 = set( (float) (u + 0), - (float) v, -1.0f, 0.0f );
-			float4 point1 = set( (float) (u + 1), - (float) v, -1.0f, 0.0f );
-			float4 point2 = set( (float) (u + 2), - (float) v, -1.0f, 0.0f );
-			float4 point3 = set( (float) (u + 3), - (float) v, -1.0f, 0.0f );
+			float4 point0 = loadss( (float) (u + 0) ) + point; 
+			float4 point1 = loadss( (float) (u + 1) ) + point;
+			float4 point2 = loadss( (float) (u + 2) ) + point;
+			float4 point3 = loadss( (float) (u + 3) ) + point;
 
 			point0 = fma( point0, flInv, ppOverFl );
 			point1 = fma( point1, flInv, ppOverFl );
@@ -185,6 +189,7 @@ size_t Integrator::DepthMap2PointCloud
 				outPointCloud[ nSplats++ ] = pack( (uint32_t) tmp[0], (uint32_t) tmp[1], (uint32_t) tmp[2] );
 			}
 		}
+	}
 
 	return nSplats;
 }
@@ -233,21 +238,23 @@ void Integrator::ExpandChunksHelper
 
 	case 1:
 		{
-			tmpScratchPad.clear();
-			unsigned prev = inOutChunkIndices[ 0 ];
+			tmpScratchPad.resize( inOutChunkIndices.size() * 2 );
 
+			std::size_t dst = 0;
+			unsigned prev = inOutChunkIndices[ 0 ];
 			for( std::size_t i = 0; i < inOutChunkIndices.size(); ++i )
 			{
 				unsigned x = inOutChunkIndices[ i ];
 
-				if( x != prev )
-					tmpScratchPad.push_back( prev );
-				
-				tmpScratchPad.push_back( x );
+				tmpScratchPad[ dst ] = prev;
+				dst += ( x != prev );
+
+				tmpScratchPad[ dst++ ] = x;
 
 				prev = x + 1;
 			}
 
+			tmpScratchPad.resize( dst );
 			std::swap( tmpScratchPad, inOutChunkIndices );
 		}
 		break;

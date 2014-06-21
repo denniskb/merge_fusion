@@ -1,9 +1,5 @@
 #pragma once
 
-#include <cstddef>
-#include <iterator>
-#include <vector>
-
 
 
 namespace kifi {
@@ -53,6 +49,7 @@ OutputIterator1 set_union
 
 #pragma region Implementation
 
+#include <cstddef>
 #include <cstring>
 #include <utility>
 
@@ -125,7 +122,7 @@ void radix_sort
 			++it.first, ++it.second
 		)
 		{
-			size_t idst = cnt[ ( * it.first >> shift ) & 0xff ]++;
+			std::size_t idst = cnt[ ( * it.first >> shift ) & 0xff ]++;
 			  keys_tmp[ idst ] = * it.first;
 			values_tmp[ idst ] = * it.second;
 		}
@@ -157,26 +154,39 @@ OutputIterator1 set_union
 )
 {
 	while( keys_first1 != keys_last1 && keys_first2 != keys_last2 )
-	{
-		int le = ( * keys_first1 <= * keys_first2 );
-		int ge = ( * keys_first1 >= * keys_first2 );
+		if( * keys_first1 < * keys_first2 )
+		{
+			* keys_result++   = * keys_first1;
+			* values_result++ = * values_first1;
 
-		* keys_result++   = le ? * keys_first1   : * keys_first2;
-		* values_result++ = le ? * values_first1 : * values_first2;
+			++keys_first1;
+			++values_first1;
+		}
+		else if( * keys_first2 < * keys_first1 )
+		{
+			* keys_result++   = * keys_first2;
+			* values_result++ = * values_first2;
 
-		std::advance( keys_first1, le );
-		std::advance( keys_first2, ge );
+			++keys_first2;
+			++values_first2;
+		}
+		else
+		{
+			* keys_result++   = * keys_first1;
+			* values_result++ = * values_first1;
 
-		std::advance( values_first1, le );
-		std::advance( values_first2, ge );
-	}
+			++keys_first1;
+			++keys_first2;
+			++values_first1;
+			++values_first2;
+		}
 
 	while( keys_first1 != keys_last1 )
 	{
 		* keys_result++ = * keys_first1++;
 		* values_result++ = * values_first1++;
 	}
-
+	
 	while( keys_first2 != keys_last2 )
 	{
 		* keys_result++ = * keys_first2++;

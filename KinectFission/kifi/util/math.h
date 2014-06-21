@@ -157,6 +157,7 @@ inline float4   fma       ( float4 u, float4 v, float4 w );
 inline float4   homogenize( float4 v );
 inline float4   load      ( float const * src );
 inline float4   loadu     ( float const * src );
+inline float4   loadss    ( float src );
 inline int      none      ( float4 v );
 inline float4   set       ( float s );
 inline float4   set       ( float x, float y, float z, float w );
@@ -770,6 +771,11 @@ float4 load( float const * src )
 float4 loadu( float const * src )
 {
 	return _mm_loadu_ps( src );
+}
+
+float4 loadss( float src )
+{
+	return _mm_load_ss( & src );
 }
 
 int none( float4 v )
