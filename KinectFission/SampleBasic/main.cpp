@@ -48,32 +48,24 @@ int main()
 
 	Integrator integrator;
 
+	std::vector< vec3 > vertices;
+
 
 
 	depthStreamHouse.NextFrame( synthDepthFrame, view );
 	ComputeMatrices( view, eye, forward, viewProj, viewToWorld );
+	integrator.Integrate( volume, synthDepthFrame, eye, forward, viewProj, viewToWorld );
 	
 	for( int i = 0; i < 100; i++ ) 
 	{
 		//depthStreamHouse.NextFrame( synthDepthFrame, view );
 		//ComputeMatrices( view, eye, forward, viewProj, viewToWorld );
-
-		integrator.Integrate( volume, synthDepthFrame, eye, forward, viewProj, viewToWorld );
+		//integrator.Integrate( volume, synthDepthFrame, eye, forward, viewProj, viewToWorld );
+		Splatter::Splat( volume, vertices );
 	}
 
-	std::vector< vec3 > vertices;
-	
-#if 1
-	Splatter::Splat( volume, vertices );
-#else
-	for( auto it = volume.Data().keys_cbegin(), end = volume.Data().keys_cend(); it != end; ++it )
-	{
-		unsigned x, y, z;
-		unpack( * it, x, y, z );
-		
-		vertices.push_back( vec3( (float) x, (float) y, (float) z ) );
-	}
-#endif
+	//std::vector< vec3 > vertices;
+	//Splatter::Splat( volume, vertices );
 
 	mesh2obj( vertices, "I:/tmp/house.obj" );
 	

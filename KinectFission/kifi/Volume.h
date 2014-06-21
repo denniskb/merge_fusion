@@ -39,6 +39,10 @@ private:
 	util::float4 m_tmpVoxelLenInv;
 	util::float4 m_tmpNegVoxelLenInvTimesMin;
 
+	// TODO: deprecated
+	float m_tmpVoxelLenf;
+	float m_tmpVoxelLenOver2PlusMinf;
+
 	int m_res;
 	float m_sideLen;
 	float m_truncMargin;
@@ -54,22 +58,16 @@ private:
 
 namespace kifi {
 
-// result.w is undefined!
 util::float4 Volume::VoxelCenter( util::float4 index ) const
 {
 	return util::fma( index, m_tmpVoxelLen, m_tmpVoxelLenOver2PlusMin );
 }
 
-// result.w is undefined!
 util::vec3 Volume::VoxelCenter( int x, int y, int z ) const
 {
-	float tmp0 = SideLength() / Resolution();
-	float tmp1 = tmp0 * 0.5f + Minimum().x;
-
-	return util::vec3( (float) x, (float) y, (float) z ) * tmp0 + tmp1;
+	return util::vec3( (float) x, (float) y, (float) z ) * m_tmpVoxelLenf + m_tmpVoxelLenOver2PlusMinf;
 }
 
-// result.w is undefined!
 util::float4 Volume::VoxelIndex( util::float4 world ) const
 {
 	return util::fma( world, m_tmpVoxelLenInv, m_tmpNegVoxelLenInvTimesMin );
