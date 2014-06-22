@@ -15,7 +15,6 @@ void Splatter::Splat( Volume const & volume, std::vector< util::vec3 > & outVert
 {
 	assert( 1 == util::pack( 1, 0, 0 ) );
 
-	outVertices.reserve( 1 << 16 );
 	outVertices.clear();
 
 	util::chrono::stop_watch t;
@@ -24,41 +23,42 @@ void Splatter::Splat( Volume const & volume, std::vector< util::vec3 > & outVert
 	unsigned deltay = util::pack( 0, 1, 0 );
 	unsigned deltaz = util::pack( 0, 0, 1 );
 
-	util::flat_map< unsigned, Voxel >::const_key_iterator voxels[ 4 ];
-	std::fill( voxels, voxels + 4, volume.Data().keys_cbegin() );
+	auto const keysBegin = volume.Data().keys_cbegin();
+	auto const keysEnd   = volume.Data().keys_cend();
+	auto const keysLast      = keysEnd - 1;
+	auto const values    = volume.Data().values_cbegin();
 
-	auto last = volume.Data().keys_cend() - 1;
-	auto values = volume.Data().values_cbegin();
+	auto itSelf  = keysBegin;
+	auto itTop   = keysBegin;
+	auto itFront = keysBegin;
 
-	for( ; voxels[ 0 ] != volume.Data().keys_cend(); ++voxels[ 0 ] )
+	for( ; itSelf != keysEnd; ++itSelf )
 	{
-		Voxel self  = values[ std::distance( volume.Data().keys_cbegin(), voxels[ 0 ] ) ];
+		Voxel self  = values[ itSelf - keysBegin ];
 
-		if( 0 == self.Weight() )
+		if( 0.0f == self.Weight() )
 			continue;
 
-		voxels[ 1 ] = std::min( voxels[ 0 ] + 1, last );
+		while( * itTop < * itSelf + deltay && itTop < keysLast )
+			++itTop;
 
-		while( * voxels[ 2 ] < * voxels[ 0 ] + deltay && voxels[ 2 ] < last )
-			++voxels[ 2 ];
-
-		while( * voxels[ 3 ] < * voxels[ 0 ] + deltaz && voxels[ 3 ] < last )
-			++voxels[ 3 ];
+		while( * itFront < * itSelf + deltaz && itFront < keysLast )
+			++itFront;
 
 		Voxel right = 
-			( * voxels[ 1 ] == * voxels[ 0 ] + deltax ) ? 
-			values[ std::distance( volume.Data().keys_cbegin(), voxels[ 1 ] ) ] : Voxel();
+			( itSelf < keysLast && * (itSelf + 1) == * itSelf + deltax ) ? 
+			values[ itSelf - keysBegin + 1 ] : Voxel();
 
 		Voxel top = 
-			( * voxels[ 2 ] == * voxels[ 0 ] + deltay ) ? 
-			values[ std::distance( volume.Data().keys_cbegin(), voxels[ 2 ] ) ] : Voxel();
+			( * itTop == * itSelf + deltay ) ? 
+			values[ itTop - keysBegin ] : Voxel();
 
 		Voxel front = 
-			( * voxels[ 3 ] == * voxels[ 0 ] + deltaz ) ? 
-			values[ std::distance( volume.Data().keys_cbegin(), voxels[ 3 ] ) ] : Voxel();
+			( * itFront == * itSelf + deltaz ) ? 
+			values[ itFront - keysBegin ] : Voxel();
 
 		unsigned x, y, z;
-		util::unpack( * voxels[ 0 ], x, y, z );
+		util::unpack( * itSelf, x, y, z );
 
 		util::vec3 vert000 = volume.VoxelCenter( x, y, z ); 
 

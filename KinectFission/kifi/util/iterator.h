@@ -16,7 +16,7 @@ class const_iterator : public std::iterator< std::input_iterator_tag, T >
 {
 public:
 	// all
-	const_iterator( T const & value ) : m_value( value ) {}
+	const_iterator( T value ) : m_value( value ) {}
 
 	const_iterator & operator++() { return * this; }
 	const_iterator operator++( int ) { return * this; }
@@ -29,7 +29,7 @@ public:
 	T const * operator->() const { return & m_value; }
 
 private:
-	T const & m_value;
+	T m_value;
 };
 
 #pragma warning( pop )

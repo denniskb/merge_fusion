@@ -64,8 +64,7 @@ int main()
 		Splatter::Splat( volume, vertices );
 	}
 
-	//std::vector< vec3 > vertices;
-	//Splatter::Splat( volume, vertices );
+	Splatter::Splat( volume, vertices );
 
 	mesh2obj( vertices, "I:/tmp/house.obj" );
 	

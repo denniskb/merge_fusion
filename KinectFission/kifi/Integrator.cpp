@@ -4,6 +4,7 @@
 #include <vector>
 
 #include <kifi/util/algorithm.h>
+#include <kifi/util/functional.h>
 #include <kifi/util/math.h>
 #include <kifi/util/iterator.h>
 #include <kifi/util/vector2d.h>
@@ -14,17 +15,6 @@
 
 using namespace kifi;
 using namespace kifi::util;
-
-
-
-namespace {
-	struct add_delta
-	{
-		unsigned delta;
-		add_delta( unsigned n ) : delta( n ) {}
-		unsigned operator()( unsigned x ) const	{ return x + delta; }
-	};
-}
 
 
 
@@ -67,12 +57,12 @@ void Integrator::Integrate
 	ExpandChunks( m_tmpPointCloud, m_tmpScratchPad );
 	//sw.take_time( "expand" );
 	
-	//sw.restart();
+	sw.restart();
 	volume.Data().insert(
 		m_tmpPointCloud.cbegin(), m_tmpPointCloud.cend(),
 		make_const_iterator( Voxel() )
 	);
-	//sw.take_time( "merge" );
+	sw.take_time( "merge" );
 
 	//sw.restart();
 	UpdateVoxels( volume, frame, eye, forward, viewProjection );
@@ -227,7 +217,7 @@ void Integrator::ExpandChunksHelper
 			auto tmpNewEnd = std::set_union
 			(
 				inOutChunkIndices.cbegin(), inOutChunkIndices.cend(),
-				make_transform_iterator( inOutChunkIndices.cbegin(), add_delta( delta ) ), make_transform_iterator( inOutChunkIndices.cend(), add_delta( delta ) ),
+				make_transform_iterator( inOutChunkIndices.cbegin(), util::offset< unsigned >( delta ) ), make_transform_iterator( inOutChunkIndices.cend(), util::offset< unsigned >( delta ) ),
 				tmpScratchPad.data()
 			);
 
