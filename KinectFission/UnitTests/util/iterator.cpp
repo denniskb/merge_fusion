@@ -8,30 +8,31 @@ using namespace kifi;
 
 
 
-namespace {
-
-struct delta
-{
-	int n;
-
-	delta( int n ) : n( n ) {}
-	int operator()( int x ) const { return x + n; }
-};
-
-}
-
-
-
 BOOST_AUTO_TEST_SUITE( util_test )
 BOOST_AUTO_TEST_SUITE( iterator_test )
 
-BOOST_AUTO_TEST_CASE( partial_sum_exclusive )
+BOOST_AUTO_TEST_CASE( const_iterator )
+{
+	util::const_iterator< int > x( 5 );
+	util::const_iterator< int > y( 6 );
+
+	BOOST_REQUIRE( 5 == * x );
+	BOOST_REQUIRE( 6 == * y );
+
+	++x;
+	++y;
+
+	BOOST_REQUIRE( 5 == * x );
+	BOOST_REQUIRE( 6 == * y );
+}
+
+BOOST_AUTO_TEST_CASE( transform_iterator )
 {
 	int const a[] = { 1, 3, 3, 7, 0 };
 	int const * pa = a;
 	
-	auto first = util::make_transform_iterator( a, delta( 5 ) );
-	auto last  = util::make_transform_iterator( a + 5, delta( 5 ) );
+	auto first = util::make_transform_iterator( a, util::offset< int >( 5 ) );
+	auto last  = util::make_transform_iterator( a + 5, util::offset< int >( 5 ) );
 
 	BOOST_REQUIRE( 5 == std::distance( first, last ) );
 

@@ -22,5 +22,22 @@ BOOST_AUTO_TEST_CASE( id )
 	}
 }
 
+BOOST_AUTO_TEST_CASE( offset )
+{
+	{
+		util::offset< int > op( -3 );
+
+		BOOST_REQUIRE( -3 == op(  0 ) );
+		BOOST_REQUIRE(  7 == op( 10 ) );
+	}
+
+	{
+		util::offset< int > op( 5 );
+
+		BOOST_REQUIRE(  7 == op(  2 ) );
+		BOOST_REQUIRE( 15 == op( 10 ) );
+	}
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()

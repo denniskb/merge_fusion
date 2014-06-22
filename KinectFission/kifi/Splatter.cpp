@@ -17,7 +17,7 @@ void Splatter::Splat( Volume const & volume, std::vector< util::vec3 > & outVert
 
 	outVertices.clear();
 
-	util::chrono::stop_watch t;
+	//util::chrono::stop_watch t;
 
 	unsigned deltax = util::pack( 1, 0, 0 );
 	unsigned deltay = util::pack( 0, 1, 0 );
@@ -25,7 +25,7 @@ void Splatter::Splat( Volume const & volume, std::vector< util::vec3 > & outVert
 
 	auto const keysBegin = volume.Data().keys_cbegin();
 	auto const keysEnd   = volume.Data().keys_cend();
-	auto const keysLast      = keysEnd - 1;
+	auto const keysLast  = keysEnd - 1;
 	auto const values    = volume.Data().values_cbegin();
 
 	auto itSelf  = keysBegin;
@@ -93,8 +93,8 @@ void Splatter::Splat( Volume const & volume, std::vector< util::vec3 > & outVert
 		}
 	}
 
-	t.take_time( "tsplat" );
-	t.print_times();
+	//t.take_time( "tsplat" );
+	//t.print_times();
 }
 
 } // namespace

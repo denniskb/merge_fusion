@@ -39,7 +39,7 @@ void Integrator::Integrate
 	m_tmpPointCloud.resize ( frame.size() );
 	m_tmpScratchPad.reserve( frame.size() );
 
-	chrono::stop_watch sw;
+	//chrono::stop_watch sw;
 	size_t nSplats = DepthMap2PointCloud( volume, frame, viewToWorld, m_tmpPointCloud );
 	//sw.take_time( "tsplat" );
 
@@ -57,18 +57,18 @@ void Integrator::Integrate
 	ExpandChunks( m_tmpPointCloud, m_tmpScratchPad );
 	//sw.take_time( "expand" );
 	
-	sw.restart();
+	//sw.restart();
 	volume.Data().insert(
 		m_tmpPointCloud.cbegin(), m_tmpPointCloud.cend(),
 		make_const_iterator( Voxel() )
 	);
-	sw.take_time( "merge" );
+	///sw.take_time( "merge" );
 
 	//sw.restart();
 	UpdateVoxels( volume, frame, eye, forward, viewProjection );
-	sw.take_time( "tupdate" );
+	//sw.take_time( "tupdate" );
 	
-	sw.print_times();
+	//sw.print_times();
 }
 
 

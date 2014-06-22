@@ -56,7 +56,7 @@ int main()
 	ComputeMatrices( view, eye, forward, viewProj, viewToWorld );
 	integrator.Integrate( volume, synthDepthFrame, eye, forward, viewProj, viewToWorld );
 	
-	for( int i = 0; i < 100; i++ ) 
+	for( int i = 0; i < 1000; i++ ) 
 	{
 		//depthStreamHouse.NextFrame( synthDepthFrame, view );
 		//ComputeMatrices( view, eye, forward, viewProj, viewToWorld );
@@ -64,7 +64,7 @@ int main()
 		Splatter::Splat( volume, vertices );
 	}
 
-	Splatter::Splat( volume, vertices );
+	//Splatter::Splat( volume, vertices );
 
 	mesh2obj( vertices, "I:/tmp/house.obj" );
 	
