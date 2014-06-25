@@ -14,7 +14,6 @@
 #include <kifi/Voxel.h>
 
 using namespace kifi;
-using namespace kifi::util;
 
 
 
@@ -27,23 +26,23 @@ using namespace kifi::util;
 void Integrator::Integrate
 ( 
 	Volume & volume,
-	vector2d< float > const & frame,
+	util::vector2d< float > const & frame,
 
-	vec3 eye,
-	vec3 forward,
+	util::vec3 eye,
+	util::vec3 forward,
 
-	matrix const & viewProjection,
-	matrix4x3 const & viewToWorld
+	util::matrix const & viewProjection,
+	util::matrix4x3 const & viewToWorld
 )
 {
 	m_tmpPointCloud.resize ( frame.size() );
 	m_tmpScratchPad.reserve( frame.size() );
 
-	//chrono::stop_watch sw;
+	util::chrono::stop_watch sw;
 	size_t nSplats = DepthMap2PointCloud( volume, frame, viewToWorld, m_tmpPointCloud );
 	//sw.take_time( "tsplat" );
 
-	radix_sort( m_tmpPointCloud.data(), m_tmpPointCloud.data() + nSplats, m_tmpScratchPad.data() );
+	util::radix_sort( m_tmpPointCloud.data(), m_tmpPointCloud.data() + nSplats, m_tmpScratchPad.data() );
 	//sw.take_time( "tsort" );
 
 	m_tmpPointCloud.resize(
@@ -57,18 +56,18 @@ void Integrator::Integrate
 	ExpandChunks( m_tmpPointCloud, m_tmpScratchPad );
 	//sw.take_time( "expand" );
 	
-	//sw.restart();
+	sw.restart();
 	volume.Data().insert(
 		m_tmpPointCloud.cbegin(), m_tmpPointCloud.cend(),
-		make_const_iterator( Voxel() )
+		util::make_const_iterator( Voxel() )
 	);
-	///sw.take_time( "merge" );
+	sw.take_time( "merge" );
 
 	//sw.restart();
 	UpdateVoxels( volume, frame, eye, forward, viewProjection );
 	//sw.take_time( "tupdate" );
 	
-	//sw.print_times();
+	sw.print_times();
 }
 
 
@@ -77,12 +76,14 @@ void Integrator::Integrate
 size_t Integrator::DepthMap2PointCloud
 (
 	Volume const & volume,
-	vector2d< float > const & frame,
-	matrix4x3 const & viewToWorld,
+	util::vector2d< float > const & frame,
+	util::matrix4x3 const & viewToWorld,
 
 	std::vector< unsigned > & outPointCloud
 )
 {
+	using namespace util;
+
 	assert( 0 == frame.width() % 4 );
 	assert( volume.Resolution() > 1 );
 
@@ -191,9 +192,9 @@ void Integrator::ExpandChunks
 	std::vector< unsigned > & tmpScratchPad
 )
 {
-	ExpandChunksHelper( inOutChunkIndices, pack( 0, 0, 1 ), tmpScratchPad);
-	ExpandChunksHelper( inOutChunkIndices, pack( 0, 1, 0 ), tmpScratchPad);
-	ExpandChunksHelper( inOutChunkIndices, pack( 1, 0, 0 ), tmpScratchPad);
+	ExpandChunksHelper( inOutChunkIndices, util::pack( 0, 0, 1 ), tmpScratchPad);
+	ExpandChunksHelper( inOutChunkIndices, util::pack( 0, 1, 0 ), tmpScratchPad);
+	ExpandChunksHelper( inOutChunkIndices, util::pack( 1, 0, 0 ), tmpScratchPad);
 }
 
 // static
@@ -255,13 +256,15 @@ void Integrator::ExpandChunksHelper
 void Integrator::UpdateVoxels
 (
 	Volume & volume,
-	vector2d< float > const & frame,
+	util::vector2d< float > const & frame,
 
-	vec3 eye,
-	vec3 forward,
-	matrix const & viewProjection
+	util::vec3 eye,
+	util::vec3 forward,
+	util::matrix const & viewProjection
 )
 {
+	using namespace util;
+
 	float4 ndcToUV = set( frame.width() * 0.5f, frame.height() * 0.5f, 0.0f, 0.0f );
 
 	float4 frameSize = set( (float) frame.width(), (float) frame.height(), std::numeric_limits< float >::max(), std::numeric_limits< float >::max() );

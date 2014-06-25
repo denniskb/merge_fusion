@@ -3,6 +3,8 @@
 #include <cstddef>
 #include <iterator>
 
+#include <kifi/util/functional.h>
+
 
 
 namespace kifi {
@@ -92,7 +94,7 @@ private:
 	UnaryOperation m_op;
 };
 
-template< class Iterator, class UnaryOperation >
+template< class Iterator, class UnaryOperation  >
 transform_iterator< Iterator, UnaryOperation > make_transform_iterator( Iterator it, UnaryOperation op );
 
 }} // namespace
@@ -100,8 +102,6 @@ transform_iterator< Iterator, UnaryOperation > make_transform_iterator( Iterator
 
 
 #pragma region Implementation
-
-#include <kifi/util/functional.h>
 
 
 

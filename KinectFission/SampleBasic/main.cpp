@@ -56,7 +56,7 @@ int main()
 	ComputeMatrices( view, eye, forward, viewProj, viewToWorld );
 	integrator.Integrate( volume, synthDepthFrame, eye, forward, viewProj, viewToWorld );
 	
-	for( int i = 0; i < 1000; i++ ) 
+	for( int i = 0; i < 100; i++ ) 
 	{
 		//depthStreamHouse.NextFrame( synthDepthFrame, view );
 		//ComputeMatrices( view, eye, forward, viewProj, viewToWorld );

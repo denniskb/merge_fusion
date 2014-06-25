@@ -17,11 +17,11 @@ void Splatter::Splat( Volume const & volume, std::vector< util::vec3 > & outVert
 
 	outVertices.clear();
 
-	//util::chrono::stop_watch t;
+	util::chrono::stop_watch t;
 
-	unsigned deltax = util::pack( 1, 0, 0 );
-	unsigned deltay = util::pack( 0, 1, 0 );
-	unsigned deltaz = util::pack( 0, 0, 1 );
+	int deltax = util::pack( 1, 0, 0 );
+	int deltay = util::pack( 0, 1, 0 );
+	int deltaz = util::pack( 0, 0, 1 );
 
 	auto const keysBegin = volume.Data().keys_cbegin();
 	auto const keysEnd   = volume.Data().keys_cend();
@@ -39,14 +39,14 @@ void Splatter::Splat( Volume const & volume, std::vector< util::vec3 > & outVert
 		if( 0.0f == self.Weight() )
 			continue;
 
-		while( * itTop < * itSelf + deltay && itTop < keysLast )
+		while( * itTop < * itSelf + deltay && itTop != keysLast )
 			++itTop;
 
-		while( * itFront < * itSelf + deltaz && itFront < keysLast )
+		while( * itFront < * itSelf + deltaz && itFront != keysLast )
 			++itFront;
 
 		Voxel right = 
-			( itSelf < keysLast && * (itSelf + 1) == * itSelf + deltax ) ? 
+			( itSelf != keysLast && * (itSelf + 1) == * itSelf + deltax ) ?
 			values[ itSelf - keysBegin + 1 ] : Voxel();
 
 		Voxel top = 
@@ -59,7 +59,6 @@ void Splatter::Splat( Volume const & volume, std::vector< util::vec3 > & outVert
 
 		unsigned x, y, z;
 		util::unpack( * itSelf, x, y, z );
-
 		util::vec3 vert000 = volume.VoxelCenter( x, y, z ); 
 
 		float dself, dright, dtop, dfront;
@@ -93,8 +92,8 @@ void Splatter::Splat( Volume const & volume, std::vector< util::vec3 > & outVert
 		}
 	}
 
-	//t.take_time( "tsplat" );
-	//t.print_times();
+	t.take_time( "tsplat" );
+	t.print_times();
 }
 
 } // namespace
