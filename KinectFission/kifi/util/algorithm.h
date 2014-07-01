@@ -181,6 +181,7 @@ OutputIterator1 set_union
 			++values_first2;
 		}
 
+	// TODO: Replace while loops with std::copy calls
 	while( keys_first1 != keys_last1 )
 	{
 		* keys_result++ = * keys_first1++;

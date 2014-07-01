@@ -133,13 +133,13 @@ inline float4 & operator*=( float4 & v, float4x4 m );
 #pragma region Functions
 
 template< typename T >
-T               clamp   ( T x, T a, T b );
-inline float    dot     ( vec3 u, vec3 v );
+T                    clamp   ( T x, T a, T b );
+inline float         dot     ( vec3 u, vec3 v );
 template< typename T >
-T               lerp    ( T a, T b, T weightB );
-inline uint32_t pack    ( uint32_t x, uint32_t y, uint32_t z );
-inline bool     powerOf2( unsigned x );
-inline void     unpack  ( uint32_t v, uint32_t & outX, uint32_t & outY, uint32_t & outZ );
+T                    lerp    ( T a, T b, T weightB );
+inline std::uint32_t pack    ( std::uint32_t x, std::uint32_t y, std::uint32_t z );
+inline bool          powerOf2( unsigned x );
+inline void          unpack  ( std::uint32_t v, std::uint32_t & outX, std::uint32_t & outY, std::uint32_t & outZ );
 
 inline matrix4x3 invert_transform  ( matrix4x3 const & Rt );
 inline matrix    perspective_fov_rh( float fovYradians, float aspectWbyH, float nearZdistance, float farZdistance );
@@ -620,7 +620,7 @@ T lerp( T a, T b, T weightB )
 	return a + (b-a) * weightB;
 }
 
-uint32_t pack( uint32_t x, uint32_t y, uint32_t z )
+std::uint32_t pack( std::uint32_t x, std::uint32_t y, std::uint32_t z )
 {
 	return z << 20 | y << 10 | x;
 }
@@ -630,7 +630,7 @@ bool powerOf2( unsigned x )
 	return x > 0 && ! (x & (x - 1));
 }
 
-void unpack( uint32_t v, uint32_t & outX, uint32_t & outY, uint32_t & outZ )
+void unpack( std::uint32_t v, std::uint32_t & outX, std::uint32_t & outY, std::uint32_t & outZ )
 {
 	outX = v & 0x3ff;
 	outY = v >> 10 & 0x3ff;

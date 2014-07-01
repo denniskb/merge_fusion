@@ -1,4 +1,4 @@
-#include <cstdio>
+#include <fstream>
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/test/auto_unit_test.hpp>
@@ -41,8 +41,9 @@ BOOST_AUTO_TEST_CASE( Integrate )
 
 	i.Integrate( v, depth, eye, forward, viewProj, viewToWorld );
 
-	FILE * debug;
-	fopen_s( & debug, TMP_DIR "/volume_integrate.obj", "w" );
+	std::ofstream debug( TMP_DIR "/volume_integrate.obj" );
+	if( ! debug )
+		return;
 
 	for( auto it = v.Data().keys_cbegin(), end = v.Data().keys_cend(); it != end; ++it )
 	{
@@ -51,11 +52,9 @@ BOOST_AUTO_TEST_CASE( Integrate )
 		
 		util::vec3 pos = v.VoxelCenter( x, y, z );
 		
-		fprintf_s( debug, "v %f %f %f\n", pos.x, pos.y, pos.z );
+		debug << "v " << pos.x << " " << pos.y << " " << pos.z << "\n";
 	}
 	
-	fclose( debug );
-
 	BOOST_REQUIRE( true );
 }
 

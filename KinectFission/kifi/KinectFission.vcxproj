@@ -41,7 +41,12 @@
     <Import Project="..\property_sheets\release.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile />
     <Link />
@@ -49,6 +54,7 @@
       <AdditionalIncludeDirectories>$(ProjectDir)..;$(CUDA_PATH)\include;$(NVCUDASAMPLES_ROOT)\common\inc</AdditionalIncludeDirectories>
       <FloatingPointExceptions>true</FloatingPointExceptions>
       <AdditionalOptions>/D_SCL_SECURE_NO_WARNINGS %(AdditionalOptions)</AdditionalOptions>
+      <EnablePREfast>false</EnablePREfast>
     </ClCompile>
     <CudaCompile>
       <Include>$(ProjectDir)..;$(CUDA_PATH)\include;$(NVCUDASAMPLES_ROOT)\common\inc</Include>
@@ -69,6 +75,7 @@
       <UndefinePreprocessorDefinitions>
       </UndefinePreprocessorDefinitions>
       <FloatingPointModel>Fast</FloatingPointModel>
+      <EnablePREfast>false</EnablePREfast>
     </ClCompile>
     <CudaCompile>
       <Include>$(ProjectDir)..;$(CUDA_PATH)\include;$(NVCUDASAMPLES_ROOT)\common\inc</Include>

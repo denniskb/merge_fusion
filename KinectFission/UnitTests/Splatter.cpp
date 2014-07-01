@@ -18,22 +18,6 @@ using namespace kifi;
 
 
 
-static void mesh2obj( std::vector< util::vec3 > const & vertices, char const * outObjFileName )
-{
-	FILE * file;
-	fopen_s( & file, outObjFileName, "w" );
-
-	for( int i = 0; i < vertices.size(); i++ )
-	{
-		auto v = vertices[ i ];
-		fprintf_s( file, "v %f %f %f\n", v.x, v.y, v.z );
-	}
-	
-	fclose( file );
-}
-
-
-
 BOOST_AUTO_TEST_SUITE( SplatterTest )
 
 BOOST_AUTO_TEST_CASE( Splat )

@@ -39,7 +39,7 @@ void Integrator::Integrate
 	m_tmpScratchPad.reserve( frame.size() );
 
 	util::chrono::stop_watch sw;
-	size_t nSplats = DepthMap2PointCloud( volume, frame, viewToWorld, m_tmpPointCloud );
+	std::size_t nSplats = DepthMap2PointCloud( volume, frame, viewToWorld, m_tmpPointCloud );
 	//sw.take_time( "tsplat" );
 
 	util::radix_sort( m_tmpPointCloud.data(), m_tmpPointCloud.data() + nSplats, m_tmpScratchPad.data() );
@@ -73,7 +73,7 @@ void Integrator::Integrate
 
 
 // static 
-size_t Integrator::DepthMap2PointCloud
+std::size_t Integrator::DepthMap2PointCloud
 (
 	Volume const & volume,
 	util::vector2d< float > const & frame,
@@ -103,13 +103,13 @@ size_t Integrator::DepthMap2PointCloud
 	float4 mask0001 = set( 0.0f, 0.0f, 0.0f, 1.0f );
 	float4 half = set( 0.5f );
 
-	size_t nSplats = 0;
+	std::size_t nSplats = 0;
 
-	for( size_t v = 0; v < frame.height(); v++ )
+	for( std::size_t v = 0; v < frame.height(); v++ )
 	{
 		float4 point = set( 0.0f, - (float) v, -1.0f, 0.0f );
 
-		for( size_t u = 0; u < frame.width(); u += 4 )
+		for( std::size_t u = 0; u < frame.width(); u += 4 )
 		{
 			float4 depths = loadu( & frame( u, v ) );
 
@@ -156,28 +156,28 @@ size_t Integrator::DepthMap2PointCloud
 			{
 				float tmp[4];
 				storeu( tmp, point0 );
-				outPointCloud[ nSplats++ ] = pack( (uint32_t) tmp[0], (uint32_t) tmp[1], (uint32_t) tmp[2] );
+				outPointCloud[ nSplats++ ] = pack( (std::uint32_t) tmp[0], (std::uint32_t) tmp[1], (std::uint32_t) tmp[2] );
 			}
 
 			if( point1Valid )
 			{
 				float tmp[4];
 				storeu( tmp, point1 );
-				outPointCloud[ nSplats++ ] = pack( (uint32_t) tmp[0], (uint32_t) tmp[1], (uint32_t) tmp[2] );
+				outPointCloud[ nSplats++ ] = pack( (std::uint32_t) tmp[0], (std::uint32_t) tmp[1], (std::uint32_t) tmp[2] );
 			}
 
 			if( point2Valid )
 			{
 				float tmp[4];
 				storeu( tmp, point2 );
-				outPointCloud[ nSplats++ ] = pack( (uint32_t) tmp[0], (uint32_t) tmp[1], (uint32_t) tmp[2] );
+				outPointCloud[ nSplats++ ] = pack( (std::uint32_t) tmp[0], (std::uint32_t) tmp[1], (std::uint32_t) tmp[2] );
 			}
 
 			if( point3Valid )
 			{
 				float tmp[4];
 				storeu( tmp, point3 );
-				outPointCloud[ nSplats++ ] = pack( (uint32_t) tmp[0], (uint32_t) tmp[1], (uint32_t) tmp[2] );
+				outPointCloud[ nSplats++ ] = pack( (std::uint32_t) tmp[0], (std::uint32_t) tmp[1], (std::uint32_t) tmp[2] );
 			}
 		}
 	}
@@ -273,9 +273,9 @@ void Integrator::UpdateVoxels
 	float4 _forward = set( forward, 0.0f );
 	float4x4 _viewProjection = set( viewProjection );
 
-	for( size_t i = 0, end = volume.Data().size() / 4 * 4; i < end; i += 4 )
+	for( std::size_t i = 0, end = volume.Data().size() / 4 * 4; i < end; i += 4 )
 	{
-		uint32_t x, y, z;
+		std::uint32_t x, y, z;
 
 		unpack( volume.Data().keys_cbegin()[ i + 0 ], x, y, z );
 		float4 k0 = set( (float) x, (float) y, (float) z, 1.0f );

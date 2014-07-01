@@ -1,4 +1,4 @@
-#include <cstdio>
+#include <fstream>
 
 #include <boost/test/auto_unit_test.hpp>
 
@@ -19,21 +19,22 @@ BOOST_AUTO_TEST_CASE( fsize )
 	std::string const fileName = std::tmpnam( nullptr );
 	
 	{
-		std::FILE * file = nullptr;
-		if( ! fopen_s( & file, fileName.c_str(), "wb" ) && file )
+		std::ofstream file( fileName.c_str() );
+
+		if( file )
 		{
-			fclose( file );	
+			file.close();
 			BOOST_CHECK( 0 == util::fsize( fileName ) );
 		}
 	}
 	
 	{
-		std::FILE * file = nullptr;
-		if( ! fopen_s( & file, fileName.c_str(), "wb" ) && file )
+		std::ofstream file( fileName.c_str(), std::ofstream::binary );
+
+		if( file )
 		{
-			char data[1];
-			fwrite( & data, 1, 1, file );
-			fclose( file );
+			file.put( 1 );
+			file.close();
 	
 			BOOST_CHECK( 1 == util::fsize( fileName ) );
 		}

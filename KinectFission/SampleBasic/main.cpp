@@ -1,4 +1,3 @@
-#include <cstdio>
 #include <vector>
 
 #include <kifi/util/math.h>
@@ -15,22 +14,6 @@
 
 using namespace kifi;
 using namespace kifi::util;
-
-
-
-static void mesh2obj( std::vector< vec3 > const & vertices, char const * outObjFileName )
-{
-	FILE * file;
-	fopen_s( & file, outObjFileName, "w" );
-
-	for( int i = 0; i < vertices.size(); i++ )
-	{
-		auto v = vertices[ i ];
-		fprintf_s( file, "v %f %f %f\n", v.x, v.y, v.z );
-	}
-	
-	fclose( file );
-}
 
 
 
@@ -56,15 +39,15 @@ int main()
 	ComputeMatrices( view, eye, forward, viewProj, viewToWorld );
 	integrator.Integrate( volume, synthDepthFrame, eye, forward, viewProj, viewToWorld );
 	
-	for( int i = 0; i < 100; i++ ) 
+	for( int i = 0; i < 200; i++ ) 
 	{
-		//depthStreamHouse.NextFrame( synthDepthFrame, view );
-		//ComputeMatrices( view, eye, forward, viewProj, viewToWorld );
-		//integrator.Integrate( volume, synthDepthFrame, eye, forward, viewProj, viewToWorld );
-		Splatter::Splat( volume, vertices );
+		depthStreamHouse.NextFrame( synthDepthFrame, view );
+		ComputeMatrices( view, eye, forward, viewProj, viewToWorld );
+		integrator.Integrate( volume, synthDepthFrame, eye, forward, viewProj, viewToWorld );
+		//Splatter::Splat( volume, vertices );
 	}
 
-	//Splatter::Splat( volume, vertices );
+	Splatter::Splat( volume, vertices );
 
 	mesh2obj( vertices, "I:/tmp/house.obj" );
 	

@@ -1,5 +1,8 @@
 #pragma once
 
+#include <fstream>
+#include <vector>
+
 #include <kifi/util/math.h>
 
 
@@ -21,4 +24,20 @@ inline void ComputeMatrices
 	outEye = util::transform_point( util::vec3( 0.0f, 0.0f, 0.0f ), outViewToWorld );
 	outForward = util::transform_vector( util::vec3( 0.0f, 0.0f, -1.0f ), outViewToWorld );
 	outViewProj = util::matrix( view ) * util::perspective_fov_rh( 0.778633444f, 4.0f / 3.0f, 0.8f, 4.0f );
+}
+
+
+
+inline void mesh2obj( std::vector< kifi::util::vec3 > const & vertices, char const * outObjFileName )
+{
+	std::ofstream file( outObjFileName );
+
+	if( ! file )
+		return;
+
+	for( int i = 0; i < vertices.size(); i++ )
+	{
+		auto v = vertices[ i ];
+		file << "v " << v.x << " " << v.y << " " << v.z << "\n";
+	}
 }

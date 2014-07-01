@@ -82,7 +82,7 @@ bool DepthStream::NextFrame
 			m_file.read( reinterpret_cast< char * >( m_bufferedDepth.data() ), m_bufferedDepth.size() * 2 );
 			unsigned * in = reinterpret_cast< unsigned * >( m_bufferedDepth.data() );
 
-			for( size_t i = 0, size = m_bufferedDepth.size() / 2; i < size; ++i )
+			for( std::size_t i = 0, size = m_bufferedDepth.size() / 2; i < size; ++i )
 			{
 				// little endian
 				outFrame[ 2 * i ] = ( in[ i ] & 0xffff ) * 0.001f;

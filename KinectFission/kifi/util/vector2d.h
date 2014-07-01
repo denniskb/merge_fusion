@@ -17,22 +17,22 @@ public:
 
 	vector2d
 	( 
-		size_t width, size_t height,
+		std::size_t width, std::size_t height,
 		T const & val = T(),
 		Alloc const & allocator = Alloc() 
 	);
 
-	size_t width() const;
-	size_t height() const;
+	std::size_t width() const;
+	std::size_t height() const;
 	
-	T & operator()( size_t x, size_t y );
-	T const & operator()( size_t x, size_t y ) const;
+	T & operator()( std::size_t x, std::size_t y );
+	T const & operator()( std::size_t x, std::size_t y ) const;
 
-	void resize( size_t width, size_t height, T const & val = T() );
+	void resize( std::size_t width, std::size_t height, T const & val = T() );
 
 private:
-	size_t m_width;
-	size_t m_height;
+	std::size_t m_width;
+	std::size_t m_height;
 };
 
 }}
@@ -59,7 +59,7 @@ vector2d< T, Alloc >::vector2d( Alloc const & allocator ) :
 template< typename T, class Alloc >
 vector2d< T, Alloc >::vector2d
 (
-	size_t width, size_t height,
+	std::size_t width, std::size_t height,
 	T const & val, 
 	Alloc const & allocator 
 ) :
@@ -72,13 +72,13 @@ vector2d< T, Alloc >::vector2d
 
 
 template< typename T, class Alloc >
-size_t vector2d< T, Alloc >::width() const
+std::size_t vector2d< T, Alloc >::width() const
 {
 	return m_width;
 }
 
 template< typename T, class Alloc >
-size_t vector2d< T, Alloc >::height() const
+std::size_t vector2d< T, Alloc >::height() const
 {
 	return m_height;
 }
@@ -86,7 +86,7 @@ size_t vector2d< T, Alloc >::height() const
 
 
 template< typename T, class Alloc >
-T & vector2d< T, Alloc >::operator()( size_t x, size_t y )
+T & vector2d< T, Alloc >::operator()( std::size_t x, std::size_t y )
 {
 	assert( x < width() );
 	assert( y < height() );
@@ -95,7 +95,7 @@ T & vector2d< T, Alloc >::operator()( size_t x, size_t y )
 }
 
 template< typename T, class Alloc >
-T const & vector2d< T, Alloc >::operator()( size_t x, size_t y ) const
+T const & vector2d< T, Alloc >::operator()( std::size_t x, std::size_t y ) const
 {
 	assert( x < width() );
 	assert( y < height() );
@@ -106,7 +106,7 @@ T const & vector2d< T, Alloc >::operator()( size_t x, size_t y ) const
 
 
 template< typename T, class Alloc >
-void vector2d< T, Alloc >::resize( size_t width, size_t height, T const & val )
+void vector2d< T, Alloc >::resize( std::size_t width, std::size_t height, T const & val )
 {
 	m_width = width;
 	m_height = height;

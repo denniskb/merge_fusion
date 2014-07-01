@@ -1,4 +1,4 @@
-#include <cstdio>
+#include <fstream>
 #include <vector>
 
 #include <boost/test/auto_unit_test.hpp>
@@ -14,28 +14,27 @@ using namespace kifi;
 
 static void WriteHeader
 ( 
-	FILE * to,
-	int version,
-	int frameWidth, int frameHeight,
-	int texelType,
-	int nFrames
+	std::ofstream & to,
+	std::int32_t version,
+	std::int32_t frameWidth, std::int32_t frameHeight,
+	std::int32_t texelType,
+	std::int32_t nFrames
 )
 {
 	if( version != 1 && version != 2 )
 		BOOST_CHECK( false );
 
-	static char const * header = "svc raw depth\n";
-	fwrite( header, 1, 15, to );
-	fwrite( & version, 4, 1, to );
+	to.write( "svc raw depth\n", 15 );
+	to.write( reinterpret_cast< char * >( & version ), 4 );
 
 	if( 2 == version )
 	{
-		fwrite( & frameWidth, 4, 1, to );
-		fwrite( & frameHeight, 4, 1, to );
-		fwrite( & texelType, 4, 1, to );
+		to.write( reinterpret_cast< char * >( & frameWidth  ), 4 );
+		to.write( reinterpret_cast< char * >( & frameHeight ), 4 );
+		to.write( reinterpret_cast< char * >( & texelType   ), 4 );
 	}
 
-	fwrite( & nFrames, 4, 1, to );
+	to.write( reinterpret_cast< char * >( & nFrames ), 4 );
 }
 
 
@@ -50,17 +49,14 @@ BOOST_AUTO_TEST_CASE( NextFrame_v1 )
 	float viewMatrix[ 16 ] = { 0.0f };
 	viewMatrix[ 2 + 1 * 4 ] = 0.271f;
 
-	std::vector< short > depthData( FRAME_RES );
+	std::vector< std::int16_t > depthData( FRAME_RES );
 	depthData[ 71 + 103 * 640 ] = 57;
 
-	FILE * file;
-	fopen_s( & file, fileName, "wb" );
-
+	std::ofstream file( fileName, std::ofstream::binary );
 	WriteHeader( file, 1, -1, -1, -1, 1 );
-	fwrite( viewMatrix, sizeof( viewMatrix ), 1, file );
-	fwrite( & depthData[ 0 ], 2, FRAME_RES, file );
-
-	fclose( file );
+	file.write( reinterpret_cast< char * >( & viewMatrix ), sizeof( viewMatrix ) );
+	file.write( reinterpret_cast< char * >( depthData.data() ), 2 * depthData.size() );
+	file.close();
 
 	util::matrix4x3 view;
 	util::vector2d< float > depth;
@@ -89,17 +85,14 @@ BOOST_AUTO_TEST_CASE( NextFrame_v2_short )
 	float viewMatrix[ 16 ] = { 0.0f };
 	viewMatrix[ 2 + 1 * 4 ] = 0.271f;
 
-	std::vector< short > depthData( FRAME_RES );
+	std::vector< std::int16_t > depthData( FRAME_RES );
 	depthData[ 71 + 103 * 640 ] = 57;
 
-	FILE * file;
-	fopen_s( & file, fileName, "wb" );
-
+	std::ofstream file( fileName, std::ofstream::binary );
 	WriteHeader( file, 2, 640, 480, 0, 1 );
-	fwrite( viewMatrix, sizeof( viewMatrix ), 1, file );
-	fwrite( & depthData[ 0 ], 2, FRAME_RES, file );
-
-	fclose( file );
+	file.write( reinterpret_cast< char * >( & viewMatrix ), sizeof( viewMatrix ) );
+	file.write( reinterpret_cast< char * >( depthData.data() ), 2 * depthData.size() );
+	file.close();
 
 	util::matrix4x3 view;
 	util::vector2d< float > depth;
@@ -131,14 +124,11 @@ BOOST_AUTO_TEST_CASE( NextFrame_v2_float )
 	std::vector< float > depthData( FRAME_RES );
 	depthData[ 71 + 103 * 640 ] = 0.057f;
 
-	FILE * file;
-	fopen_s( & file, fileName, "wb" );
-
+	std::ofstream file( fileName, std::ofstream::binary );
 	WriteHeader( file, 2, 640, 480, 1, 1 );
-	fwrite( viewMatrix, sizeof( viewMatrix ), 1, file );
-	fwrite( & depthData[ 0 ], 2, FRAME_RES, file );
-
-	fclose( file );
+	file.write( reinterpret_cast< char * >( & viewMatrix ), sizeof( viewMatrix ) );
+	file.write( reinterpret_cast< char * >( depthData.data() ), 4 * depthData.size() );
+	file.close();
 
 	util::matrix4x3 view;
 	util::vector2d< float > depth;

@@ -63,7 +63,6 @@
     <Link>
       <AdditionalDependencies>cudart.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(CUDA_PATH)\lib\x64</AdditionalLibraryDirectories>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

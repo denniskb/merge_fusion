@@ -187,7 +187,7 @@ void flat_map< Key, T >::insert
 		m_tmpValues.begin()
 	);
 
-	size_t actualNewSize = std::distance( m_tmpKeys.begin(), end );
+	std::size_t actualNewSize = std::distance( m_tmpKeys.begin(), end );
 
 	m_tmpKeys.  resize( actualNewSize );
 	m_tmpValues.resize( actualNewSize );
@@ -197,7 +197,7 @@ void flat_map< Key, T >::insert
 }
 
 template< typename Key, typename T >
-size_t flat_map< Key, T >::size() const
+std::size_t flat_map< Key, T >::size() const
 {
 	return m_keys.size();
 }
