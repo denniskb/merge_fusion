@@ -1,6 +1,6 @@
 #pragma once
 
-#include <kifi/util/math.h>
+#include <cassert>
 
 
 
@@ -8,20 +8,54 @@ namespace kifi {
 
 struct Voxel
 {
-	Voxel() : m_d( 0.0f ), m_w( 0 ) {}
+	inline Voxel();
 
-	float Distance() const { return m_d / m_w; }
-	float Weight() const { return m_w; }
+	inline float Distance() const;
+	inline float Weight() const;
 
-	void Update( float newDistance )
-	{
-		m_d += newDistance;
-		m_w ++;
-	}
+	inline void Update( float newDistance );
 
 private:
-	float m_d;
-	float m_w;
+	float m_distance;
+	float m_weight;
 };
 
 } // namespace
+
+
+
+#pragma region Implementation
+
+namespace kifi {
+
+Voxel::Voxel() :
+	m_distance( 0.0f ),
+	m_weight( 0.0f )
+{
+}
+
+
+
+float Voxel::Distance() const
+{
+	assert( m_weight > 0.0f );
+
+	return m_distance / m_weight;
+}
+
+float Voxel::Weight() const
+{
+	return m_weight;
+}
+
+
+
+void Voxel::Update( float distance )
+{
+	m_distance += distance;
+	m_weight++;
+}
+
+} // namespace
+
+#pragma endregion
