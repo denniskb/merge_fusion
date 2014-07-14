@@ -1,0 +1,10 @@
+*.cachefile
+*.suo
+*.user
+desktop.ini
+
+
+/icp/icp/bin
+/icp/icp/obj
+/icp/icpContent/bin
+/icp/icpContent/obj
