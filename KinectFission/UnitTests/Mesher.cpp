@@ -1,7 +1,9 @@
+#include <vector>
+
 #include <boost/filesystem/operations.hpp>
 #include <boost/test/auto_unit_test.hpp>
 
-#include <kifi/util/DirectXMathExt.h>
+#include <kifi/util/math.h>
 #include <kifi/util/vector2d.h>
 
 #include <kifi/DepthStream.h>
@@ -17,33 +19,37 @@ using namespace kifi;
 
 BOOST_AUTO_TEST_SUITE( MesherTest )
 
-BOOST_AUTO_TEST_CASE( Triangulate )
+BOOST_AUTO_TEST_CASE( Mesh )
 {
 	/*
-	Quick visual test to verify triangulation works correctly:
+	Quick visual test to verify integration works correctly:
 	One depth frame is integrated (generated with poly2depth) and then
-	the volume is triangulated using mc and stored as an .obj
+	the volume is splatted and stored vertices as an .obj
 	*/
+	Volume v( 256, 2.0f, 0.02f );
 	Integrator i;
 	Mesher m;
-
-	Volume v( 256, 2.0f, 0.02f );
 
 	DepthStream ds( ( boost::filesystem::current_path() / "../content/imrod_v2.depth" ).string().c_str() );
 
 	util::vector2d< float > depth;
-	util::float4x4 view, viewProj, viewToWorld;
-	util::float4 eye, forward;
+	util::matrix4x3 view, viewToWorld;
+	util::matrix viewProj;
+	util::vec3 eye, forward;
 
 	ds.NextFrame( depth, view );
 	ComputeMatrices( view, eye, forward, viewProj, viewToWorld );
 
 	i.Integrate( v, depth, eye, forward, viewProj, viewToWorld );
 
-	std::vector< util::float4 > VB;
-	std::vector< unsigned > IB;
-	m.Triangulate( v, VB, IB );
-	Mesher::Mesh2Obj( VB, IB, "C:/TEMP/volume_triangulate.obj" );
+	std::vector< util::vec3 > verts;
+	std::vector< std::uint32_t > indices;
+	
+	m.Mesh( v, verts );
+	Mesher::Mesh2Obj( verts, indices, TMP_DIR "/volume_splat.obj" );
+
+	m.Mesh( v, verts, indices );
+	Mesher::Mesh2Obj( verts, indices, TMP_DIR "/volume_mesh.obj" );
 
 	BOOST_REQUIRE( true );
 }

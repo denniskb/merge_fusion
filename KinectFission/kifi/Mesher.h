@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <vector>
 
 #include <kifi/util/math.h>
@@ -13,48 +14,27 @@ class Volume;
 class Mesher
 {
 public:
-	// Marching cubes ported from http://paulbourke.net/geometry/polygonise/
-	void Triangulate
-	(
-		Volume const & volume,
-
-		std::vector< util::tmpfloat4 > & outVertices,
-		std::vector< unsigned > & outIndices
-	);
+	void Mesh( Volume const & volume, std::vector< util::vec3 > & outVertices );
+	void Mesh( Volume const & volume, std::vector< util::vec3 > & outVertices, std::vector< std::uint32_t > & outIndices );
 
 	static void Mesh2Obj
 	(
-		std::vector< util::tmpfloat4 > const & vertices,
+		std::vector< util::vec3 > const & vertices,
 		std::vector< unsigned > const & indices,
 
 		char const * outObjFileName
 	);
 
-	static int const * TriOffsets();
-	static util::uint4 const * TriTable();
-
 private:
-	std::vector< unsigned > m_vertexIDs;
-	std::vector< unsigned > m_indexIDs;
-	std::vector< char > m_scratchPad;
+	std::vector< std::uint32_t > m_vertexIDs;
+	std::vector< std::uint32_t > m_indexIDs;
+	std::vector< std::uint32_t > m_tmpScratchPad;
 
-	static void Generate
-	(
-		Volume const & volume,
+	template< bool GenerateTriangles >
+	void Generate( Volume const & volume, std::vector< util::vec3 > & outVertices );
 
-		std::vector< util::tmpfloat4 > & outVertices,
-		std::vector< unsigned > & outVertexIDs,
-		std::vector< unsigned > & outIndices
-	);
-
-	static void VertexIDsToIndices
-	(
-		std::vector< unsigned > const & vertexIDs,
-
-		std::vector< unsigned > & inOutIndices,
-		std::vector< unsigned > & tmpIndexIDs,
-		std::vector< char > & tmpScratchPad
-	);
+	static std::uint32_t const * TriOffsets();
+	static util::uint4 const * TriTable();
 };
 
 } // namespace

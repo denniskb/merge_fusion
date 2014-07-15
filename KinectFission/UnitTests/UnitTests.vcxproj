@@ -73,7 +73,7 @@
     <ClCompile Include="DepthStream.cpp" />
     <ClCompile Include="Integrator.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Splatter.cpp" />
+    <ClCompile Include="Mesher.cpp" />
     <ClCompile Include="util\algorithm.cpp" />
     <ClCompile Include="util\barrier.cpp" />
     <ClCompile Include="util\chrono.cpp" />

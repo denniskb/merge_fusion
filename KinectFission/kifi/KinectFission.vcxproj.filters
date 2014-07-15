@@ -15,14 +15,13 @@
     <ClInclude Include="util\windows_nominmax_strict_lean.h" />
     <ClInclude Include="DepthStream.h" />
     <ClInclude Include="Integrator.h" />
-    <ClInclude Include="Mesher.h" />
-    <ClInclude Include="Splatter.h" />
     <ClInclude Include="Volume.h" />
     <ClInclude Include="Voxel.h" />
     <ClInclude Include="util\numeric.h" />
     <ClInclude Include="util\iterator.h" />
     <ClInclude Include="util\functional.h" />
     <ClInclude Include="util\math.h" />
+    <ClInclude Include="Mesher.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="util\barrier.cpp" />
@@ -33,6 +32,6 @@
     <ClCompile Include="Integrator.cpp" />
     <ClCompile Include="util\windows_high_resolution_clock.cpp" />
     <ClCompile Include="Volume.cpp" />
-    <ClCompile Include="Splatter.cpp" />
+    <ClCompile Include="Mesher.cpp" />
   </ItemGroup>
 </Project>

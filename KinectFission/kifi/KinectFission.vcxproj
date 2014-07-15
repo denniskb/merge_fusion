@@ -91,7 +91,6 @@
     <ClInclude Include="DepthStream.h" />
     <ClInclude Include="Integrator.h" />
     <ClInclude Include="Mesher.h" />
-    <ClInclude Include="Splatter.h" />
     <ClInclude Include="util\algorithm.h" />
     <ClInclude Include="util\barrier.h" />
     <ClInclude Include="util\chrono.h" />
@@ -114,7 +113,7 @@
   <ItemGroup>
     <ClCompile Include="DepthStream.cpp" />
     <ClCompile Include="Integrator.cpp" />
-    <ClCompile Include="Splatter.cpp" />
+    <ClCompile Include="Mesher.cpp" />
     <ClCompile Include="util\barrier.cpp" />
     <ClCompile Include="util\fstream.cpp" />
     <ClCompile Include="util\semaphore.cpp" />

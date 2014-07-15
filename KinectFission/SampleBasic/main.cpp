@@ -7,7 +7,6 @@
 #include <kifi/DepthStream.h>
 #include <kifi/Integrator.h>
 #include <kifi/Mesher.h>
-#include <kifi/Splatter.h>
 #include <kifi/Volume.h>
 
 #include <UnitTests/helper_test.h>
@@ -30,26 +29,26 @@ int main()
 	Volume volume( 512, 4.0f, 0.02f );
 
 	Integrator integrator;
+	Mesher     mesher;
 
 	std::vector< vec3 > vertices;
-
-
+	std::vector< unsigned > indices;
 
 	depthStreamHouse.NextFrame( synthDepthFrame, view );
 	ComputeMatrices( view, eye, forward, viewProj, viewToWorld );
 	integrator.Integrate( volume, synthDepthFrame, eye, forward, viewProj, viewToWorld );
 	
-	for( int i = 0; i < 200; i++ ) 
+	for( int i = 0; i < 100; i++ ) 
 	{
 		depthStreamHouse.NextFrame( synthDepthFrame, view );
 		ComputeMatrices( view, eye, forward, viewProj, viewToWorld );
 		integrator.Integrate( volume, synthDepthFrame, eye, forward, viewProj, viewToWorld );
-		//Splatter::Splat( volume, vertices );
+		//mesher.Mesh( volume, vertices, indices );
 	}
 
-	Splatter::Splat( volume, vertices );
+	mesher.Mesh( volume, vertices );
+	//mesher.Mesh( volume, vertices, indices );
+	Mesher::Mesh2Obj( vertices, indices, "I:/tmp/house.obj" );
 
-	mesh2obj( vertices, "I:/tmp/house.obj" );
-	
 	return 0;
 }

@@ -1,40 +1,48 @@
-#include <kifi/util/algorithm.h>
-#include <kifi/util/array3d.h>
-#include <kifi/util/DirectXMathExt.h>
+#include <cassert>
+#include <cstddef>
+#include <cstdint>
+
+#include <kifi/util/math.h>
 #include <kifi/util/stop_watch.h>
 
 #include <kifi/Mesher.h>
 #include <kifi/Volume.h>
-#include <kifi/Voxel.h>
 
 
 
 namespace kifi {
 
-void Mesher::Triangulate
-(
-	Volume const & volume,
-
-	std::vector< util::float4 > & outVertices,
-	std::vector< unsigned > & outIndices
-)
+void Mesher::Mesh( Volume const & volume, std::vector< util::vec3 > & outVertices )
 {
-	outVertices.reserve( 1 << 16 );
-	m_vertexIDs.reserve( 1 << 16 );
-	outIndices.reserve( 1 << 18 );
+	Generate< false >( volume, outVertices );
+}
 
-	util::chrono::stop_watch t;
+void Mesher::Mesh( Volume const & volume, std::vector< util::vec3 > & outVertices, std::vector< std::uint32_t > & outIndices )
+{
+	// TODO: Cleanup
+
+	Generate< true >( volume, outVertices );
 	
-	Generate( volume, outVertices, m_vertexIDs, outIndices );	
-	t.take_time( "tgen" );
-
-	util::radix_sort( m_vertexIDs.begin(), m_vertexIDs.end(), outVertices.begin(), m_scratchPad );
-	t.take_time( "tsort" );
+	m_tmpScratchPad.resize( 4 * m_vertexIDs.size() );
+	util::radix_sort( m_vertexIDs.data(), m_vertexIDs.data() + m_vertexIDs.size(), outVertices.data(), m_tmpScratchPad.data() );
 	
-	VertexIDsToIndices( m_vertexIDs, outIndices, m_indexIDs, m_scratchPad );
-	t.take_time( "tidx" );
+	outIndices.resize( m_indexIDs.size() );
+	for( std::uint32_t i = 0; i < m_indexIDs.size(); ++i )
+		outIndices[ i ] = i;
 
-	//t.print();
+	m_tmpScratchPad.resize( 2 * m_indexIDs.size() );
+	util::radix_sort( m_indexIDs.data(), m_indexIDs.data() + m_indexIDs.size(), outIndices.data(), m_tmpScratchPad.data() );
+
+	std::uint32_t j = 0;
+	for( std::uint32_t i = 0; i < m_vertexIDs.size(); ++i )
+		while( j < m_indexIDs.size() && m_indexIDs[ j ] == m_vertexIDs[ i ] )
+			m_indexIDs[ j++ ] = i;
+
+	m_tmpScratchPad.resize( m_indexIDs.size() );
+	for( int i = 0; i < m_indexIDs.size(); i++ )
+		m_tmpScratchPad[ outIndices[ i ] ] = m_indexIDs[ i ];
+
+	outIndices.swap( m_tmpScratchPad );
 }
 
 
@@ -42,7 +50,7 @@ void Mesher::Triangulate
 // static 
 void Mesher::Mesh2Obj
 (
-	std::vector< util::float4 > const & vertices,
+	std::vector< util::vec3 > const & vertices,
 	std::vector< unsigned > const & indices,
 
 	char const * outObjFileName
@@ -72,10 +80,208 @@ void Mesher::Mesh2Obj
 
 
 
-// static
-int const * Mesher::TriOffsets()
+#pragma warning( push )
+#pragma warning( disable : 4127 ) // conditional expression is constant
+
+template< bool GenerateTriangles >
+void Mesher::Generate( Volume const & volume, std::vector< util::vec3 > & outVertices )
 {
-	static int const triCounts[] = {
+	assert( 1 == util::pack( 1, 0, 0 ) );
+
+	outVertices.clear();
+	m_vertexIDs.clear();
+	m_indexIDs.clear();
+
+	util::chrono::stop_watch t;
+
+	auto const keys           = volume.Data().keys_cbegin();
+	auto const values         = volume.Data().values_cbegin();
+	std::size_t nKeys         = volume.Data().size();
+	std::size_t maxVoxelIndex = nKeys - 1;
+
+	// voxel indices
+	int iTop = 0;
+	int iFront = 0;
+	int iFrontTop = 0;
+
+	Voxel voxels[ 8 ];
+
+	int deltas[] = {
+		util::pack( 0, 0, 0 ), // self
+		util::pack( 1, 0, 0 ), // right
+		util::pack( 0, 1, 0 ), // top
+		util::pack( 1, 1, 0 ), // top-right
+
+		util::pack( 0, 0, 1 ), // front
+		util::pack( 1, 0, 1 ), // front-right
+		util::pack( 0, 1, 1 ), // front-top
+		util::pack( 1, 1, 1 )  // front-top-right
+	};
+
+	for( std::size_t i = 0; i < nKeys; ++i )
+	{
+		if( 0.0f == values[ i ].Weight() )
+			continue;
+
+		while( keys[ iTop ] < keys[ i ] + deltas[ 2 ] && iTop < maxVoxelIndex )
+			++iTop;
+
+		while( keys[ iFront ] < keys[ i ] + deltas[ 4 ] && iFront < maxVoxelIndex )
+			++iFront;
+
+		voxels[ 0 ] = values[ i ];
+		voxels[ 2 ] = ( keys[ iTop ]   == keys[ i ] + deltas[ 2 ] ) ? values[ iTop ]   : Voxel();
+		voxels[ 4 ] = ( keys[ iFront ] == keys[ i ] + deltas[ 4 ] ) ? values[ iFront ] : Voxel();
+
+		voxels[ 1 ] = ( i < maxVoxelIndex && keys[ i + 1 ] == keys[ i ] + deltas[ 1 ] ) ? values[ i + 1 ] : Voxel();
+
+		std::uint32_t x0, y0, z0;
+		util::unpack( keys[ i ], x0, y0, z0 );
+		util::vec3 vert000 = volume.VoxelCenter( x0, y0, z0 ); 
+
+		float dself = voxels[ 0 ].Distance();
+
+		if( voxels[ 1 ].Weight() > 0.0f && dself * voxels[ 1 ].Distance() <= 0.0f )
+		{
+			util::vec3 vert = vert000;
+
+			vert.x += util::lerp( 
+				0.0f, 
+				volume.VoxelLength(), 
+				abs( dself ) / (abs( dself ) + abs( voxels[ 1 ].Distance() ))
+			);
+
+			outVertices.push_back( vert );
+			if( GenerateTriangles )
+				m_vertexIDs.push_back( 3 * keys[ i ] );
+		}
+				
+		if( voxels[ 2 ].Weight() > 0.0f && dself * voxels[ 2 ].Distance() <= 0.0f )
+		{
+			util::vec3 vert = vert000;
+
+			vert.y += util::lerp(
+				0.0f, 
+				volume.VoxelLength(), 
+				abs( dself ) / (abs( dself ) + abs( voxels[ 2 ].Distance() ))
+			);
+
+			outVertices.push_back( vert );
+			if( GenerateTriangles )
+				m_vertexIDs.push_back( 3 * keys[ i ] + 1 );
+		}
+				
+		if( voxels[ 4 ].Weight() > 0.0f && dself * voxels[ 4 ].Distance() <= 0.0f )
+		{
+			util::vec3 vert = vert000;
+
+			vert.z += util::lerp( 
+				0.0f, 
+				volume.VoxelLength(), 
+				abs( dself ) / (abs( dself ) + abs( voxels[ 4 ].Distance() ))
+			);
+
+			outVertices.push_back( vert );
+			if( GenerateTriangles )
+				m_vertexIDs.push_back( 3 * keys[ i ] + 2 );
+		}
+
+
+
+		if( GenerateTriangles )
+		{
+			if( 1023 == x0 ||
+				1023 == y0 ||
+				1023 == z0 )
+				continue;
+
+			while( keys[ iFrontTop ] < keys[ i ] + deltas[ 6 ] && iFrontTop < maxVoxelIndex )
+				++iFrontTop;
+
+			voxels[ 6 ] = ( keys[ iFrontTop ] == keys[ i ] + deltas[ 6 ] ) ? values[ iFrontTop ] : Voxel();
+
+			voxels[ 3 ] = 
+				( iTop < maxVoxelIndex && keys[ iTop + 1 ] == keys[ i ] + deltas[ 3 ] ) 
+				? 
+				values[ iTop + 1 ] : Voxel();
+			
+			voxels[ 5 ] = 
+				( iFront < maxVoxelIndex && keys[ iFront + 1 ] == keys[ i ] + deltas[ 5 ] ) 
+				?
+				values[ iFront + 1 ] : Voxel();
+
+			voxels[ 7 ] =
+				( iFrontTop < maxVoxelIndex && keys[ iFrontTop + 1 ] == keys[ i ] + deltas[ 7 ] )
+				?
+				values[ iFrontTop + 1 ] : Voxel();
+
+			int skip = 0;
+			for( int i = 1; i < 8; ++i )
+				skip |= ( 0.0f == voxels[ i ].Weight() );
+
+			if( skip )
+				continue;
+
+			// We index vertices differently from Paul Bourke
+			int lutIdx =
+				( voxels[ 0 ].Distance() < 0.0f ) << 2 |
+				( voxels[ 1 ].Distance() < 0.0f ) << 3 |
+				( voxels[ 2 ].Distance() < 0.0f ) << 6 |
+				( voxels[ 3 ].Distance() < 0.0f ) << 7 |
+				( voxels[ 4 ].Distance() < 0.0f ) << 1 |	
+				( voxels[ 5 ].Distance() < 0.0f ) << 0 |
+				( voxels[ 6 ].Distance() < 0.0f ) << 5 |
+				( voxels[ 7 ].Distance() < 0.0f ) << 4;
+
+			std::uint32_t x1, y1, z1;
+			x1 = x0 + 1;
+			y1 = y0 + 1;
+			z1 = z0 + 1;
+
+			unsigned localToGlobal[ 12 ];
+			localToGlobal[  0 ] = util::pack( x0, y0, z1 ) * 3;
+			localToGlobal[  1 ] = util::pack( x0, y0, z0 ) * 3 + 2;
+			localToGlobal[  2 ] = util::pack( x0, y0, z0 ) * 3;
+			localToGlobal[  3 ] = util::pack( x1, y0, z0 ) * 3 + 2;
+			localToGlobal[  4 ] = util::pack( x0, y1, z1 ) * 3;
+			localToGlobal[  5 ] = util::pack( x0, y1, z0 ) * 3 + 2;
+			localToGlobal[  6 ] = util::pack( x0, y1, z0 ) * 3;
+			localToGlobal[  7 ] = util::pack( x1, y1, z0 ) * 3 + 2;
+			localToGlobal[  8 ] = util::pack( x1, y0, z1 ) * 3 + 1;
+			localToGlobal[  9 ] = util::pack( x0, y0, z1 ) * 3 + 1;
+			localToGlobal[ 10 ] = util::pack( x0, y0, z0 ) * 3 + 1;
+			localToGlobal[ 11 ] = util::pack( x1, y0, z0 ) * 3 + 1;
+
+			for (
+				int i = TriOffsets()[ lutIdx ],
+				end   = TriOffsets()[ std::min( 255, lutIdx + 1 ) ];
+				i < end;
+				i++
+			)
+			{
+				util::uint4 tri = TriTable()[ i ];
+				m_indexIDs.push_back( localToGlobal[ tri.x ] );
+				m_indexIDs.push_back( localToGlobal[ tri.y ] );
+				m_indexIDs.push_back( localToGlobal[ tri.z ] );
+			}
+		}
+	}
+
+	t.take_time( "tsplat" );
+	t.print_times();
+}
+
+template void Mesher::Generate< true >( Volume const &, std::vector< util::vec3 > & );
+template void Mesher::Generate< false >( Volume const &, std::vector< util::vec3 > & );
+
+#pragma warning( pop )
+
+
+
+// static
+std::uint32_t const * Mesher::TriOffsets()
+{
+	static std::uint32_t const triCounts[] = {
 		0,   0,   1,   2,   4,   5,   7,   9,  12,  13,  15,  17,  20,  22,  25,  28,
 	   30,  31,  33,  35,  38,  40,  43,  46,  50,  52,  55,  58,  62,  65,  69,  73,
 	   76,  77,  79,  81,  84,  86,  89,  92,  96,  98, 101, 104, 108, 111, 115, 119,
@@ -309,235 +515,6 @@ util::uint4 const * Mesher::TriTable()
 	};
 
 	return reinterpret_cast< util::uint4 const * >( triTable );
-}
-
-
-
-// static 
-void Mesher::Generate
-(
-	Volume const & volume,
-
-	std::vector< util::float4 > & outVertices,
-	std::vector< unsigned > & outVertexIDs,
-	std::vector< unsigned > & outIndices
-)
-{
-	outVertices.clear();
-	outVertexIDs.clear();
-	outIndices.clear();
-
-	util::array3d< Voxel, 4, 4, 4 > cache;
-
-	util::flat_map< unsigned, Brick >::const_key_iterator bricks[ 8 ];
-	std::fill( bricks, bricks + 8, volume.Data().keys_cbegin() );
-
-	unsigned deltas[ 8 ];
-	for( int i = 0; i < 8; i++ )
-	{
-		unsigned x, y, z;
-		Brick::Index1Dto3D( i, x, y, z );
-		deltas[ i ] = util::packInts( x, y, z );
-	}
-
-	auto values = volume.Data().values_cbegin();
-	for
-	(
-		auto start = volume.Data().keys_cbegin(),
-		end = volume.Data().keys_cend(),
-		self = start;
-		self != end;
-		++self
-	)
-	{
-		for( int j = 0; j < 64; j++ )
-			cache[ j ] = Voxel();
-
-		bricks[ 0 ] = self;
-		bricks[ 1 ] = self < end - 1 ? self + 1 : self;
-
-		for( int j = 2; j <= 6; j += 2 )
-			while( bricks[ j ] < end - 1 && * bricks[ j ] < * self + deltas[ j ] )
-				bricks[ j ]++;
-		
-		for( int j = 3; j <= 7; j += 2 )
-		{
-			auto tmp = bricks[ j - 1 ];
-			bricks[ j ] = ( * tmp < * self + deltas[ j ] && tmp < end - 1 ) ? tmp + 1 : tmp;
-		}
-
-		for( int j = 0; j < 8; j++ )
-			if( * bricks[ j ] == * self + deltas[ j ] )
-			{
-				Brick const & b = values[ std::distance( start, bricks[ j ] ) ];
-
-				unsigned x0, y0, z0, x1, y1, z1;
-				Brick::Index1Dto3D( j, x0, y0, z0 );
-
-				x0 *= 2;
-				y0 *= 2;
-				z0 *= 2;
-
-				x1 = x0 + 1;
-				y1 = y0 + 1;
-				z1 = z0 + 1;
-
-				cache( x0, y0, z0 ) = b[ 0 ];
-				cache( x1, y0, z0 ) = b[ 1 ];
-				cache( x0, y1, z0 ) = b[ 2 ];
-				cache( x1, y1, z0 ) = b[ 3 ];
-
-				cache( x0, y0, z1 ) = b[ 4 ];
-				cache( x1, y0, z1 ) = b[ 5 ];
-				cache( x0, y1, z1 ) = b[ 6 ];
-				cache( x1, y1, z1 ) = b[ 7 ];
-			}
-
-		unsigned bx, by, bz;
-		util::unpackInts( * self, bx, by, bz );
-
-		bx *= 2;
-		by *= 2;
-		bz *= 2;
-
-		for( int j = 0; j < 8; j++ )
-		{
-			unsigned x0, y0, z0, x1, y1, z1;
-			Brick::Index1Dto3D( j, x0, y0, z0 );
-
-			x1 = x0 + 1;
-			y1 = y0 + 1;
-			z1 = z0 + 1;
-
-			Voxel v[ 8 ];
-			v[ 2 ] = cache( x0, y0, z0 );
-
-			if( 0 == v[ 2 ].Weight() )
-				continue;
-
-			v[ 3 ] = cache( x1, y0, z0 );
-			v[ 6 ] = cache( x0, y1, z0 );
-			v[ 7 ] = cache( x1, y1, z0 );
-
-			v[ 1 ] = cache( x0, y0, z1 );
-			v[ 0 ] = cache( x1, y0, z1 );
-			v[ 5 ] = cache( x0, y1, z1 );
-			v[ 4 ] = cache( x1, y1, z1 );
-
-			x0 += bx;
-			y0 += by;
-			z0 += bz;
-
-			x1 += bx;
-			y1 += by;
-			z1 += bz;
-
-			// Generate vertices
-			float d[ 8 ];
-			for( int j = 0; j < 8; j++ )
-				d[ j ] = v[ j ].Distance( volume.TruncationMargin() );
-
-			util::float4 vert000 = volume.VoxelCenter( x0, y0, z0 );
-			unsigned i000 = util::packInts( x0, y0, z0 );
-
-			// TODO: Re-evaluate interpolation (esp. use of weights in lerp)
-			if( v[ 3 ].Weight() > 0 && d[ 2 ] * d[ 3 ] < 0.0f )
-			{
-				util::float4 vert = vert000;
-				vert.x += util::lerp( 0.0f, volume.VoxelLength(), abs( d[ 3 ] ), abs( d[ 2 ] ) );
-
-				outVertexIDs.push_back( 3 * i000 );
-				outVertices.push_back( vert );
-			}
-				
-			if( v[ 6 ].Weight() > 0 && d[ 2 ] * d[ 6 ] < 0.0f )
-			{
-				util::float4 vert = vert000;
-				vert.y += util::lerp( 0.0f, volume.VoxelLength(), abs( d[ 6 ] ), abs( d[ 2 ] ) );
-
-				outVertexIDs.push_back( 3 * i000 + 1 );
-				outVertices.push_back( vert );
-			}
-				
-			if( v[ 1 ].Weight() > 0 && d[ 2 ] * d[ 1 ] < 0.0f )
-			{
-				util::float4 vert = vert000;
-				vert.z += util::lerp( 0.0f, volume.VoxelLength(), abs( d[ 1 ] ), abs( d[ 2 ] ) );
-
-				outVertexIDs.push_back( 3 * i000 + 2 );
-				outVertices.push_back( vert );
-			}
-			
-			// Generate indices
-			bool skip = false;
-			for( int i = 0; i < 8; i++ )
-				skip = skip || ( 0 == v[ i ].Weight() );
-
-			if( skip )
-				continue;
-
-			int lutIdx = 0;
-			for( int i = 0; i < 8; i++ )
-				if( d[ i ] < 0.0f )
-					lutIdx |= ( 1u << i );
-
-			// Maps local edge indices to global vertex indices
-			unsigned localToGlobal[ 12 ];
-			localToGlobal[  0 ] = util::packInts( x0, y0, z1 ) * 3;
-			localToGlobal[  1 ] = util::packInts( x0, y0, z0 ) * 3 + 2;
-			localToGlobal[  2 ] = util::packInts( x0, y0, z0 ) * 3;
-			localToGlobal[  3 ] = util::packInts( x1, y0, z0 ) * 3 + 2;
-			localToGlobal[  4 ] = util::packInts( x0, y1, z1 ) * 3;
-			localToGlobal[  5 ] = util::packInts( x0, y1, z0 ) * 3 + 2;
-			localToGlobal[  6 ] = util::packInts( x0, y1, z0 ) * 3;
-			localToGlobal[  7 ] = util::packInts( x1, y1, z0 ) * 3 + 2;
-			localToGlobal[  8 ] = util::packInts( x1, y0, z1 ) * 3 + 1;
-			localToGlobal[  9 ] = util::packInts( x0, y0, z1 ) * 3 + 1;
-			localToGlobal[ 10 ] = util::packInts( x0, y0, z0 ) * 3 + 1;
-			localToGlobal[ 11 ] = util::packInts( x1, y0, z0 ) * 3 + 1;
-
-			for (
-				int i = TriOffsets()[ lutIdx ],
-				end   = TriOffsets()[ std::min( 255, lutIdx + 1 ) ];
-				i < end;
-				i++
-			)
-			{
-				util::uint4 tri = TriTable()[ i ];
-				outIndices.push_back( localToGlobal[ tri.x ] );
-				outIndices.push_back( localToGlobal[ tri.y ] );
-				outIndices.push_back( localToGlobal[ tri.z ] );
-			}
-		}
-	}
-}
-
-// static 
-void Mesher::VertexIDsToIndices
-(
-	std::vector< unsigned > const & vertexIDs,
-
-	std::vector< unsigned > & inOutIndices,
-	std::vector< unsigned > & tmpIndexIDs,
-	std::vector< char > & tmpScratchPad
-)
-{
-	tmpIndexIDs.resize( inOutIndices.size() );
-	for( int i = 0; i < inOutIndices.size(); i++ )
-		tmpIndexIDs[ i ] = i;
-
-	util::radix_sort( inOutIndices.begin(), inOutIndices.end(), tmpIndexIDs.begin(), tmpScratchPad );
-
-	tmpScratchPad.resize( inOutIndices.size() * sizeof( unsigned ) );
-	unsigned * tmp = reinterpret_cast< unsigned * >( tmpScratchPad.data() );
-
-	int j = 0;
-	for( int i = 0; i < vertexIDs.size(); i++ )
-		while( j < inOutIndices.size() && inOutIndices[ j ] == vertexIDs[ i ] )
-			tmp[ j++ ] = i;
-
-	for( int i = 0; i < inOutIndices.size(); i++ )
-		inOutIndices[ tmpIndexIDs[ i ] ] = tmp[ i ];
 }
 
 } // namespace
