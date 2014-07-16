@@ -28,11 +28,11 @@ void Integrator::Integrate
 	Volume & volume,
 	util::vector2d< float > const & frame,
 
-	util::vec3 eye,
-	util::vec3 forward,
+	util::float4 eye,
+	util::float4 forward,
 
-	util::matrix const & viewProjection,
-	util::matrix4x3 const & viewToWorld
+	util::float4x4 const & viewProjection,
+	util::float4x4 const & viewToWorld
 )
 {
 	m_tmpPointCloud.resize ( frame.size() );
@@ -77,7 +77,7 @@ std::size_t Integrator::DepthMap2PointCloud
 (
 	Volume const & volume,
 	util::vector2d< float > const & frame,
-	util::matrix4x3 const & viewToWorld,
+	util::float4x4 const & viewToWorld,
 
 	std::vector< unsigned > & outPointCloud
 )
@@ -87,50 +87,50 @@ std::size_t Integrator::DepthMap2PointCloud
 	assert( 0 == frame.width() % 4 );
 	assert( volume.Resolution() > 1 );
 
-	float4x4 _viewToWorld = set( viewToWorld );
+	matrix _viewToWorld = set( viewToWorld );
 
 	// TODO: Encapsulate in CameraParams struct!
-	float4 flInv = set( 1.0f / 585.0f, 1.0f / 585.0f, 1.0f, 1.0f );
-	float4 ppOverFl = set
+	vector flInv = set( 1.0f / 585.0f, 1.0f / 585.0f, 1.0f, 1.0f );
+	vector ppOverFl = set
 	(
 		-((frame.width()  / 2) - 0.5f) / 585.0f, 
 		 ((frame.height() / 2) - 0.5f) / 585.0f, 
 		0.0f, 
 		0.0f
 	);
-	float4 maxIndex = set( (float) (volume.Resolution() - 1 ) );
+	vector maxIndex = set( (float) (volume.Resolution() - 1 ) );
 
-	float4 mask0001 = set( 0.0f, 0.0f, 0.0f, 1.0f );
-	float4 half = set( 0.5f );
+	vector mask0001 = set( 0.0f, 0.0f, 0.0f, 1.0f );
+	vector half = set( 0.5f );
 
 	std::size_t nSplats = 0;
 
 	for( std::size_t v = 0; v < frame.height(); v++ )
 	{
-		float4 point = set( 0.0f, - (float) v, -1.0f, 0.0f );
+		vector point = set( 0.0f, - (float) v, -1.0f, 0.0f );
 
 		for( std::size_t u = 0; u < frame.width(); u += 4 )
 		{
-			float4 depths = loadu( & frame( u, v ) );
+			vector depths = loadu( & frame( u, v ) );
 
 			int depthsValid = any( depths > zero() );
 			if( ! depthsValid )
 				continue;
 
-			float4 point0 = loadss( (float) (u + 0) ) + point; 
-			float4 point1 = loadss( (float) (u + 1) ) + point;
-			float4 point2 = loadss( (float) (u + 2) ) + point;
-			float4 point3 = loadss( (float) (u + 3) ) + point;
+			vector point0 = loadss( (float) (u + 0) ) + point; 
+			vector point1 = loadss( (float) (u + 1) ) + point;
+			vector point2 = loadss( (float) (u + 2) ) + point;
+			vector point3 = loadss( (float) (u + 3) ) + point;
 
 			point0 = fma( point0, flInv, ppOverFl );
 			point1 = fma( point1, flInv, ppOverFl );
 			point2 = fma( point2, flInv, ppOverFl );
 			point3 = fma( point3, flInv, ppOverFl );
 			
-			float4 depthx = broadcast< 0 >( depths );
-			float4 depthy = broadcast< 1 >( depths );
-			float4 depthz = broadcast< 2 >( depths );
-			float4 depthw = broadcast< 3 >( depths );
+			vector depthx = broadcast< 0 >( depths );
+			vector depthy = broadcast< 1 >( depths );
+			vector depthz = broadcast< 2 >( depths );
+			vector depthw = broadcast< 3 >( depths );
 
 			point0 = fma( point0, depthx, mask0001 );
 			point1 = fma( point1, depthy, mask0001 );
@@ -156,28 +156,28 @@ std::size_t Integrator::DepthMap2PointCloud
 			{
 				float tmp[4];
 				storeu( tmp, point0 );
-				outPointCloud[ nSplats++ ] = pack( (std::uint32_t) tmp[0], (std::uint32_t) tmp[1], (std::uint32_t) tmp[2] );
+				outPointCloud[ nSplats++ ] = pack( (unsigned) tmp[0], (unsigned) tmp[1], (unsigned) tmp[2] );
 			}
 
 			if( point1Valid )
 			{
 				float tmp[4];
 				storeu( tmp, point1 );
-				outPointCloud[ nSplats++ ] = pack( (std::uint32_t) tmp[0], (std::uint32_t) tmp[1], (std::uint32_t) tmp[2] );
+				outPointCloud[ nSplats++ ] = pack( (unsigned) tmp[0], (unsigned) tmp[1], (unsigned) tmp[2] );
 			}
 
 			if( point2Valid )
 			{
 				float tmp[4];
 				storeu( tmp, point2 );
-				outPointCloud[ nSplats++ ] = pack( (std::uint32_t) tmp[0], (std::uint32_t) tmp[1], (std::uint32_t) tmp[2] );
+				outPointCloud[ nSplats++ ] = pack( (unsigned) tmp[0], (unsigned) tmp[1], (unsigned) tmp[2] );
 			}
 
 			if( point3Valid )
 			{
 				float tmp[4];
 				storeu( tmp, point3 );
-				outPointCloud[ nSplats++ ] = pack( (std::uint32_t) tmp[0], (std::uint32_t) tmp[1], (std::uint32_t) tmp[2] );
+				outPointCloud[ nSplats++ ] = pack( (unsigned) tmp[0], (unsigned) tmp[1], (unsigned) tmp[2] );
 			}
 		}
 	}
@@ -258,46 +258,46 @@ void Integrator::UpdateVoxels
 	Volume & volume,
 	util::vector2d< float > const & frame,
 
-	util::vec3 eye,
-	util::vec3 forward,
-	util::matrix const & viewProjection
+	util::float4 eye,
+	util::float4 forward,
+	util::float4x4 const & viewProjection
 )
 {
 	using namespace util;
 
-	float4 ndcToUV = set( frame.width() * 0.5f, frame.height() * 0.5f, 0.0f, 0.0f );
+	vector ndcToUV = set( frame.width() * 0.5f, frame.height() * 0.5f, 0.0f, 0.0f );
 
-	float4 frameSize = set( (float) frame.width(), (float) frame.height(), std::numeric_limits< float >::max(), std::numeric_limits< float >::max() );
+	vector frameSize = set( (float) frame.width(), (float) frame.height(), std::numeric_limits< float >::max(), std::numeric_limits< float >::max() );
 
-	float4 _eye = set( eye, 1.0f );
-	float4 _forward = set( forward, 0.0f );
-	float4x4 _viewProjection = set( viewProjection );
+	vector _eye = set( eye );
+	vector _forward = set( forward );
+	matrix _viewProjection = set( viewProjection );
 
 	for( std::size_t i = 0, end = volume.Data().size() / 4 * 4; i < end; i += 4 )
 	{
-		std::uint32_t x, y, z;
+		unsigned x, y, z;
 
 		unpack( volume.Data().keys_cbegin()[ i + 0 ], x, y, z );
-		float4 k0 = set( (float) x, (float) y, (float) z, 1.0f );
+		vector k0 = set( (float) x, (float) y, (float) z, 1.0f );
 
 		unpack( volume.Data().keys_cbegin()[ i + 1 ], x, y, z );
-		float4 k1 = set( (float) x, (float) y, (float) z, 1.0f );
+		vector k1 = set( (float) x, (float) y, (float) z, 1.0f );
 
 		unpack( volume.Data().keys_cbegin()[ i + 2 ], x, y, z );
-		float4 k2 = set( (float) x, (float) y, (float) z, 1.0f );
+		vector k2 = set( (float) x, (float) y, (float) z, 1.0f );
 
 		unpack( volume.Data().keys_cbegin()[ i + 3 ], x, y, z );
-		float4 k3 = set( (float) x, (float) y, (float) z, 1.0f );
+		vector k3 = set( (float) x, (float) y, (float) z, 1.0f );
 
 		k0 = volume.VoxelCenter( k0 );
 		k1 = volume.VoxelCenter( k1 );
 		k2 = volume.VoxelCenter( k2 );
 		k3 = volume.VoxelCenter( k3 );
 		 
-		float4 dist0 = dot( k0 - _eye, _forward );
-		float4 dist1 = dot( k1 - _eye, _forward );
-		float4 dist2 = dot( k2 - _eye, _forward );
-		float4 dist3 = dot( k3 - _eye, _forward );
+		vector dist0 = dot( k0 - _eye, _forward );
+		vector dist1 = dot( k1 - _eye, _forward );
+		vector dist2 = dot( k2 - _eye, _forward );
+		vector dist3 = dot( k3 - _eye, _forward );
 
 		float dist0f = storess( dist0 );
 		float dist1f = storess( dist1 );

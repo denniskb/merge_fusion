@@ -33,17 +33,17 @@ BOOST_AUTO_TEST_CASE( Mesh )
 	DepthStream ds( ( boost::filesystem::current_path() / "../content/imrod_v2.depth" ).string().c_str() );
 
 	util::vector2d< float > depth;
-	util::matrix4x3 view, viewToWorld;
-	util::matrix viewProj;
-	util::vec3 eye, forward;
+	util::float4x4 view, viewToWorld;
+	util::float4x4 viewProj;
+	util::float4 eye, forward;
 
 	ds.NextFrame( depth, view );
 	ComputeMatrices( view, eye, forward, viewProj, viewToWorld );
 
 	i.Integrate( v, depth, eye, forward, viewProj, viewToWorld );
 
-	std::vector< util::vec3 > verts;
-	std::vector< std::uint32_t > indices;
+	std::vector< util::float3 > verts;
+	std::vector< unsigned > indices;
 	
 	m.Mesh( v, verts );
 	Mesher::Mesh2Obj( verts, indices, TMP_DIR "/volume_splat.obj" );

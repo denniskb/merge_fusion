@@ -21,17 +21,16 @@ int main()
 	DepthStream depthStreamHouse( "I:/tmp/house.depth" );
 	vector2d< float > synthDepthFrame;
 	
-	vec3      eye;
-	vec3      forward;
-	matrix4x3 view, viewToWorld;
-	matrix    viewProj;
+	float4   eye;
+	float4   forward;
+	float4x4 view, viewToWorld, viewProj;
 
 	Volume volume( 512, 4.0f, 0.02f );
 
 	Integrator integrator;
 	Mesher     mesher;
 
-	std::vector< vec3 > vertices;
+	std::vector< float3   > vertices;
 	std::vector< unsigned > indices;
 
 	depthStreamHouse.NextFrame( synthDepthFrame, view );
@@ -46,8 +45,8 @@ int main()
 		//mesher.Mesh( volume, vertices, indices );
 	}
 
-	mesher.Mesh( volume, vertices );
-	//mesher.Mesh( volume, vertices, indices );
+	//mesher.Mesh( volume, vertices );
+	mesher.Mesh( volume, vertices, indices );
 	Mesher::Mesh2Obj( vertices, indices, "I:/tmp/house.obj" );
 
 	return 0;

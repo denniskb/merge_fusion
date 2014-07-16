@@ -114,6 +114,7 @@
     <ClCompile Include="DepthStream.cpp" />
     <ClCompile Include="Integrator.cpp" />
     <ClCompile Include="Mesher.cpp" />
+    <ClCompile Include="invariants.cpp" />
     <ClCompile Include="util\barrier.cpp" />
     <ClCompile Include="util\fstream.cpp" />
     <ClCompile Include="util\semaphore.cpp" />

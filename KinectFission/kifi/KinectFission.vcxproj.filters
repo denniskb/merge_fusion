@@ -33,5 +33,6 @@
     <ClCompile Include="util\windows_high_resolution_clock.cpp" />
     <ClCompile Include="Volume.cpp" />
     <ClCompile Include="Mesher.cpp" />
+    <ClCompile Include="invariants.cpp" />
   </ItemGroup>
 </Project>

@@ -1,9 +1,5 @@
 #pragma once
 
-#include <cmath>
-#include <cstdint>
-#include <cstring>
-
 #ifdef KIFI_USE_FMA3
 #include <immintrin.h> // AVX (only used for 'fma')
 #endif
@@ -15,49 +11,31 @@
 namespace kifi {
 namespace util {
 
-#pragma region vec3/matrix4x3/matrix/float4/float4x4
+#pragma region float3/float4/float4x4/float4x4/vector/matrix
 
-__declspec( deprecated )
-struct uint4
-{
-	std::uint32_t x, y, z, w;
-};
-
-__declspec( deprecated )
-struct tmpfloat4
-{
-	float x, y, z, w;
-};
-
-struct vec3
+struct float3
 {
 	float x, y, z;
 
-	inline vec3();
-	inline explicit vec3( float s );
-	inline vec3( float x, float y, float z );
+	inline float3();
+	inline float3( float s );
+	inline float3( float x, float y, float z );
 };
 
-
-
-struct matrix4x3
+struct float4
 {
-	// stored in column-major order
-	float 
-		m00, m10, m20, m30,
-		m01, m11, m21, m31,
-		m02, m12, m22, m32;
+	float x, y, z, w;
 
-	inline matrix4x3();
-	inline matrix4x3
-	(
-		float m00, float m01, float m02, float m03,
-		float m10, float m11, float m12, float m13,
-		float m20, float m21, float m22, float m23
-	);
+	inline float4();
+	inline float4( float s );
+	inline float4( float x, float y, float z, float w );
+
+	inline float3 xyz() const;
 };
 
-struct matrix
+
+
+struct float4x4
 {
 	// stored in column-major order
 	float 
@@ -66,22 +44,20 @@ struct matrix
 		m02, m12, m22, m32,
 		m03, m13, m23, m33;
 
-	inline matrix();
-	inline matrix
+	inline float4x4();
+	inline float4x4
 	(
 		float m00, float m01, float m02, float m03,
 		float m10, float m11, float m12, float m13,
 		float m20, float m21, float m22, float m23,
 		float m30, float m31, float m32, float m33
 	);
-	inline explicit matrix( matrix4x3 const & m );
-	// src must be in row-major order
-	inline explicit matrix( float const * src );
 
-	inline operator matrix4x3() const;
+	// src must be in row-major order
+	inline explicit float4x4( float const * src );
 };
 
-matrix const identity
+float4x4 const identity
 (
 	1.0f, 0.0f, 0.0f, 0.0f,
 	0.0f, 1.0f, 0.0f, 0.0f,
@@ -91,85 +67,68 @@ matrix const identity
 
 
 
-typedef __m128 float4;
-struct float4x4 { float4 row0, row1, row2, row3; };
+typedef __m128 vector;
+struct matrix { vector row0, row1, row2, row3; };
 
 #pragma endregion
 
 #pragma region Operators
 
-inline vec3 operator+( vec3 v, float s );
-inline vec3 operator-( vec3 v, float s );
-inline vec3 operator*( vec3 v, float s );
-inline vec3 operator/( vec3 v, float s );
+inline float4 operator+( float4 u, float4 v );
+inline float4 operator-( float4 u, float4 v );
+inline float4 operator*( float4 u, float4 v );
+inline float4 operator/( float4 u, float4 v );
 
-inline vec3 operator+( float s, vec3 v );
-inline vec3 operator-( float s, vec3 v );
-inline vec3 operator*( float s, vec3 v );
-inline vec3 operator/( float s, vec3 v );
+inline float4 & operator+=( float4 & u, float4 v );
+inline float4 & operator-=( float4 & u, float4 v );
+inline float4 & operator*=( float4 & u, float4 v );
+inline float4 & operator/=( float4 & u, float4 v );
 
-inline vec3 operator+( vec3 u, vec3 v );
-inline vec3 operator-( vec3 u, vec3 v );
-inline vec3 operator*( vec3 u, vec3 v );
-inline vec3 operator/( vec3 u, vec3 v );
+inline float4   operator*( float4   v, float4x4 m );
+inline float4x4 operator*( float4x4 m, float4x4 n );
 
-inline vec3 & operator+=( vec3 & v, float s );
-inline vec3 & operator-=( vec3 & v, float s );
-inline vec3 & operator*=( vec3 & v, float s );
-inline vec3 & operator/=( vec3 & v, float s );
-
-inline vec3 & operator+=( vec3 & u, vec3 v );
-inline vec3 & operator-=( vec3 & u, vec3 v );
-inline vec3 & operator*=( vec3 & u, vec3 v );
-inline vec3 & operator/=( vec3 & u, vec3 v );
-
-inline matrix operator*( matrix m, matrix n );
-
-inline float4   operator* ( float4 v  , float4x4 m );
-inline float4 & operator*=( float4 & v, float4x4 m );
+inline vector   operator* ( vector v  , matrix m );
+inline vector & operator*=( vector & v, matrix m );
 
 #pragma endregion
 
 #pragma region Functions
 
 template< typename T >
-T                    clamp   ( T x, T a, T b );
-inline float         dot     ( vec3 u, vec3 v );
-template< typename T >
-T                    lerp    ( T a, T b, T weightB );
-inline std::uint32_t pack    ( std::uint32_t x, std::uint32_t y, std::uint32_t z );
-inline bool          powerOf2( unsigned x );
-inline void          unpack  ( std::uint32_t v, std::uint32_t & outX, std::uint32_t & outY, std::uint32_t & outZ );
-
-inline matrix4x3 invert_transform  ( matrix4x3 const & Rt );
-inline matrix    perspective_fov_rh( float fovYradians, float aspectWbyH, float nearZdistance, float farZdistance );
-inline vec3      project           ( vec3 v, matrix const & m );    // w == 1, homogenization
-inline vec3      transform_point   ( vec3 v, matrix4x3 const & m ); // w == 1, no homogenization
-inline vec3      transform_vector  ( vec3 v, matrix4x3 const & m ); // w == 0, no homogenization
-inline matrix    transpose         ( matrix const & m );
-
-inline int      all       ( float4 v );
-inline int      any       ( float4 v );
-template< int index >	  
-inline float4   broadcast ( float4 v );
-inline float4   dot       ( float4 u, float4 v );
-inline float4   fma       ( float4 u, float4 v, float4 w );
+T               clamp     ( T x, T a, T b );
+inline float    dot       ( float4 u, float4 v );
 inline float4   homogenize( float4 v );
-inline float4   load      ( float const * src );
-inline float4   loadu     ( float const * src );
-inline float4   loadss    ( float src );
-inline int      none      ( float4 v );
-inline float4   set       ( float s );
-inline float4   set       ( float x, float y, float z, float w );
-inline float4   set       ( vec3 v, float w );
-inline float4x4 set       ( matrix m );
-inline float4x4 set       ( matrix4x3 m );
+template< typename T >
+T               lerp      ( T a, T b, T weightB );
+inline unsigned	pack      ( unsigned x, unsigned y, unsigned z );
+inline bool     powerOf2  ( int x );
+inline void     unpack    ( unsigned v, unsigned & outX, unsigned & outY, unsigned & outZ );
+
+inline float4x4 invert_transform  ( float4x4 const & Rt );
+inline float4x4 perspective_fov_rh( float fovYradians, float aspectWbyH, float nearZdistance, float farZdistance );
+inline float4x4 transpose         ( float4x4 const & m );
+
+inline int      all       ( vector v );
+inline int      any       ( vector v );
+template< int index >	  
+inline vector   broadcast ( vector v );
+inline vector   dot       ( vector u, vector v );
+inline vector   fma       ( vector u, vector v, vector w );
+inline vector   homogenize( vector v );
+inline vector   load      ( float const * src );
+inline vector   loadu     ( float const * src );
+inline vector   loadss    ( float src );
+inline int      none      ( vector v );
+inline vector   set       ( float s );
+inline vector   set       ( float x, float y, float z, float w );
+inline vector   set       ( float4 v );
+inline matrix   set       ( float4x4 m );
 template< int a0, int a1, int b0, int b1 >
-inline float4   shuffle   ( float4 a, float4 b );
-inline void     store     ( float * dst, float4 src );
-inline float    storess   ( float4 src );
-inline void     storeu    ( float * dst, float4 src );
-inline float4   zero      ();
+inline vector   shuffle   ( vector a, vector b );
+inline void     store     ( float * dst, vector src );
+inline float    storess   ( vector src );
+inline void     storeu    ( float * dst, vector src );
+inline vector   zero      ();
 
 #pragma endregion
 
@@ -203,20 +162,31 @@ inline __m128 operator&( __m128 u, __m128 v );
 
 #pragma region Implementation
 
+#include <cassert>
+#include <cmath>
+#include <cstring>
+
+
+
 namespace kifi {
 namespace util {
 
-#pragma region vec3/matrix
+#pragma region float4/float4x4
 
-vec3::vec3() {}
-vec3::vec3( float s ) : x( s ), y( s ), z( s ) {}
-vec3::vec3( float x, float y, float z ) : x( x ), y( y ), z( z ) {}
+float3::float3() {}
+float3::float3( float s ) : x( s ), y( s ), z( s ) {}
+float3::float3( float x, float y, float z ) : x( x ), y( y ), z( z ) {}
+
+float4::float4() {}
+float4::float4( float s ) : x( s ), y( s ), z( s ), w( s ) {}
+float4::float4( float x, float y, float z, float w ) : x( x ), y( y ), z( z ), w( w ) {}
+float3 float4::xyz() const { return float3( x, y, z ); }
 
 
 
-matrix::matrix() {}
+float4x4::float4x4() {}
 
-matrix::matrix
+float4x4::float4x4
 (
 	float m00, float m01, float m02, float m03,
 	float m10, float m11, float m12, float m13,
@@ -229,260 +199,102 @@ matrix::matrix
 	m03( m03 ), m13( m13 ), m23( m23 ), m33( m33 )
 {}
 
-matrix::matrix( matrix4x3 const & m )
-{
-	std::memcpy( & m00, & m.m00, 48 );
-	
-	m03 = 0.0f;
-	m13 = 0.0f;
-	m23 = 0.0f;
-	m33 = 1.0f;
-}
-
-matrix::matrix( float const * src )
+float4x4::float4x4( float const * src )
 {
 	std::memcpy( & m00, src, 64 );
 	* this = transpose( * this );
 }
 
-matrix::operator matrix4x3() const
-{
-	matrix4x3 result;
-
-	std::memcpy( & result.m00, & m00, 48 );
-
-	return result;
-}
-
-
-
-matrix4x3::matrix4x3() {}
-
-matrix4x3::matrix4x3
-(
-	float m00, float m01, float m02,
-	float m10, float m11, float m12,
-	float m20, float m21, float m22,
-	float m30, float m31, float m32
-) :
-	m00( m00 ), m10( m10 ), m20( m20 ), m30( m30 ),
-	m01( m01 ), m11( m11 ), m21( m21 ), m31( m31 ),
-	m02( m02 ), m12( m12 ), m22( m22 ), m32( m32 )
-{}
-
 #pragma endregion
 
 #pragma region Operators
 
-vec3 operator+( vec3 v, float s )
+float4 operator+( float4 u, float4 v )
 {
-	return vec3
-	(
-		v.x + s,
-		v.y + s,
-		v.z + s
-	);
-}
-
-vec3 operator-( vec3 v, float s )
-{
-	return vec3
-	(
-		v.x - s,
-		v.y - s,
-		v.z - s
-	);
-}
-
-vec3 operator*( vec3 v, float s )
-{
-	return vec3
-	(
-		v.x * s,
-		v.y * s,
-		v.z * s
-	);
-}
-
-vec3 operator/( vec3 v, float s )
-{
-	float const sInv = 1.0f / s;
-
-	return vec3
-	(
-		v.x * sInv,
-		v.y * sInv,
-		v.z * sInv
-	);
-}
-
-
-
-vec3 operator+( float s, vec3 v )
-{
-	return vec3
-	(
-		s + v.x,
-		s + v.y,
-		s + v.z
-	);
-}
-
-vec3 operator-( float s, vec3 v )
-{
-	return vec3
-	(
-		s - v.x,
-		s - v.y,
-		s - v.z
-	);
-}
-
-vec3 operator*( float s, vec3 v )
-{
-	return vec3
-	(
-		s * v.x,
-		s * v.y,
-		s * v.z
-	);
-}
-
-vec3 operator/( float s, vec3 v )
-{
-	return vec3
-	(
-		s / v.x,
-		s / v.y,
-		s / v.z
-	);
-}
-
-
-
-vec3 operator+( vec3 u, vec3 v )
-{
-	return vec3
+	return float4
 	(
 		u.x + v.x,
 		u.y + v.y,
-		u.z + v.z
+		u.z + v.z,
+		u.w + v.w
 	);
 }
 
-vec3 operator-( vec3 u, vec3 v )
+float4 operator-( float4 u, float4 v )
 {
-	return vec3
+	return float4
 	(
 		u.x - v.x,
 		u.y - v.y,
-		u.z - v.z
+		u.z - v.z,
+		u.w - v.w
 	);
 }
 
-vec3 operator*( vec3 u, vec3 v )
+float4 operator*( float4 u, float4 v )
 {
-	return vec3
+	return float4
 	(
 		u.x * v.x,
 		u.y * v.y,
-		u.z * v.z
+		u.z * v.z,
+		u.w * v.w
 	);
 }
 
-vec3 operator/( vec3 u, vec3 v )
+float4 operator/( float4 u, float4 v )
 {
-	return vec3
+	return float4
 	(
 		u.x / v.x,
 		u.y / v.y,
-		u.z / v.z
+		u.z / v.z,
+		u.w / v.w
 	);
 }
 
 
 
-vec3 & operator+=( vec3 & v, float s )
+float4 & operator+=( float4 & u, float4 v )
 {
-	v.x += s;
-	v.y += s;
-	v.z += s;
-
-	return v;
-}
-
-vec3 & operator-=( vec3 & v, float s )
-{
-	v.x -= s;
-	v.y -= s;
-	v.z -= s;
-
-	return v;
-}
-
-vec3 & operator*=( vec3 & v, float s )
-{
-	v.x *= s;
-	v.y *= s;
-	v.z *= s;
-
-	return v;
-}
-
-vec3 & operator/=( vec3 & v, float s )
-{
-	float const sInv = 1.0f / s;
-
-	v.x *= sInv;
-	v.y *= sInv;
-	v.z *= sInv;
-
-	return v;
-}
-
-
-
-vec3 & operator+=( vec3 & u, vec3 v )
-{
-	u.x += v.x;
-	u.y += v.y;
-	u.z += v.z;
-
+	u = u + v;
 	return u;
 }
 
-vec3 & operator-=( vec3 & u, vec3 v )
+float4 & operator-=( float4 & u, float4 v )
 {
-	u.x -= v.x;
-	u.y -= v.y;
-	u.z -= v.z;
-
+	u = u - v;
 	return u;
 }
 
-vec3 & operator*=( vec3 & u, vec3 v )
+float4 & operator*=( float4 & u, float4 v )
 {
-	u.x *= v.x;
-	u.y *= v.y;
-	u.z *= v.z;
-
+	u = u * v;
 	return u;
 }
 
-vec3 & operator/=( vec3 & u, vec3 v )
+float4 & operator/=( float4 & u, float4 v )
 {
-	u.x /= v.x;
-	u.y /= v.y;
-	u.z /= v.z;
-
+	u = u / v;
 	return u;
 }
 
 
 
-matrix operator*( matrix m, matrix n )
+float4 operator*( float4 v, float4x4 m )
 {
-	matrix result;
+	return float4
+	(
+		(v.x * m.m00 + v.y * m.m10) + (v.z * m.m20 + v.w * m.m30),
+		(v.x * m.m01 + v.y * m.m11) + (v.z * m.m21 + v.w * m.m31),
+		(v.x * m.m02 + v.y * m.m12) + (v.z * m.m22 + v.w * m.m32),
+		(v.x * m.m03 + v.y * m.m13) + (v.z * m.m23 + v.w * m.m33)
+	);
+}
+
+float4x4 operator*( float4x4 m, float4x4 n )
+{
+	float4x4 result;
 
 	result.m00 =  n.m00 * m.m00;
 	result.m10 =  n.m00 * m.m10;
@@ -575,12 +387,12 @@ matrix operator*( matrix m, matrix n )
 
 
 
-float4 operator*( float4 v, float4x4 m )
+vector operator*( vector v, matrix m )
 {
-	float4 vx = broadcast< 0 >( v );
-	float4 vy = broadcast< 1 >( v );
-	float4 vz = broadcast< 2 >( v );
-	float4 vw = broadcast< 3 >( v );
+	vector vx = broadcast< 0 >( v );
+	vector vy = broadcast< 1 >( v );
+	vector vz = broadcast< 2 >( v );
+	vector vw = broadcast< 3 >( v );
 
 	vx *= m.row0;
 	vy *= m.row1;
@@ -593,7 +405,7 @@ float4 operator*( float4 v, float4x4 m )
 	return vx + vz;
 }
 
-float4 & operator*=( float4 & v, float4x4 m )
+vector & operator*=( vector & v, matrix m )
 {
 	v = v * m;
 	return v;
@@ -609,9 +421,16 @@ T clamp( T x, T a, T b )
 	return std::max( a, std::min( x, b ) );
 }
 
-float dot( vec3 u, vec3 v )
+float dot( float4 u, float4 v )
 {
-	return (u.x * v.x + u.y * v.y) + (u.z * v.z);
+	return (u.x * v.x + u.y * v.y) + (u.z * v.z + u.w * v.w);
+}
+
+float4 homogenize( float4 v )
+{
+	assert( v.w != 0.0f );
+
+	return v / v.w;
 }
 
 template< typename T >
@@ -620,17 +439,17 @@ T lerp( T a, T b, T weightB )
 	return a + (b-a) * weightB;
 }
 
-std::uint32_t pack( std::uint32_t x, std::uint32_t y, std::uint32_t z )
+unsigned pack( unsigned x, unsigned y, unsigned z )
 {
 	return z << 20 | y << 10 | x;
 }
 
-bool powerOf2( unsigned x )
+bool powerOf2( int x )
 {
 	return x > 0 && ! (x & (x - 1));
 }
 
-void unpack( std::uint32_t v, std::uint32_t & outX, std::uint32_t & outY, std::uint32_t & outZ )
+void unpack( unsigned v, unsigned & outX, unsigned & outY, unsigned & outZ )
 {
 	outX = v & 0x3ff;
 	outY = v >> 10 & 0x3ff;
@@ -639,14 +458,14 @@ void unpack( std::uint32_t v, std::uint32_t & outX, std::uint32_t & outY, std::u
 
 
 
-matrix4x3 invert_transform( matrix4x3 const & Rt )
+float4x4 invert_transform( float4x4 const & Rt )
 {
-	matrix R( Rt );
+	float4x4 R( Rt );
 	R.m30 = 0.0f;
 	R.m31 = 0.0f;
 	R.m32 = 0.0f;
 
-	matrix tInv = identity;
+	float4x4 tInv = identity;
 	tInv.m30 = -Rt.m30;
 	tInv.m31 = -Rt.m31;
 	tInv.m32 = -Rt.m32;
@@ -654,13 +473,13 @@ matrix4x3 invert_transform( matrix4x3 const & Rt )
 	return tInv * transpose( R );
 }
 
-matrix perspective_fov_rh( float fovYradians, float aspectWbyH, float nearZdistance, float farZdistance )
+float4x4 perspective_fov_rh( float fovYradians, float aspectWbyH, float nearZdistance, float farZdistance )
 {
 	float h = 1.0f / std::tanf( 0.5f * fovYradians );
 	float w = h / aspectWbyH;
 	float Q = farZdistance / (farZdistance - nearZdistance);
 	
-	matrix result;
+	float4x4 result;
 	std::memset( & result.m00, 0, 64 );
 
 	result.m00 = w;
@@ -672,43 +491,9 @@ matrix perspective_fov_rh( float fovYradians, float aspectWbyH, float nearZdista
 	return result;
 }
 
-vec3 project( vec3 v, matrix const & m )
+float4x4 transpose( float4x4 const & m )
 {
-	vec3 result;
-	
-	result.x = ( v.x * m.m00 + v.y * m.m10 ) + ( v.z * m.m20 + m.m30 );
-	result.y = ( v.x * m.m01 + v.y * m.m11 ) + ( v.z * m.m21 + m.m31 );
-	result.z = ( v.x * m.m02 + v.y * m.m12 ) + ( v.z * m.m22 + m.m32 );
-	float w  = ( v.x * m.m03 + v.y * m.m13 ) + ( v.z * m.m23 + m.m33 );
-	
-	return result / w;
-}
-
-vec3 transform_point( vec3 v, matrix4x3 const & m )
-{
-	vec3 result;
-	
-	result.x = ( v.x * m.m00 + v.y * m.m10 ) + ( v.z * m.m20 + m.m30 );
-	result.y = ( v.x * m.m01 + v.y * m.m11 ) + ( v.z * m.m21 + m.m31 );
-	result.z = ( v.x * m.m02 + v.y * m.m12 ) + ( v.z * m.m22 + m.m32 );
-	
-	return result;
-}
-
-vec3 transform_vector( vec3 v, matrix4x3 const & m )
-{
-	vec3 result;
-	
-	result.x = ( v.x * m.m00 + v.y * m.m10 ) + ( v.z * m.m20 );
-	result.y = ( v.x * m.m01 + v.y * m.m11 ) + ( v.z * m.m21 );
-	result.z = ( v.x * m.m02 + v.y * m.m12 ) + ( v.z * m.m22 );
-	
-	return result;
-}
-
-matrix transpose( matrix const & m )
-{
-	return matrix
+	return float4x4
 	(
 		m.m00, m.m10, m.m20, m.m30,
 		m.m01, m.m11, m.m21, m.m31,
@@ -719,29 +504,29 @@ matrix transpose( matrix const & m )
 
 
 
-int all( float4 v )
+int all( vector v )
 {
 	return ( 0xf == _mm_movemask_ps( v ) );
 }
 
-int any( float4 v )
+int any( vector v )
 {
 	return _mm_movemask_ps( v );
 }
 
 template< int i >
-float4 broadcast( float4 v )
+vector broadcast( vector v )
 {
 	return shuffle< i, i, i, i >( v, v );
 }
 
-float4 dot( float4 u, float4 v )
+vector dot( vector u, vector v )
 {
-	float4 tmp = u * v;
+	vector tmp = u * v;
 
-	float4 rotl1 = shuffle< 1, 2, 3, 0 >( tmp, tmp );
-	float4 rotl2 = shuffle< 2, 3, 0, 1 >( tmp, tmp );
-	float4 rotl3 = shuffle< 3, 0, 1, 2 >( tmp, tmp );
+	vector rotl1 = shuffle< 1, 2, 3, 0 >( tmp, tmp );
+	vector rotl2 = shuffle< 2, 3, 0, 1 >( tmp, tmp );
+	vector rotl3 = shuffle< 3, 0, 1, 2 >( tmp, tmp );
 
 	tmp   += rotl1;
 	rotl2 += rotl3;
@@ -749,7 +534,7 @@ float4 dot( float4 u, float4 v )
 	return tmp + rotl2;
 }
 
-float4 fma( float4 u, float4 v, float4 w )
+vector fma( vector u, vector v, vector w )
 {
 #ifdef KIFI_USE_FMA3
 	return _mm_fmadd_ps( u, v, w );
@@ -758,50 +543,50 @@ float4 fma( float4 u, float4 v, float4 w )
 #endif
 }
 
-float4 homogenize( float4 v )
+vector homogenize( vector v )
 {
 	return v / broadcast< 3 >( v );
 }
 
-float4 load( float const * src )
+vector load( float const * src )
 {
 	return _mm_load_ps( src );
 }
 
-float4 loadu( float const * src )
+vector loadu( float const * src )
 {
 	return _mm_loadu_ps( src );
 }
 
-float4 loadss( float src )
+vector loadss( float src )
 {
 	return _mm_load_ss( & src );
 }
 
-int none( float4 v )
+int none( vector v )
 {
 	return ( 0 == _mm_movemask_ps( v ) );
 }
 
 
-float4 set( float s )
+vector set( float s )
 {
 	return _mm_set1_ps( s );
 }
 
-float4 set( float x, float y, float z, float w )
+vector set( float x, float y, float z, float w )
 {
 	return _mm_set_ps( w, z, y, x );
 }
 
-float4 set( vec3 v, float w )
+vector set( float4 v )
 {
-	return set( v.x, v.y, v.z, w );
+	return loadu( reinterpret_cast< float * >( & v ) );
 }
 
-float4x4 set( matrix m )
+matrix set( float4x4 m )
 {
-	float4x4 result;
+	matrix result;
 
 	result.row0 = set( m.m00, m.m01, m.m02, m.m03 );
 	result.row1 = set( m.m10, m.m11, m.m12, m.m13 );
@@ -811,35 +596,30 @@ float4x4 set( matrix m )
 	return result;
 }
 
-float4x4 set ( matrix4x3 m )
-{
-	return set( matrix( m ) );
-}
-
 template< int a0, int a1, int b0, int b1 >
-float4 shuffle( float4 a, float4 b )
+vector shuffle( vector a, vector b )
 {
 	return _mm_shuffle_ps( a, b, _MM_SHUFFLE( b1, b0, a1, a0 ) );
 }
 
-void store( float * dst, float4 src )
+void store( float * dst, vector src )
 {
 	_mm_store_ps( dst, src );
 }
 
-float storess( float4 src )
+float storess( vector src )
 {
 	float result;
 	_mm_store_ss( & result, src );
 	return result;
 }
 
-void storeu( float * dst, float4 src )
+void storeu( float * dst, vector src )
 {
 	_mm_storeu_ps( dst, src );
 }
 
-float4 zero()
+vector zero()
 {
 	return _mm_setzero_ps();
 }

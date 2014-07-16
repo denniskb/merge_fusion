@@ -56,7 +56,7 @@ DepthStream::DepthStream( std::string const & fileName ) :
 bool DepthStream::NextFrame
 (
 	util::vector2d< float > & outFrame,
-	util::matrix4x3 & outView
+	util::float4x4 & outView
 )
 {
 	assert( 2 == sizeof( short ) );
@@ -67,7 +67,7 @@ bool DepthStream::NextFrame
 
 	float view[ 16 ];
 	m_file.read( reinterpret_cast< char * >( view ), 64 );
-	outView = util::matrix( view );
+	outView = util::float4x4( view );
 
 	outFrame.resize( m_frameWidth, m_frameHeight );
 

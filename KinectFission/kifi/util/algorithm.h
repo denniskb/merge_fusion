@@ -5,6 +5,8 @@
 namespace kifi {
 namespace util {
 
+// TODO: Change interface to ptr, size
+
 template< typename T >
 void radix_sort
 (
@@ -67,11 +69,11 @@ void radix_sort
 {
 	using std::swap;
 
-	unsigned cnt[ 256 ];
+	int cnt[ 256 ];
 
 	T * tmp = reinterpret_cast< T * >( scratchPad );
 
-	for( unsigned shift = 0; shift != 32; shift += 8 )
+	for( int shift = 0; shift != 32; shift += 8 )
 	{
 		std::memset( cnt, 0, sizeof( cnt ) );
 
@@ -99,12 +101,12 @@ void radix_sort
 {
 	using std::swap;
 
-	unsigned cnt[ 256 ];
+	int cnt[ 256 ];
 
 	T * keys_tmp = reinterpret_cast< T * >( scratchPad );
 	U * values_tmp = reinterpret_cast< U * >( keys_tmp + (keys_last - keys_first) );
 
-	for( unsigned shift = 0; shift != 32; shift += 8 )
+	for( int shift = 0; shift != 32; shift += 8 )
 	{
 		std::memset( cnt, 0, sizeof( cnt ) );
 

@@ -14,27 +14,27 @@ class Volume;
 class Mesher
 {
 public:
-	void Mesh( Volume const & volume, std::vector< util::vec3 > & outVertices );
-	void Mesh( Volume const & volume, std::vector< util::vec3 > & outVertices, std::vector< std::uint32_t > & outIndices );
+	void Mesh( Volume const & volume, std::vector< util::float3 > & outVertices );
+	void Mesh( Volume const & volume, std::vector< util::float3 > & outVertices, std::vector< unsigned > & outIndices );
 
 	static void Mesh2Obj
 	(
-		std::vector< util::vec3 > const & vertices,
+		std::vector< util::float3 > const & vertices,
 		std::vector< unsigned > const & indices,
 
 		char const * outObjFileName
 	);
 
 private:
-	std::vector< std::uint32_t > m_vertexIDs;
-	std::vector< std::uint32_t > m_indexIDs;
-	std::vector< std::uint32_t > m_tmpScratchPad;
+	std::vector< unsigned > m_vertexIDs;
+	std::vector< unsigned > m_indexIDs;
+	std::vector< unsigned > m_tmpScratchPad;
 
 	template< bool GenerateTriangles >
-	void Generate( Volume const & volume, std::vector< util::vec3 > & outVertices );
+	void Generate( Volume const & volume, std::vector< util::float3 > & outVertices );
 
-	static std::uint32_t const * TriOffsets();
-	static util::uint4 const * TriTable();
+	static int const * TriOffsets();
+	static int const * TriTable();
 };
 
 } // namespace

@@ -1,11 +1,25 @@
 #pragma once
 
-#include <functional>
-
 
 
 namespace kifi {
 namespace util {
+
+template< typename T >
+class kahan_sum
+{
+public:
+	kahan_sum();
+
+	kahan_sum & operator+=( T rhs );
+	operator T();
+
+private:
+	T m_sum;
+	T m_c;
+};
+
+
 
 template< class InputIterator, class OutputIterator >
 OutputIterator partial_sum_exclusive
@@ -27,8 +41,39 @@ OutputIterator partial_sum_exclusive
 
 #pragma region Implementation
 
+#include <functional>
+#include <memory>
+
+
+
 namespace kifi {
 namespace util {
+
+template< typename T >
+kahan_sum< T >::kahan_sum() :
+	m_sum( T() ),
+	m_c  ( T() )
+{
+}
+
+template< typename T >
+kahan_sum< T > & kahan_sum< T >::operator+=( T rhs )
+{
+	T y   = rhs - m_c;
+	T t   = m_sum + y;
+	m_c   = t - m_sum - y;
+	m_sum = t;
+
+	return * this;
+}
+
+template< typename T >
+kahan_sum< T >::operator T()
+{
+	return m_sum;
+}
+
+
 
 template< class InputIterator, class OutputIterator >
 OutputIterator partial_sum_exclusive

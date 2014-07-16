@@ -28,12 +28,12 @@ Volume::Volume
 	m_tmpVoxelLenf = sideLength / resolution;
 	m_tmpVoxelLenOver2PlusMinf = m_tmpVoxelLenf * 0.5f + Minimum().x;
 
-	m_tmpVoxelLen = util::set( util::vec3( m_tmpVoxelLenf ), 1.0f );
-	m_tmpVoxelLenOver2PlusMin = util::set( util::vec3( m_tmpVoxelLenOver2PlusMinf ), 0.0f );
+	m_tmpVoxelLen = util::set( m_tmpVoxelLenf, m_tmpVoxelLenf, m_tmpVoxelLenf, 1.0f );
+	m_tmpVoxelLenOver2PlusMin = util::set( m_tmpVoxelLenOver2PlusMinf, m_tmpVoxelLenOver2PlusMinf, m_tmpVoxelLenOver2PlusMinf, 0.0f );
 
 	float vlenInv = 1.0f / m_tmpVoxelLenf;
-	m_tmpVoxelLenInv = util::set( util::vec3( vlenInv ), 1.0f );
-	m_tmpNegVoxelLenInvTimesMin = m_tmpVoxelLenInv * util::set( util::vec3( -Minimum().x ), 0.0f );
+	m_tmpVoxelLenInv = util::set( vlenInv, vlenInv, vlenInv, 1.0f );
+	m_tmpMinOverNegVoxelLen = m_tmpVoxelLenInv * util::set( -Minimum().x, -Minimum().x, -Minimum().x, 0.0f );
 }
 
 
@@ -60,14 +60,14 @@ float Volume::TruncationMargin() const
 
 
 
-util::vec3 Volume::Minimum() const
+util::float4 Volume::Minimum() const
 {
-	return util::vec3( -0.5f * m_sideLen );
+	return util::float4( -0.5f * m_sideLen );
 }
 
-util::vec3 Volume::Maximum() const
+util::float4 Volume::Maximum() const
 {
-	return util::vec3( 0.5f * m_sideLen );
+	return util::float4( 0.5f * m_sideLen );
 }
 
 
