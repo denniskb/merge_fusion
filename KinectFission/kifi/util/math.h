@@ -461,7 +461,7 @@ float4x4 perspective_fov_rh( float fovYradians, float aspectWbyH, float nearZdis
 void transpose( float4x4 & m )
 {
 	for( int row = 0; row < 4; row++ )
-		for( int col = row; col < 4; col++ )
+		for( int col = row + 1; col < 4; col++ )
 			std::swap( m( row, col ), m( col, row ) );
 }
 
