@@ -137,10 +137,10 @@ std::size_t Integrator::DepthMap2PointCloud
 			point2 = fma( point2, depthz, mask0001 );
 			point3 = fma( point3, depthw, mask0001 );
 
-			point0 = point0 * _viewToWorld;
-			point1 = point1 * _viewToWorld;
-			point2 = point2 * _viewToWorld;
-			point3 = point3 * _viewToWorld;
+			point0 = _viewToWorld * point0;
+			point1 = _viewToWorld * point1;
+			point2 = _viewToWorld * point2;
+			point3 = _viewToWorld * point3;
 
 			point0 = volume.VoxelIndex( point0 ) - half;
 			point1 = volume.VoxelIndex( point1 ) - half;
@@ -304,16 +304,17 @@ void Integrator::UpdateVoxels
 		float dist2f = storess( dist2 );
 		float dist3f = storess( dist3 );
 
-		k0 = homogenize( k0 * _viewProjection );
-		k1 = homogenize( k1 * _viewProjection );
-		k2 = homogenize( k2 * _viewProjection );
-		k3 = homogenize( k3 * _viewProjection );
+		k0 = homogenize( _viewProjection * k0 );
+		k1 = homogenize( _viewProjection * k1 );
+		k2 = homogenize( _viewProjection * k2 );
+		k3 = homogenize( _viewProjection * k3 );
 
 		k0 = fma( k0, ndcToUV, ndcToUV );
 		k1 = fma( k1, ndcToUV, ndcToUV );
 		k2 = fma( k2, ndcToUV, ndcToUV );
 		k3 = fma( k3, ndcToUV, ndcToUV );
 
+		// TODO: Replace hard-coded 0.8 with camera params struct
 		int k0valid = dist0f >= 0.8f && all( k0 >= zero() & k0 < frameSize );
 		int k1valid = dist1f >= 0.8f && all( k1 >= zero() & k1 < frameSize );
 		int k2valid = dist2f >= 0.8f && all( k2 >= zero() & k2 < frameSize );

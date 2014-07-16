@@ -9,7 +9,7 @@
 
 inline void ComputeMatrices
 (
-	kifi::util::float4x4 const & view,
+	kifi::util::float4x4 const & worldToView,
 
 	kifi::util::float4 & outEye,
 	kifi::util::float4 & outForward,
@@ -19,9 +19,8 @@ inline void ComputeMatrices
 {
 	using namespace kifi;
 
-	outViewToWorld = util::invert_transform( view );
-
-	outEye = util::float4( 0.0f, 0.0f, 0.0f, 1.0f ) * outViewToWorld;
-	outForward = util::float4( 0.0f, 0.0f, -1.0f, 0.0f ) * outViewToWorld;
-	outViewProj = view * util::perspective_fov_rh( 0.778633444f, 4.0f / 3.0f, 0.8f, 4.0f );
+	outViewToWorld = util::invert_transform( worldToView );
+	outEye = outViewToWorld * util::float4( 0.0f, 0.0f, 0.0f, 1.0f );
+	outForward = outViewToWorld * util::float4( 0.0f, 0.0f, -1.0f, 0.0f );
+	outViewProj = util::perspective_fov_rh( 0.778633444f, 4.0f / 3.0f, 0.8f, 4.0f ) * worldToView;
 }

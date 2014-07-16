@@ -75,7 +75,7 @@ float4x4 const identity
 
 
 typedef __m128 vector;
-struct matrix { vector row0, row1, row2, row3; };
+struct matrix { vector col0, col1, col2, col3; };
 
 #pragma endregion
 
@@ -91,10 +91,10 @@ inline float4 & operator-=( float4 & u, float4 v );
 inline float4 & operator*=( float4 & u, float4 v );
 inline float4 & operator/=( float4 & u, float4 v );
 
-inline float4   operator*( float4   v, float4x4 m );
+inline float4   operator*( float4x4 m, float4 v   );
 inline float4x4 operator*( float4x4 m, float4x4 n );
 
-inline vector operator* ( vector v, matrix m );
+inline vector operator* ( matrix m, vector v );
 
 #pragma endregion
 
@@ -110,7 +110,7 @@ inline unsigned	pack      ( unsigned x, unsigned y, unsigned z );
 inline bool     powerOf2  ( int x );
 inline void     unpack    ( unsigned v, unsigned & outX, unsigned & outY, unsigned & outZ );
 
-inline float4x4 invert_transform  ( float4x4 const & Rt );
+inline float4x4 invert_transform  ( float4x4 const & tR );
 inline float4x4 perspective_fov_rh( float fovYradians, float aspectWbyH, float nearZdistance, float farZdistance );
 inline void     transpose         ( float4x4 & m );
 
@@ -335,14 +335,14 @@ float4 & operator/=( float4 & u, float4 v )
 
 
 
-float4 operator*( float4 v, float4x4 m )
+float4 operator*( float4x4 m, float4 v )
 {
 	return float4
 	(
-		dot( v, m.col( 0 ) ),
-		dot( v, m.col( 1 ) ),
-		dot( v, m.col( 2 ) ),
-		dot( v, m.col( 3 ) )
+		dot( m.row( 0 ), v ),
+		dot( m.row( 1 ), v ),
+		dot( m.row( 2 ), v ),
+		dot( m.row( 3 ), v )
 	);
 }
 
@@ -359,17 +359,17 @@ float4x4 operator*( float4x4 m, float4x4 n )
 
 
 
-vector operator*( vector v, matrix m )
+vector operator*( matrix m, vector v )
 {
 	vector vx = broadcast< 0 >( v );
 	vector vy = broadcast< 1 >( v );
 	vector vz = broadcast< 2 >( v );
 	vector vw = broadcast< 3 >( v );
 
-	vx *= m.row0;
-	vy *= m.row1;
-	vz *= m.row2;
-	vw *= m.row3;
+	vx *= m.col0;
+	vy *= m.col1;
+	vz *= m.col2;
+	vw *= m.col3;
 
 	vx += vy;
 	vz += vw;
@@ -424,20 +424,20 @@ void unpack( unsigned v, unsigned & outX, unsigned & outY, unsigned & outZ )
 
 
 
-float4x4 invert_transform( float4x4 const & Rt )
+float4x4 invert_transform( float4x4 const & tR )
 {
-	float4x4 R( Rt );
-	R( 3, 0 ) = 0.0f;
-	R( 3, 1 ) = 0.0f;
-	R( 3, 2 ) = 0.0f;
+	float4x4 R( tR );
+	R( 0, 3 ) = 0.0f;
+	R( 1, 3 ) = 0.0f;
+	R( 2, 3 ) = 0.0f;
 
 	float4x4 tInv = identity;
-	tInv( 3, 0 ) = -Rt( 3, 0 );
-	tInv( 3, 1 ) = -Rt( 3, 1 );
-	tInv( 3, 2 ) = -Rt( 3, 2 );
+	tInv( 0, 3 ) = -tR( 0, 3 );
+	tInv( 1, 3 ) = -tR( 1, 3 );
+	tInv( 2, 3 ) = -tR( 2, 3 );
 
 	transpose( R );
-	return tInv * R;
+	return R * tInv;
 }
 
 float4x4 perspective_fov_rh( float fovYradians, float aspectWbyH, float nearZdistance, float farZdistance )
@@ -452,8 +452,8 @@ float4x4 perspective_fov_rh( float fovYradians, float aspectWbyH, float nearZdis
 	result( 0, 0 ) = w;
 	result( 1, 1 ) = h;
 	result( 2, 2 ) = -Q;
-	result( 3, 2 ) = -Q * nearZdistance;
-	result( 2, 3 ) = -1.0f;
+	result( 2, 3 ) = -Q * nearZdistance;
+	result( 3, 2 ) = -1.0f;
 
 	return result;
 }
@@ -551,10 +551,10 @@ matrix set( float4x4 m )
 {
 	matrix result;
 
-	result.row0 = set( m.row( 0 ) );
-	result.row1 = set( m.row( 1 ) );
-	result.row2 = set( m.row( 2 ) );
-	result.row3 = set( m.row( 3 ) );
+	result.col0 = set( m.col( 0 ) );
+	result.col1 = set( m.col( 1 ) );
+	result.col2 = set( m.col( 2 ) );
+	result.col3 = set( m.col( 3 ) );
 
 	return result;
 }
