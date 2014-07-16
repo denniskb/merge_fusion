@@ -137,20 +137,20 @@ std::size_t Integrator::DepthMap2PointCloud
 			point2 = fma( point2, depthz, mask0001 );
 			point3 = fma( point3, depthw, mask0001 );
 
-			point0 *= _viewToWorld;
-			point1 *= _viewToWorld;
-			point2 *= _viewToWorld;
-			point3 *= _viewToWorld;
+			point0 = point0 * _viewToWorld;
+			point1 = point1 * _viewToWorld;
+			point2 = point2 * _viewToWorld;
+			point3 = point3 * _viewToWorld;
 
 			point0 = volume.VoxelIndex( point0 ) - half;
 			point1 = volume.VoxelIndex( point1 ) - half;
 			point2 = volume.VoxelIndex( point2 ) - half;
 			point3 = volume.VoxelIndex( point3 ) - half;
 
-			int point0Valid = (depthsValid & 0x1) && none( ( point0 < zero() ) | ( point0 >= maxIndex ) );
-			int point1Valid = (depthsValid & 0x2) && none( ( point1 < zero() ) | ( point1 >= maxIndex ) );
-			int point2Valid = (depthsValid & 0x4) && none( ( point2 < zero() ) | ( point2 >= maxIndex ) );
-			int point3Valid = (depthsValid & 0x8) && none( ( point3 < zero() ) | ( point3 >= maxIndex ) );
+			int point0Valid = (depthsValid & 0x1) && all( ( point0 >= zero() ) & ( point0 < maxIndex ) );
+			int point1Valid = (depthsValid & 0x2) && all( ( point1 >= zero() ) & ( point1 < maxIndex ) );
+			int point2Valid = (depthsValid & 0x4) && all( ( point2 >= zero() ) & ( point2 < maxIndex ) );
+			int point3Valid = (depthsValid & 0x8) && all( ( point3 >= zero() ) & ( point3 < maxIndex ) );
 
 			if( point0Valid )
 			{
@@ -314,10 +314,10 @@ void Integrator::UpdateVoxels
 		k2 = fma( k2, ndcToUV, ndcToUV );
 		k3 = fma( k3, ndcToUV, ndcToUV );
 
-		int k0valid = dist0f >= 0.8f && none( k0 < zero() | k0 >= frameSize );
-		int k1valid = dist1f >= 0.8f && none( k1 < zero() | k1 >= frameSize );
-		int k2valid = dist2f >= 0.8f && none( k2 < zero() | k2 >= frameSize );
-		int k3valid = dist3f >= 0.8f && none( k3 < zero() | k3 >= frameSize );
+		int k0valid = dist0f >= 0.8f && all( k0 >= zero() & k0 < frameSize );
+		int k1valid = dist1f >= 0.8f && all( k1 >= zero() & k1 < frameSize );
+		int k2valid = dist2f >= 0.8f && all( k2 >= zero() & k2 < frameSize );
+		int k3valid = dist3f >= 0.8f && all( k3 >= zero() & k3 < frameSize );
 
 		if( k0valid )
 		{

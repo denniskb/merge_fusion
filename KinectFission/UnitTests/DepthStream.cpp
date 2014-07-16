@@ -68,8 +68,8 @@ BOOST_AUTO_TEST_CASE( NextFrame_v1 )
 	BOOST_CHECK( 0 == depth( 0, 0 ) );
 	BOOST_CHECK_CLOSE( 0.057f, depth( 71, 103 ), 0.1f );
 
-	BOOST_CHECK( 0.0f == view.m00 );
-	BOOST_CHECK( 0.271f == view.m12 );
+	BOOST_CHECK( 0.0f == view( 0, 0 ) );
+	BOOST_CHECK( 0.271f == view( 1, 2 ) );
 
 	BOOST_CHECK( ! ds.NextFrame( depth, view ) );
 
@@ -104,8 +104,8 @@ BOOST_AUTO_TEST_CASE( NextFrame_v2_short )
 	BOOST_CHECK( 0 == depth( 0, 0 ) );
 	BOOST_CHECK_CLOSE( 0.057f, depth( 71, 103 ), 0.1f );
 
-	BOOST_CHECK( 0.0f == view.m00 );
-	BOOST_CHECK( 0.271f == view.m12 );
+	BOOST_CHECK( 0.0f == view( 0, 0 ) );
+	BOOST_CHECK( 0.271f == view( 1, 2 ) );
 
 	BOOST_CHECK( ! ds.NextFrame( depth, view ) );
 
@@ -140,8 +140,8 @@ BOOST_AUTO_TEST_CASE( NextFrame_v2_float )
 	BOOST_CHECK( 0 == depth( 0, 0 ) );
 	BOOST_CHECK_CLOSE( 0.057f, depth( 71, 103 ), 0.1f );
 
-	BOOST_CHECK( 0.0f == view.m00 );
-	BOOST_CHECK( 0.271f == view.m12 );
+	BOOST_CHECK( 0.0f == view( 0, 0 ) );
+	BOOST_CHECK( 0.271f == view( 1, 2 ) );
 
 	BOOST_CHECK( ! ds.NextFrame( depth, view ) );
 

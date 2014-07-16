@@ -35,15 +35,11 @@ struct float4
 
 
 
+#pragma warning( push )
+#pragma warning( disable : 4201 ) // non-standard extension used (unnamed struct/union)
+
 struct float4x4
 {
-	// stored in column-major order
-	float 
-		m00, m10, m20, m30,
-		m01, m11, m21, m31,
-		m02, m12, m22, m32,
-		m03, m13, m23, m33;
-
 	inline float4x4();
 	inline float4x4
 	(
@@ -55,7 +51,18 @@ struct float4x4
 
 	// src must be in row-major order
 	inline explicit float4x4( float const * src );
+
+	inline float & operator()( int iRow, int iCol );
+	inline float   operator()( int iRow, int iCol ) const;
+
+	inline float4 row( int i ) const;
+	inline float4 col( int i ) const;
+
+private:
+	float m_data[ 16 ]; // row-major
 };
+
+#pragma warning( pop )
 
 float4x4 const identity
 (
@@ -87,8 +94,7 @@ inline float4 & operator/=( float4 & u, float4 v );
 inline float4   operator*( float4   v, float4x4 m );
 inline float4x4 operator*( float4x4 m, float4x4 n );
 
-inline vector   operator* ( vector v  , matrix m );
-inline vector & operator*=( vector & v, matrix m );
+inline vector operator* ( vector v, matrix m );
 
 #pragma endregion
 
@@ -106,7 +112,7 @@ inline void     unpack    ( unsigned v, unsigned & outX, unsigned & outY, unsign
 
 inline float4x4 invert_transform  ( float4x4 const & Rt );
 inline float4x4 perspective_fov_rh( float fovYradians, float aspectWbyH, float nearZdistance, float farZdistance );
-inline float4x4 transpose         ( float4x4 const & m );
+inline void     transpose         ( float4x4 & m );
 
 inline int      all       ( vector v );
 inline int      any       ( vector v );
@@ -162,6 +168,7 @@ inline __m128 operator&( __m128 u, __m128 v );
 
 #pragma region Implementation
 
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <cstring>
@@ -192,17 +199,64 @@ float4x4::float4x4
 	float m10, float m11, float m12, float m13,
 	float m20, float m21, float m22, float m23,
 	float m30, float m31, float m32, float m33
-) :
-	m00( m00 ), m10( m10 ), m20( m20 ), m30( m30 ),
-	m01( m01 ), m11( m11 ), m21( m21 ), m31( m31 ),
-	m02( m02 ), m12( m12 ), m22( m22 ), m32( m32 ),
-	m03( m03 ), m13( m13 ), m23( m23 ), m33( m33 )
-{}
+)
+{
+	(*this)( 0, 0 ) = m00;
+	(*this)( 0, 1 ) = m01;
+	(*this)( 0, 2 ) = m02;
+	(*this)( 0, 3 ) = m03;
+
+	(*this)( 1, 0 ) = m10;
+	(*this)( 1, 1 ) = m11;
+	(*this)( 1, 2 ) = m12;
+	(*this)( 1, 3 ) = m13;
+
+	(*this)( 2, 0 ) = m20;
+	(*this)( 2, 1 ) = m21;
+	(*this)( 2, 2 ) = m22;
+	(*this)( 2, 3 ) = m23;
+
+	(*this)( 3, 0 ) = m30;
+	(*this)( 3, 1 ) = m31;
+	(*this)( 3, 2 ) = m32;
+	(*this)( 3, 3 ) = m33;
+}
 
 float4x4::float4x4( float const * src )
 {
-	std::memcpy( & m00, src, 64 );
-	* this = transpose( * this );
+	std::memcpy( m_data, src, 64 );
+}
+
+float & float4x4::operator()( int iRow, int iCol )
+{
+	return m_data[ iCol + 4 * iRow ];
+}
+
+float float4x4::operator()( int iRow, int iCol ) const
+{
+	return m_data[ iCol + 4 * iRow ];
+}
+
+float4 float4x4::row( int i ) const
+{
+	return float4
+	(
+		(*this)( i, 0 ),
+		(*this)( i, 1 ),
+		(*this)( i, 2 ),
+		(*this)( i, 3 )
+	);
+}
+
+float4 float4x4::col( int i ) const
+{
+	return float4
+	(
+		(*this)( 0, i ),
+		(*this)( 1, i ),
+		(*this)( 2, i ),
+		(*this)( 3, i )
+	);
 }
 
 #pragma endregion
@@ -285,10 +339,10 @@ float4 operator*( float4 v, float4x4 m )
 {
 	return float4
 	(
-		(v.x * m.m00 + v.y * m.m10) + (v.z * m.m20 + v.w * m.m30),
-		(v.x * m.m01 + v.y * m.m11) + (v.z * m.m21 + v.w * m.m31),
-		(v.x * m.m02 + v.y * m.m12) + (v.z * m.m22 + v.w * m.m32),
-		(v.x * m.m03 + v.y * m.m13) + (v.z * m.m23 + v.w * m.m33)
+		dot( v, m.col( 0 ) ),
+		dot( v, m.col( 1 ) ),
+		dot( v, m.col( 2 ) ),
+		dot( v, m.col( 3 ) )
 	);
 }
 
@@ -296,91 +350,9 @@ float4x4 operator*( float4x4 m, float4x4 n )
 {
 	float4x4 result;
 
-	result.m00 =  n.m00 * m.m00;
-	result.m10 =  n.m00 * m.m10;
-	result.m20 =  n.m00 * m.m20;
-	result.m30 =  n.m00 * m.m30;
-
-	result.m00 += n.m10 * m.m01;
-	result.m10 += n.m10 * m.m11;
-	result.m20 += n.m10 * m.m21;
-	result.m30 += n.m10 * m.m31;
-
-	result.m00 += n.m20 * m.m02;
-	result.m10 += n.m20 * m.m12;
-	result.m20 += n.m20 * m.m22;
-	result.m30 += n.m20 * m.m32;
-
-	result.m00 += n.m30 * m.m03;
-	result.m10 += n.m30 * m.m13;
-	result.m20 += n.m30 * m.m23;
-	result.m30 += n.m30 * m.m33;
-
-
-
-	result.m01 =  n.m01 * m.m00;
-	result.m11 =  n.m01 * m.m10;
-	result.m21 =  n.m01 * m.m20;
-	result.m31 =  n.m01 * m.m30;
-
-	result.m01 += n.m11 * m.m01;
-	result.m11 += n.m11 * m.m11;
-	result.m21 += n.m11 * m.m21;
-	result.m31 += n.m11 * m.m31;
-
-	result.m01 += n.m21 * m.m02;
-	result.m11 += n.m21 * m.m12;
-	result.m21 += n.m21 * m.m22;
-	result.m31 += n.m21 * m.m32;
-
-	result.m01 += n.m31 * m.m03;
-	result.m11 += n.m31 * m.m13;
-	result.m21 += n.m31 * m.m23;
-	result.m31 += n.m31 * m.m33;
-
-
-
-	result.m02 =  n.m02 * m.m00;
-	result.m12 =  n.m02 * m.m10;
-	result.m22 =  n.m02 * m.m20;
-	result.m32 =  n.m02 * m.m30;
-
-	result.m02 += n.m12 * m.m01;
-	result.m12 += n.m12 * m.m11;
-	result.m22 += n.m12 * m.m21;
-	result.m32 += n.m12 * m.m31;
-
-	result.m02 += n.m22 * m.m02;
-	result.m12 += n.m22 * m.m12;
-	result.m22 += n.m22 * m.m22;
-	result.m32 += n.m22 * m.m32;
-
-	result.m02 += n.m32 * m.m03;
-	result.m12 += n.m32 * m.m13;
-	result.m22 += n.m32 * m.m23;
-	result.m32 += n.m32 * m.m33;
-
-
-
-	result.m03 =  n.m03 * m.m00;
-	result.m13 =  n.m03 * m.m10;
-	result.m23 =  n.m03 * m.m20;
-	result.m33 =  n.m03 * m.m30;
-
-	result.m03 += n.m13 * m.m01;
-	result.m13 += n.m13 * m.m11;
-	result.m23 += n.m13 * m.m21;
-	result.m33 += n.m13 * m.m31;
-
-	result.m03 += n.m23 * m.m02;
-	result.m13 += n.m23 * m.m12;
-	result.m23 += n.m23 * m.m22;
-	result.m33 += n.m23 * m.m32;
-
-	result.m03 += n.m33 * m.m03;
-	result.m13 += n.m33 * m.m13;
-	result.m23 += n.m33 * m.m23;
-	result.m33 += n.m33 * m.m33;
+	for( int row = 0; row < 4; row++ )
+		for( int col = 0; col < 4; col++ )
+			result( row, col ) = dot( m.row( row ), n.col( col ) );
 
 	return result;
 }
@@ -403,12 +375,6 @@ vector operator*( vector v, matrix m )
 	vz += vw;
 
 	return vx + vz;
-}
-
-vector & operator*=( vector & v, matrix m )
-{
-	v = v * m;
-	return v;
 }
 
 #pragma endregion
@@ -461,16 +427,17 @@ void unpack( unsigned v, unsigned & outX, unsigned & outY, unsigned & outZ )
 float4x4 invert_transform( float4x4 const & Rt )
 {
 	float4x4 R( Rt );
-	R.m30 = 0.0f;
-	R.m31 = 0.0f;
-	R.m32 = 0.0f;
+	R( 3, 0 ) = 0.0f;
+	R( 3, 1 ) = 0.0f;
+	R( 3, 2 ) = 0.0f;
 
 	float4x4 tInv = identity;
-	tInv.m30 = -Rt.m30;
-	tInv.m31 = -Rt.m31;
-	tInv.m32 = -Rt.m32;
+	tInv( 3, 0 ) = -Rt( 3, 0 );
+	tInv( 3, 1 ) = -Rt( 3, 1 );
+	tInv( 3, 2 ) = -Rt( 3, 2 );
 
-	return tInv * transpose( R );
+	transpose( R );
+	return tInv * R;
 }
 
 float4x4 perspective_fov_rh( float fovYradians, float aspectWbyH, float nearZdistance, float farZdistance )
@@ -480,26 +447,22 @@ float4x4 perspective_fov_rh( float fovYradians, float aspectWbyH, float nearZdis
 	float Q = farZdistance / (farZdistance - nearZdistance);
 	
 	float4x4 result;
-	std::memset( & result.m00, 0, 64 );
+	std::memset( & result, 0, 64 );
 
-	result.m00 = w;
-	result.m11 = h;
-	result.m22 = -Q;
-	result.m32 = -Q * nearZdistance;
-	result.m23 = -1.0f;
+	result( 0, 0 ) = w;
+	result( 1, 1 ) = h;
+	result( 2, 2 ) = -Q;
+	result( 3, 2 ) = -Q * nearZdistance;
+	result( 2, 3 ) = -1.0f;
 
 	return result;
 }
 
-float4x4 transpose( float4x4 const & m )
+void transpose( float4x4 & m )
 {
-	return float4x4
-	(
-		m.m00, m.m10, m.m20, m.m30,
-		m.m01, m.m11, m.m21, m.m31,
-		m.m02, m.m12, m.m22, m.m32,
-		m.m03, m.m13, m.m23, m.m33
-	);
+	for( int row = 0; row < 4; row++ )
+		for( int col = row; col < 4; col++ )
+			std::swap( m( row, col ), m( col, row ) );
 }
 
 
@@ -588,10 +551,10 @@ matrix set( float4x4 m )
 {
 	matrix result;
 
-	result.row0 = set( m.m00, m.m01, m.m02, m.m03 );
-	result.row1 = set( m.m10, m.m11, m.m12, m.m13 );
-	result.row2 = set( m.m20, m.m21, m.m22, m.m23 );
-	result.row3 = set( m.m30, m.m31, m.m32, m.m33 );
+	result.row0 = set( m.row( 0 ) );
+	result.row1 = set( m.row( 1 ) );
+	result.row2 = set( m.row( 2 ) );
+	result.row3 = set( m.row( 3 ) );
 
 	return result;
 }
