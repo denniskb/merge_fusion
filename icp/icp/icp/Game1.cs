@@ -41,7 +41,7 @@ namespace icp
             proj = Matrix.CreatePerspectiveFieldOfView(0.93f, (float)graphics.PreferredBackBufferWidth / graphics.PreferredBackBufferHeight, 0.1f, 5.0f);
             tmp = Matrix.Identity;
 
-            pcl = new PointCloud(16);
+            pcl = new PointCloud(8);
         }
 
         /// <summary>

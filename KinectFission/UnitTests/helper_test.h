@@ -1,8 +1,6 @@
 #pragma once
 
-#include <fstream>
-#include <vector>
-
+#include <kifi/DepthSensorParams.h>
 #include <kifi/util/math.h>
 
 
@@ -22,5 +20,5 @@ inline void ComputeMatrices
 	outViewToWorld = util::invert_transform( worldToView );
 	outEye = outViewToWorld * util::float4( 0.0f, 0.0f, 0.0f, 1.0f );
 	outForward = outViewToWorld * util::float4( 0.0f, 0.0f, -1.0f, 0.0f );
-	outViewProj = util::perspective_fov_rh( 0.778633444f, 4.0f / 3.0f, 0.8f, 4.0f ) * worldToView;
+	outViewProj = DepthSensorParams::KinectParams( KinectSensorModeFar ).ViewToClip() * worldToView;
 }

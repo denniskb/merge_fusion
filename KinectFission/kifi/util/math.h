@@ -120,6 +120,12 @@ inline void     unpack    ( unsigned v, unsigned & outX, unsigned & outY, unsign
 inline void     eigen             ( float4x4 const & m, float4 & outEigenValues, float4x4 & outEigenVectors );
 inline float4x4 invert_transform  ( float4x4 const & tR );
 inline float4x4 perspective_fov_rh( float fovYradians, float aspectWbyH, float nearZdistance, float farZdistance );
+inline float4x4 perspective_fl_pp_rh
+(
+	float focalLengthXPixels   , float focalLengthYPixels, 
+	float principalPointXPixels, float principalPointYPixels,	
+	float nearZdistance        , float farZdistance 
+);
 inline void     transpose         ( float4x4 & m );
 
 inline int      all       ( vector v );
@@ -650,12 +656,38 @@ float4x4 perspective_fov_rh( float fovYradians, float aspectWbyH, float nearZdis
 	float h = 1.0f / std::tanf( 0.5f * fovYradians );
 	float w = h / aspectWbyH;
 	float Q = farZdistance / (farZdistance - nearZdistance);
-	
+
 	float4x4 result;
 	std::memset( & result, 0, 64 );
 
 	result( 0, 0 ) = w;
 	result( 1, 1 ) = h;
+	result( 2, 2 ) = -Q;
+	result( 2, 3 ) = -Q * nearZdistance;
+	result( 3, 2 ) = -1.0f;
+
+	return result;
+}
+
+float4x4 perspective_fl_pp_rh
+(
+	float focalLengthXPixels,
+	float focalLengthYPixels,
+
+	float principalPointXPixels,
+	float principalPointYPixels,
+
+	float nearZdistance,
+	float farZdistance
+)
+{
+	float Q = farZdistance / (farZdistance - nearZdistance);
+	
+	float4x4 result;
+	std::memset( & result, 0, 64 );
+
+	result( 0, 0 ) = focalLengthXPixels / principalPointXPixels;
+	result( 1, 1 ) = focalLengthYPixels / principalPointYPixels;
 	result( 2, 2 ) = -Q;
 	result( 2, 3 ) = -Q * nearZdistance;
 	result( 3, 2 ) = -1.0f;

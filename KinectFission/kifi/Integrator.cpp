@@ -314,7 +314,6 @@ void Integrator::UpdateVoxels
 		k2 = fma( k2, ndcToUV, ndcToUV );
 		k3 = fma( k3, ndcToUV, ndcToUV );
 
-		// TODO: Replace hard-coded 0.8 with camera params struct
 		int k0valid = dist0f >= 0.8f && all( k0 >= zero() & k0 < frameSize );
 		int k1valid = dist1f >= 0.8f && all( k1 >= zero() & k1 < frameSize );
 		int k2valid = dist2f >= 0.8f && all( k2 >= zero() & k2 < frameSize );

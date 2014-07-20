@@ -35,11 +35,11 @@ namespace poly2depth
 
         public Matrix GetViewProjection()
         {
-            const float radiansKinectFovY = 0.778633444f;
+            const float radiansKinectFovY = 0.777169865f;
 
             return
                 GetView() *
-                Matrix.CreatePerspectiveFieldOfView(radiansKinectFovY, 4.0f / 3.0f, 0.8f, 4.0f);
+                Matrix.CreatePerspectiveFieldOfView(radiansKinectFovY, 639.0f / 479.0f, 0.8f, 4.0f);
         }
 
         public void Update()

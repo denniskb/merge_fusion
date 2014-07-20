@@ -22,6 +22,7 @@
     <ClInclude Include="util\functional.h" />
     <ClInclude Include="util\math.h" />
     <ClInclude Include="Mesher.h" />
+    <ClInclude Include="DepthSensorParams.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="util\barrier.cpp" />
@@ -34,5 +35,6 @@
     <ClCompile Include="Volume.cpp" />
     <ClCompile Include="Mesher.cpp" />
     <ClCompile Include="invariants.cpp" />
+    <ClCompile Include="DepthSensorParams.cpp" />
   </ItemGroup>
 </Project>

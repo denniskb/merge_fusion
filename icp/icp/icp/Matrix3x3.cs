@@ -118,6 +118,15 @@ namespace icp
             );
         }
 
+        public float det()
+        {
+            float A = e * i - f * h;
+            float B = f * g - d * i;
+            float C = d * h - e * g;
+
+            return a * A + b * B + c * C;
+        }
+
         public Matrix3x3 Invert()
         {
             float A = e * i - f * h;
