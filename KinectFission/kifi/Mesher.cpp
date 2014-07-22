@@ -137,7 +137,7 @@ void Mesher::Generate( Volume const & volume, std::vector< util::float3 > & outV
 
 		unsigned x0, y0, z0;
 		util::unpack( keys[ i ], x0, y0, z0 );
-		util::float3 const vert000 = volume.VoxelCenter( x0, y0, z0 ).xyz();
+		util::float3 const vert000 = volume.VoxelCenter( x0, y0, z0 );
 
 		float dself = voxels[ 0 ].Distance();
 

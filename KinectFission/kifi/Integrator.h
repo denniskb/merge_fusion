@@ -5,6 +5,8 @@
 #include <kifi/util/math.h>
 #include <kifi/util/vector2d.h>
 
+#include <kifi/DepthSensorParams.h>
+
 
 
 namespace kifi {
@@ -19,11 +21,8 @@ public:
 		Volume & volume,
 		util::vector2d< float > const & frame,
 
-		util::float4 eye,
-		util::float4 forward,
-
-		util::float4x4 const & viewProjection,
-		util::float4x4 const & viewToWorld
+		DepthSensorParams const & cameraParams,
+		util::float4x4 const & worldToEye
 	);
 
 private:
@@ -34,7 +33,9 @@ private:
 	(
 		Volume const & volume,
 		util::vector2d< float > const & frame,
-		util::float4x4 const & viewToWorld,
+
+		DepthSensorParams const & cameraParams,
+		util::float4x4 const & eyeToWorld,
 
 		std::vector< unsigned > & outPointCloud
 	);
@@ -58,9 +59,10 @@ private:
 		Volume & volume,
 		util::vector2d< float > const & frame,
 
-		util::float4 eye,
-		util::float4 forward,
-		util::float4x4 const & viewProjection
+		DepthSensorParams const & cameraParams,
+		util::float4 const & eye,
+		util::float4 const & forward,
+		util::float4x4 const & worldToClip
 	);
 };
 

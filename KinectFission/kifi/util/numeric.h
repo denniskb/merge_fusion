@@ -9,7 +9,7 @@ template< typename T >
 class kahan_sum
 {
 public:
-	kahan_sum();
+	kahan_sum( T initial = T() );
 
 	kahan_sum & operator+=( T rhs );
 	operator T();
@@ -50,8 +50,8 @@ namespace kifi {
 namespace util {
 
 template< typename T >
-kahan_sum< T >::kahan_sum() :
-	m_sum( T() ),
+kahan_sum< T >::kahan_sum( T initial ) :
+	m_sum( initial ),
 	m_c  ( T() )
 {
 }

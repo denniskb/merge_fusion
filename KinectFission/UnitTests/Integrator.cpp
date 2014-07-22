@@ -10,8 +10,6 @@
 #include <kifi/Integrator.h>
 #include <kifi/Volume.h>
 
-#include <helper_test.h>
-
 using namespace kifi;
 
 
@@ -32,14 +30,10 @@ BOOST_AUTO_TEST_CASE( Integrate )
 	DepthStream ds( ( boost::filesystem::current_path() / "../content/imrod_v2.depth" ).string().c_str() );
 
 	util::vector2d< float > depth;
-	util::float4x4 view, viewToWorld;
-	util::float4x4 viewProj;
-	util::float4 eye, forward;
+	util::float4x4 view;
 
 	ds.NextFrame( depth, view );
-	ComputeMatrices( view, eye, forward, viewProj, viewToWorld );
-
-	i.Integrate( v, depth, eye, forward, viewProj, viewToWorld );
+	i.Integrate( v, depth, DepthSensorParams::KinectParams( KinectDepthSensorResolution640x480, KinectDepthSensorModeFar ), view );
 
 	std::ofstream debug( TMP_DIR "/volume_integrate.obj" );
 	if( ! debug )
@@ -50,7 +44,7 @@ BOOST_AUTO_TEST_CASE( Integrate )
 		unsigned x, y, z;
 		util::unpack( * it, x, y, z );
 		
-		util::float4 pos = v.VoxelCenter( x, y, z );
+		util::float3 pos = v.VoxelCenter( x, y, z );
 		
 		debug << "v " << pos.x << " " << pos.y << " " << pos.z << "\n";
 	}

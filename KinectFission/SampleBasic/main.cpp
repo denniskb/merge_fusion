@@ -9,8 +9,6 @@
 #include <kifi/Mesher.h>
 #include <kifi/Volume.h>
 
-#include <UnitTests/helper_test.h>
-
 using namespace kifi;
 using namespace kifi::util;
 
@@ -21,9 +19,8 @@ int main()
 	DepthStream depthStreamHouse( "I:/tmp/house.depth" );
 	vector2d< float > synthDepthFrame;
 	
-	float4   eye;
-	float4   forward;
-	float4x4 view, viewToWorld, viewProj;
+	float4x4 worldToEye;
+	DepthSensorParams cameraParams = DepthSensorParams::KinectParams( KinectDepthSensorResolution640x480, KinectDepthSensorModeFar );
 
 	Volume volume( 512, 4.0f, 0.02f );
 
@@ -33,15 +30,12 @@ int main()
 	std::vector< float3   > vertices;
 	std::vector< unsigned > indices;
 
-	depthStreamHouse.NextFrame( synthDepthFrame, view );
-	ComputeMatrices( view, eye, forward, viewProj, viewToWorld );
-	integrator.Integrate( volume, synthDepthFrame, eye, forward, viewProj, viewToWorld );
-	
+	depthStreamHouse.NextFrame( synthDepthFrame, worldToEye );
+
 	for( int i = 0; i < 100; i++ ) 
 	{
-		depthStreamHouse.NextFrame( synthDepthFrame, view );
-		ComputeMatrices( view, eye, forward, viewProj, viewToWorld );
-		integrator.Integrate( volume, synthDepthFrame, eye, forward, viewProj, viewToWorld );
+		depthStreamHouse.NextFrame( synthDepthFrame, worldToEye );
+		integrator.Integrate( volume, synthDepthFrame, cameraParams, worldToEye );
 		//mesher.Mesh( volume, vertices, indices );
 	}
 

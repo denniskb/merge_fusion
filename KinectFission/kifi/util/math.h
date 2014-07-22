@@ -1,8 +1,6 @@
 #pragma once
 
-#ifdef KIFI_USE_FMA3
-#include <immintrin.h> // AVX (only used for 'fma')
-#endif
+#include <array>
 
 #include <xmmintrin.h> // SSE1
 
@@ -11,7 +9,25 @@
 namespace kifi {
 namespace util {
 
-#pragma region float3/float4/float4x4/float4x4/vector/matrix
+#pragma region Types
+
+struct int2
+{
+	int x, y;
+
+	inline int2();
+	inline int2( int i );
+	inline int2( int x, int y );
+};
+
+struct float2
+{
+	float x, y;
+
+	inline float2();
+	inline float2( float s );
+	inline float2( float x, float y );
+};
 
 struct float3
 {
@@ -20,9 +36,6 @@ struct float3
 	inline float3();
 	inline float3( float s );
 	inline float3( float x, float y, float z );
-
-	inline float & operator[]( int i );
-	inline float   operator[]( int i ) const;
 };
 
 struct float4
@@ -36,17 +49,17 @@ struct float4
 	inline float & operator[]( int i );
 	inline float   operator[]( int i ) const;
 
-	inline float3 xyz() const;
+	inline float4 operator-() const;
 };
 
 
 
-#pragma warning( push )
-#pragma warning( disable : 4201 ) // non-standard extension used (unnamed struct/union)
-
 struct float4x4
 {
+	float4 col0, col1, col2, col3;
+
 	inline float4x4();
+	explicit inline float4x4( float s );
 	inline float4x4
 	(
 		float m00, float m01, float m02, float m03,
@@ -59,16 +72,8 @@ struct float4x4
 	inline explicit float4x4( float const * src );
 
 	inline float & operator()( int iRow, int iCol );
-	inline float   operator()( int iRow, int iCol ) const;
-
-	inline float4 row( int i ) const;
-	inline float4 col( int i ) const;
-
-private:
-	float m_data[ 16 ]; // row-major
+	inline float const & operator()( int iRow, int iCol ) const;
 };
-
-#pragma warning( pop )
 
 float4x4 const identity
 (
@@ -117,37 +122,30 @@ inline bool     powerOf2  ( int x );
 inline void     unpack    ( unsigned v, unsigned & outX, unsigned & outY, unsigned & outZ );
 
 // Eigenvectors are stored in the columns of 'outEigenVectors'. 'm' and 'outEigenVectors' are allowed to be identical.
-inline void     eigen             ( float4x4 const & m, float4 & outEigenValues, float4x4 & outEigenVectors );
-inline float4x4 invert_transform  ( float4x4 const & tR );
-inline float4x4 perspective_fov_rh( float fovYradians, float aspectWbyH, float nearZdistance, float farZdistance );
-inline float4x4 perspective_fl_pp_rh
-(
-	float focalLengthXPixels   , float focalLengthYPixels, 
-	float principalPointXPixels, float principalPointYPixels,	
-	float nearZdistance        , float farZdistance 
-);
-inline void     transpose         ( float4x4 & m );
+inline void eigen           ( float4x4 const & m, float4 & outEigenValues, float4x4 & outEigenVectors );
+inline void invert_transform( float4x4 & tR );
+inline void transpose       ( float4x4 & m );
 
 inline int      all       ( vector v );
 inline int      any       ( vector v );
 template< int index >	  
 inline vector   broadcast ( vector v );
 inline vector   dot       ( vector u, vector v );
-inline vector   fma       ( vector u, vector v, vector w );
 inline vector   homogenize( vector v );
+inline vector   load      ( float4 src );
+inline matrix   load      ( float4x4 src );
 inline vector   load      ( float const * src );
 inline vector   loadu     ( float const * src );
 inline vector   loadss    ( float src );
 inline int      none      ( vector v );
 inline vector   set       ( float s );
 inline vector   set       ( float x, float y, float z, float w );
-inline vector   set       ( float4 v );
-inline matrix   set       ( float4x4 m );
 template< int a0, int a1, int b0, int b1 >
 inline vector   shuffle   ( vector a, vector b );
+inline float4   store     ( vector src );
 inline void     store     ( float * dst, vector src );
-inline float    storess   ( vector src );
 inline void     storeu    ( float * dst, vector src );
+inline float    storess   ( vector src );
 inline vector   zero      ();
 
 #pragma endregion
@@ -193,32 +191,26 @@ inline __m128 operator&( __m128 u, __m128 v );
 namespace kifi {
 namespace util {
 
-#pragma region float4/float4x4
+#pragma region Types
+
+int2::int2() {}
+int2::int2( int i ) : x( i ), y( i ) {}
+int2::int2( int x, int y ) : x( x ), y( y ) {}
+
+float2::float2() {}
+float2::float2( float s ) : x( s ), y( s ) {}
+float2::float2( float x, float y ) : x( x ), y( y ) {}
 
 float3::float3() {}
 float3::float3( float s ) : x( s ), y( s ), z( s ) {}
 float3::float3( float x, float y, float z ) : x( x ), y( y ), z( z ) {}
 
-float & float3::operator[]( int i )
-{
-	assert( i >= 0 && i < 3 );
-
-	return reinterpret_cast< float * >( this )[ i ];
-}
-
-float float3::operator[]( int i ) const
-{
-	assert( i >= 0 && i < 3 );
-
-	return reinterpret_cast< float const * >( this )[ i ];
-}
-
-
-
 float4::float4() {}
 float4::float4( float s ) : x( s ), y( s ), z( s ), w( s ) {}
 float4::float4( float x, float y, float z, float w ) : x( x ), y( y ), z( z ), w( w ) {}
-float3 float4::xyz() const { return float3( x, y, z ); }
+float4 float4::operator-() const { return float4( -x, -y, -z, -w ); }
+
+
 
 float & float4::operator[]( int i )
 {
@@ -238,38 +230,32 @@ float float4::operator[]( int i ) const
 
 float4x4::float4x4() {}
 
+float4x4::float4x4( float s ) :
+	col0( s ),
+	col1( s ),
+	col2( s ),
+	col3( s )
+{
+}
+
 float4x4::float4x4
 (
 	float m00, float m01, float m02, float m03,
 	float m10, float m11, float m12, float m13,
 	float m20, float m21, float m22, float m23,
 	float m30, float m31, float m32, float m33
-)
+) :
+	col0( m00, m10, m20, m30 ),
+	col1( m01, m11, m21, m31 ),
+	col2( m02, m12, m22, m32 ),
+	col3( m03, m13, m23, m33 )
 {
-	(*this)( 0, 0 ) = m00;
-	(*this)( 0, 1 ) = m01;
-	(*this)( 0, 2 ) = m02;
-	(*this)( 0, 3 ) = m03;
-
-	(*this)( 1, 0 ) = m10;
-	(*this)( 1, 1 ) = m11;
-	(*this)( 1, 2 ) = m12;
-	(*this)( 1, 3 ) = m13;
-
-	(*this)( 2, 0 ) = m20;
-	(*this)( 2, 1 ) = m21;
-	(*this)( 2, 2 ) = m22;
-	(*this)( 2, 3 ) = m23;
-
-	(*this)( 3, 0 ) = m30;
-	(*this)( 3, 1 ) = m31;
-	(*this)( 3, 2 ) = m32;
-	(*this)( 3, 3 ) = m33;
 }
 
 float4x4::float4x4( float const * src )
 {
-	std::memcpy( m_data, src, 64 );
+	std::memcpy( this, src, 64 );
+	transpose( * this );
 }
 
 float & float4x4::operator()( int iRow, int iCol )
@@ -277,41 +263,15 @@ float & float4x4::operator()( int iRow, int iCol )
 	assert( iRow >= 0 && iRow < 4 );
 	assert( iCol >= 0 && iCol < 4 );
 
-	return m_data[ iCol + 4 * iRow ];
+	return reinterpret_cast< float * >( this )[ iRow + 4 * iCol ];
 }
 
-float float4x4::operator()( int iRow, int iCol ) const
+float const & float4x4::operator()( int iRow, int iCol ) const
 {
 	assert( iRow >= 0 && iRow < 4 );
 	assert( iCol >= 0 && iCol < 4 );
 
-	return m_data[ iCol + 4 * iRow ];
-}
-
-float4 float4x4::row( int i ) const
-{
-	assert( i >= 0 && i < 4 );
-
-	return float4
-	(
-		(*this)( i, 0 ),
-		(*this)( i, 1 ),
-		(*this)( i, 2 ),
-		(*this)( i, 3 )
-	);
-}
-
-float4 float4x4::col( int i ) const
-{
-	assert( i >= 0 && i < 4 );
-
-	return float4
-	(
-		(*this)( 0, i ),
-		(*this)( 1, i ),
-		(*this)( 2, i ),
-		(*this)( 3, i )
-	);
+	return reinterpret_cast< float const * >( this )[ iRow + 4 * iCol ];
 }
 
 #pragma endregion
@@ -392,22 +352,17 @@ float4 & operator/=( float4 & u, float4 v )
 
 float4 operator*( float4x4 m, float4 v )
 {
-	return float4
-	(
-		dot( m.row( 0 ), v ),
-		dot( m.row( 1 ), v ),
-		dot( m.row( 2 ), v ),
-		dot( m.row( 3 ), v )
-	);
+	return ( m.col0 * v.x + m.col1 * v.y ) + ( m.col2 * v.z + m.col3 * v.w );
 }
 
 float4x4 operator*( float4x4 m, float4x4 n )
 {
 	float4x4 result;
 
-	for( int row = 0; row < 4; row++ )
-		for( int col = 0; col < 4; col++ )
-			result( row, col ) = dot( m.row( row ), n.col( col ) );
+	result.col0 = m * n.col0;
+	result.col1 = m * n.col1;
+	result.col2 = m * n.col2;
+	result.col3 = m * n.col3;
 
 	return result;
 }
@@ -490,6 +445,7 @@ void eigen( float4x4 const & m, float4 & outEigenValues, float4x4 & outEigenVect
 	tred2( outEigenVectors, outEigenValues, tmp );
 	tqli ( outEigenValues, tmp, outEigenVectors );
 
+	// TODO: Replace copy-righted code.
 #pragma region tred2/tqli implementation
 
 	static int const MAX_ITERS = 30;
@@ -635,71 +591,28 @@ void eigen( float4x4 const & m, float4 & outEigenValues, float4x4 & outEigenVect
 #pragma endregion
 }
 
-float4x4 invert_transform( float4x4 const & tR )
+void invert_transform( float4x4 & tR )
 {
-	float4x4 R( tR );
-	R( 0, 3 ) = 0.0f;
-	R( 1, 3 ) = 0.0f;
-	R( 2, 3 ) = 0.0f;
-
-	float4x4 tInv = identity;
-	tInv( 0, 3 ) = -tR( 0, 3 );
-	tInv( 1, 3 ) = -tR( 1, 3 );
-	tInv( 2, 3 ) = -tR( 2, 3 );
-
-	transpose( R );
-	return R * tInv;
-}
-
-float4x4 perspective_fov_rh( float fovYradians, float aspectWbyH, float nearZdistance, float farZdistance )
-{
-	float h = 1.0f / std::tanf( 0.5f * fovYradians );
-	float w = h / aspectWbyH;
-	float Q = farZdistance / (farZdistance - nearZdistance);
-
-	float4x4 result;
-	std::memset( & result, 0, 64 );
-
-	result( 0, 0 ) = w;
-	result( 1, 1 ) = h;
-	result( 2, 2 ) = -Q;
-	result( 2, 3 ) = -Q * nearZdistance;
-	result( 3, 2 ) = -1.0f;
-
-	return result;
-}
-
-float4x4 perspective_fl_pp_rh
-(
-	float focalLengthXPixels,
-	float focalLengthYPixels,
-
-	float principalPointXPixels,
-	float principalPointYPixels,
-
-	float nearZdistance,
-	float farZdistance
-)
-{
-	float Q = farZdistance / (farZdistance - nearZdistance);
+	float4 tInv = -tR.col3; tInv.w = 1.0f;
+	tR.col3 = float4( 0.0f, 0.0f, 0.0f, 1.0f );
 	
-	float4x4 result;
-	std::memset( & result, 0, 64 );
+	std::swap( tR.col0.y, tR.col1.x );
+	std::swap( tR.col0.z, tR.col2.x );
+	std::swap( tR.col1.z, tR.col2.y );
 
-	result( 0, 0 ) = focalLengthXPixels / principalPointXPixels;
-	result( 1, 1 ) = focalLengthYPixels / principalPointYPixels;
-	result( 2, 2 ) = -Q;
-	result( 2, 3 ) = -Q * nearZdistance;
-	result( 3, 2 ) = -1.0f;
-
-	return result;
+	tR.col3 = tR * tInv;
 }
 
 void transpose( float4x4 & m )
 {
-	for( int row = 0; row < 4; row++ )
-		for( int col = row + 1; col < 4; col++ )
-			std::swap( m( row, col ), m( col, row ) );
+	std::swap( m.col0.y, m.col1.x );
+	std::swap( m.col0.z, m.col2.x );
+	std::swap( m.col0.w, m.col3.x );
+			   
+	std::swap( m.col1.z, m.col2.y );
+	std::swap( m.col1.w, m.col3.y );
+			   
+	std::swap( m.col2.w, m.col3.z );
 }
 
 
@@ -734,18 +647,26 @@ vector dot( vector u, vector v )
 	return tmp + rotl2;
 }
 
-vector fma( vector u, vector v, vector w )
-{
-#ifdef KIFI_USE_FMA3
-	return _mm_fmadd_ps( u, v, w );
-#else
-	return u * v + w;
-#endif
-}
-
 vector homogenize( vector v )
 {
 	return v / broadcast< 3 >( v );
+}
+
+vector load( float4 src )
+{
+	return loadu( reinterpret_cast< float * >( & src ) );
+}
+
+matrix load( float4x4 src )
+{
+	matrix result;
+
+	result.col0 = load( src.col0 );
+	result.col1 = load( src.col1 );
+	result.col2 = load( src.col2 );
+	result.col3 = load( src.col3 );
+
+	return result;
 }
 
 vector load( float const * src )
@@ -779,27 +700,19 @@ vector set( float x, float y, float z, float w )
 	return _mm_set_ps( w, z, y, x );
 }
 
-vector set( float4 v )
-{
-	return loadu( reinterpret_cast< float * >( & v ) );
-}
-
-matrix set( float4x4 m )
-{
-	matrix result;
-
-	result.col0 = set( m.col( 0 ) );
-	result.col1 = set( m.col( 1 ) );
-	result.col2 = set( m.col( 2 ) );
-	result.col3 = set( m.col( 3 ) );
-
-	return result;
-}
-
 template< int a0, int a1, int b0, int b1 >
 vector shuffle( vector a, vector b )
 {
 	return _mm_shuffle_ps( a, b, _MM_SHUFFLE( b1, b0, a1, a0 ) );
+}
+
+float4 store( vector src )
+{
+	float4 result;
+
+	storeu( reinterpret_cast< float * >( & result ), src );
+
+	return result;
 }
 
 void store( float * dst, vector src )
@@ -807,16 +720,16 @@ void store( float * dst, vector src )
 	_mm_store_ps( dst, src );
 }
 
+void storeu( float * dst, vector src )
+{
+	_mm_storeu_ps( dst, src );
+}
+
 float storess( vector src )
 {
 	float result;
 	_mm_store_ss( & result, src );
 	return result;
-}
-
-void storeu( float * dst, vector src )
-{
-	_mm_storeu_ps( dst, src );
 }
 
 vector zero()

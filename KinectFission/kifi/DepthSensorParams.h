@@ -6,10 +6,16 @@
 
 namespace kifi {
 
-enum KinectSensorMode
+enum KinectDepthSensorResolution
 {
-	KinectSensorModeNear,
-	KinectSensorModeFar
+	KinectDepthSensorResolution320x240,
+	KinectDepthSensorResolution640x480,
+};
+
+enum KinectDepthSensorMode
+{
+	KinectDepthSensorModeNear,
+	KinectDepthSensorModeFar
 };
 
 class DepthSensorParams
@@ -17,33 +23,30 @@ class DepthSensorParams
 public:
 	DepthSensorParams
 	(
-		float focalLenghtXInPixels,
-		float focalLengthYInPixels,
-
-		float principalPointXInPixels,
-		float principalPointYInPixels,
-
-		float minimumSensibleDistanceInMeters,
-		float maximumSensibleDistanceInMeters
+		util::int2   resolutionPixels,
+		util::float2 focalLengthPixels,
+		util::float2 principalPointPixels,
+		util::float2 sensibleDistanceRangeMeters
 	);
 
-	float FocalLengthXInPixels() const;
-	float FocalLengthYInPixels() const;
+	util::int2   ResolutionPixels() const;
+	util::float2 FocalLengthPixels() const;
+	util::float2 PrincipalPointPixels() const;
+	util::float2 SensibleRangeMeters() const;
 
-	float PrincipalPointXInPixels() const;
-	float PrincipalPointYInPixels() const;
+	/*
+	Returns a OpenGl-style (z \in [-w, w]) projection matrix which
+	projects a point from right-handed eye space to left-handed clip space.
+	*/
+	util::float4x4 EyeToClipRH() const;
 
-	float MinimumSensibleDistanceInMeters() const;
-	float MaximumSensibleDistanceInMeters() const;
-
-	util::float4x4 ViewToClip() const;
-
-	static DepthSensorParams KinectParams( KinectSensorMode mode );
+	static DepthSensorParams KinectParams( KinectDepthSensorResolution resolution, KinectDepthSensorMode mode );
 
 private:
-	float m_flX, m_flY;
-	float m_ppX, m_ppY;
-	float m_dMin, m_dMax;
+	util::int2   m_res;
+	util::float2 m_fl;
+	util::float2 m_pp;
+	util::float2 m_range;
 };
 
 } // namespace

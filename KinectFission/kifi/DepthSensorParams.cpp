@@ -1,3 +1,5 @@
+#include <cassert>
+
 #include <kifi/DepthSensorParams.h>
 
 
@@ -6,84 +8,76 @@ namespace kifi {
 
 DepthSensorParams::DepthSensorParams
 (
-	float focalLenghtXInPixels,
-	float focalLengthYInPixels,
-
-	float principalPointXInPixels,
-	float principalPointYInPixels,
-
-	float minimumSensibleDistanceInMeters,
-	float maximumSensibleDistanceInMeters
+	util::int2   resolutionPixels,
+	util::float2 focalLengthPixels,
+	util::float2 principalPointPixels,
+	util::float2 sensibleDistanceRangeMeters
 ) :
-	m_flX( focalLenghtXInPixels ),
-	m_flY( focalLengthYInPixels ),
-
-	m_ppX( principalPointXInPixels ),
-	m_ppY( principalPointYInPixels ),
-
-	m_dMin( minimumSensibleDistanceInMeters ),
-	m_dMax( maximumSensibleDistanceInMeters )
+	m_res  ( resolutionPixels ),
+	m_fl   ( focalLengthPixels ),
+	m_pp   ( principalPointPixels ),
+	m_range( sensibleDistanceRangeMeters )
 {
 }
 
 
 
-float DepthSensorParams::FocalLengthXInPixels() const
+util::int2 DepthSensorParams::ResolutionPixels() const
 {
-	return m_flX;
+	return m_res;
 }
 
-float DepthSensorParams::FocalLengthYInPixels() const
+util::float2 DepthSensorParams::FocalLengthPixels() const
 {
-	return m_flY;
+	return m_fl;
 }
 
-
-
-float DepthSensorParams::PrincipalPointXInPixels() const
+util::float2 DepthSensorParams::PrincipalPointPixels() const
 {
-	return m_ppX;
+	return m_pp;
 }
 
-float DepthSensorParams::PrincipalPointYInPixels() const
+util::float2 DepthSensorParams::SensibleRangeMeters() const
 {
-	return m_ppY;
-}
-
-
-
-float DepthSensorParams::MinimumSensibleDistanceInMeters() const
-{
-	return m_dMin;
-}
-
-float DepthSensorParams::MaximumSensibleDistanceInMeters() const
-{
-	return m_dMax;
+	return m_range;
 }
 
 
 
-util::float4x4 DepthSensorParams::ViewToClip() const
+util::float4x4 DepthSensorParams::EyeToClipRH() const
 {
-	return util::perspective_fl_pp_rh
-	(
-		FocalLengthXInPixels()           , FocalLengthYInPixels(),
-		PrincipalPointXInPixels()        , PrincipalPointYInPixels(),
-		MinimumSensibleDistanceInMeters(), MaximumSensibleDistanceInMeters()
-	);
+	util::float4x4 result( 0.0f );
+
+	result( 0, 0 ) = 2.0f * m_fl.x / m_res.x;
+	result( 0, 2 ) = m_res.x - 2.0f * m_pp.x;
+
+	result( 1, 1 ) = 2.0f * m_fl.y / m_res.y;
+	result( 1, 2 ) = m_res.y - 2.0f * m_pp.y;
+
+	result( 2, 2 ) = -(m_range.y + m_range.x) / (m_range.y - m_range.x);
+	result( 2, 3 ) = -2.0f * m_range.y * m_range.x / (m_range.y - m_range.x);
+	
+	result( 3, 2 ) = -1.0f;
+
+	return result;
 }
 
 
 
 // static 
-DepthSensorParams DepthSensorParams::KinectParams( KinectSensorMode mode )
+DepthSensorParams DepthSensorParams::KinectParams( KinectDepthSensorResolution resolution, KinectDepthSensorMode mode )
 {
+	util::int2 res = ( KinectDepthSensorResolution320x240 == resolution ) ? util::int2( 320, 240 ) : util::int2( 640, 480 );
+	// TODO: Make sure those are good default values!
+	float fl = ( KinectDepthSensorResolution320x240 == resolution ) ? 285.63f : 585.0f;//571.26f;
+	util::float2 range = ( KinectDepthSensorModeNear == mode ) ? util::float2( 0.4f, 3.0f ) : util::float2( 0.8f, 4.0f );
+
 	return DepthSensorParams
 	(
-		585.0f, 585.0f,
-		319.5f, 239.5f,
-		mode == KinectSensorModeNear ? 0.4f : 0.8f, mode == KinectSensorModeNear ? 3.0f : 4.0f
+		res,
+		fl,
+		util::float2( res.x * 0.5f, res.y * 0.5f ),
+		range
 	);
 }
 

@@ -24,7 +24,7 @@ public:
 
 	inline util::vector VoxelCenter( util::vector index ) const;
 	// TODO: Deprecated!
-	inline util::float4   VoxelCenter( int x, int y, int z ) const;
+	inline util::float3 VoxelCenter( int x, int y, int z ) const;
 	inline util::vector VoxelIndex( util::vector world ) const;
 
 	util::flat_map< unsigned, Voxel > & Data();
@@ -60,17 +60,23 @@ namespace kifi {
 
 util::vector Volume::VoxelCenter( util::vector index ) const
 {
-	return util::fma( index, m_tmpVoxelLen, m_tmpVoxelLenOver2PlusMin );
+	return index * m_tmpVoxelLen + m_tmpVoxelLenOver2PlusMin;
 }
 
-util::float4 Volume::VoxelCenter( int x, int y, int z ) const
+util::float3 Volume::VoxelCenter( int x, int y, int z ) const
 {
-	return util::float4( (float) x, (float) y, (float) z, 1.0f ) * m_tmpVoxelLenf + m_tmpVoxelLenOver2PlusMinf;
+	util::float3 result;
+
+	result.x = x * m_tmpVoxelLenf + m_tmpVoxelLenOver2PlusMinf;
+	result.y = y * m_tmpVoxelLenf + m_tmpVoxelLenOver2PlusMinf;
+	result.z = z * m_tmpVoxelLenf + m_tmpVoxelLenOver2PlusMinf;
+
+	return result;
 }
 
 util::vector Volume::VoxelIndex( util::vector world ) const
 {
-	return util::fma( world, m_tmpVoxelLenInv, m_tmpMinOverNegVoxelLen );
+	return world * m_tmpVoxelLenInv + m_tmpMinOverNegVoxelLen;
 }
 
 } // namespace

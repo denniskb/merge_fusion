@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <cassert>
 #include <iterator>
 #include <utility>
 #include <vector>
@@ -9,6 +10,7 @@
 #include <kifi/util/iterator.h>
 #include <kifi/util/vector2d.h>
 
+#include <kifi/DepthSensorParams.h>
 #include <kifi/Integrator.h>
 #include <kifi/Volume.h>
 #include <kifi/Voxel.h>
@@ -28,22 +30,24 @@ void Integrator::Integrate
 	Volume & volume,
 	util::vector2d< float > const & frame,
 
-	util::float4 eye,
-	util::float4 forward,
-
-	util::float4x4 const & viewProjection,
-	util::float4x4 const & viewToWorld
+	DepthSensorParams const & cameraParams,
+	util::float4x4 const & worldToEye
 )
 {
+	assert( frame.width() == cameraParams.ResolutionXInPixels() );
+	assert( frame.height() == cameraParams.ResolutionYInPixels() );
+
 	m_tmpPointCloud.resize ( frame.size() );
 	m_tmpScratchPad.reserve( frame.size() );
 
-	util::chrono::stop_watch sw;
-	std::size_t nSplats = DepthMap2PointCloud( volume, frame, viewToWorld, m_tmpPointCloud );
-	//sw.take_time( "tsplat" );
+	util::float4x4 worldToClip = cameraParams.EyeToClipRH() * worldToEye;
+	util::float4x4 eyeToWorld  = worldToEye; util::invert_transform( eyeToWorld );
+	util::float4 eye     =  eyeToWorld.col3;
+	util::float4 forward = -eyeToWorld.col2;
+
+	std::size_t nSplats = DepthMap2PointCloud( volume, frame, cameraParams, eyeToWorld, m_tmpPointCloud );
 
 	util::radix_sort( m_tmpPointCloud.data(), m_tmpPointCloud.data() + nSplats, m_tmpScratchPad.data() );
-	//sw.take_time( "tsort" );
 
 	m_tmpPointCloud.resize(
 		std::distance( 
@@ -51,22 +55,17 @@ void Integrator::Integrate
 			std::unique( m_tmpPointCloud.begin(), m_tmpPointCloud.begin() + nSplats ) 
 		)
 	);
-	//sw.take_time( "unique" );
 
 	ExpandChunks( m_tmpPointCloud, m_tmpScratchPad );
-	//sw.take_time( "expand" );
 	
-	sw.restart();
 	volume.Data().insert(
 		m_tmpPointCloud.cbegin(), m_tmpPointCloud.cend(),
 		util::make_const_iterator( Voxel() )
 	);
-	sw.take_time( "merge" );
+	util::chrono::stop_watch sw;
+	UpdateVoxels( volume, frame, cameraParams, eye, forward, worldToClip );
+	sw.take_time( "tupdate" );
 
-	//sw.restart();
-	UpdateVoxels( volume, frame, eye, forward, viewProjection );
-	//sw.take_time( "tupdate" );
-	
 	sw.print_times();
 }
 
@@ -77,7 +76,9 @@ std::size_t Integrator::DepthMap2PointCloud
 (
 	Volume const & volume,
 	util::vector2d< float > const & frame,
-	util::float4x4 const & viewToWorld,
+
+	DepthSensorParams const & cameraParams,
+	util::float4x4 const & eyeToWorld,
 
 	std::vector< unsigned > & outPointCloud
 )
@@ -87,17 +88,16 @@ std::size_t Integrator::DepthMap2PointCloud
 	assert( 0 == frame.width() % 4 );
 	assert( volume.Resolution() > 1 );
 
-	matrix _viewToWorld = set( viewToWorld );
+	matrix _eyeToWorld = load( eyeToWorld );
 
-	// TODO: Encapsulate in CameraParams struct!
-	vector flInv = set( 1.0f / 585.0f, 1.0f / 585.0f, 1.0f, 1.0f );
+	vector flInv = set( 1.0f / cameraParams.FocalLengthPixels().x, 1.0f / cameraParams.FocalLengthPixels().y, 1.0f, 1.0f );
 	vector ppOverFl = set
 	(
-		-((frame.width()  / 2) - 0.5f) / 585.0f, 
-		 ((frame.height() / 2) - 0.5f) / 585.0f, 
+		(0.5f - cameraParams.PrincipalPointPixels().x),
+		(cameraParams.PrincipalPointPixels().y - 0.5f),
 		0.0f, 
 		0.0f
-	);
+	) * flInv;
 	vector maxIndex = set( (float) (volume.Resolution() - 1 ) );
 
 	vector mask0001 = set( 0.0f, 0.0f, 0.0f, 1.0f );
@@ -122,25 +122,25 @@ std::size_t Integrator::DepthMap2PointCloud
 			vector point2 = loadss( (float) (u + 2) ) + point;
 			vector point3 = loadss( (float) (u + 3) ) + point;
 
-			point0 = fma( point0, flInv, ppOverFl );
-			point1 = fma( point1, flInv, ppOverFl );
-			point2 = fma( point2, flInv, ppOverFl );
-			point3 = fma( point3, flInv, ppOverFl );
+			point0 = point0 * flInv + ppOverFl;
+			point1 = point1 * flInv + ppOverFl;
+			point2 = point2 * flInv + ppOverFl;
+			point3 = point3 * flInv + ppOverFl;
 			
 			vector depthx = broadcast< 0 >( depths );
 			vector depthy = broadcast< 1 >( depths );
 			vector depthz = broadcast< 2 >( depths );
 			vector depthw = broadcast< 3 >( depths );
 
-			point0 = fma( point0, depthx, mask0001 );
-			point1 = fma( point1, depthy, mask0001 );
-			point2 = fma( point2, depthz, mask0001 );
-			point3 = fma( point3, depthw, mask0001 );
+			point0 = point0 * depthx + mask0001;
+			point1 = point1 * depthy + mask0001;
+			point2 = point2 * depthz + mask0001;
+			point3 = point3 * depthw + mask0001;
 
-			point0 = _viewToWorld * point0;
-			point1 = _viewToWorld * point1;
-			point2 = _viewToWorld * point2;
-			point3 = _viewToWorld * point3;
+			point0 = _eyeToWorld * point0;
+			point1 = _eyeToWorld * point1;
+			point2 = _eyeToWorld * point2;
+			point3 = _eyeToWorld * point3;
 
 			point0 = volume.VoxelIndex( point0 ) - half;
 			point1 = volume.VoxelIndex( point1 ) - half;
@@ -154,30 +154,26 @@ std::size_t Integrator::DepthMap2PointCloud
 
 			if( point0Valid )
 			{
-				float tmp[4];
-				storeu( tmp, point0 );
-				outPointCloud[ nSplats++ ] = pack( (unsigned) tmp[0], (unsigned) tmp[1], (unsigned) tmp[2] );
+				float4 p = store( point0 );
+				outPointCloud[ nSplats++ ] = pack( (unsigned) p.x, (unsigned) p.y, (unsigned) p.z );
 			}
 
 			if( point1Valid )
 			{
-				float tmp[4];
-				storeu( tmp, point1 );
-				outPointCloud[ nSplats++ ] = pack( (unsigned) tmp[0], (unsigned) tmp[1], (unsigned) tmp[2] );
+				float4 p = store( point1 );
+				outPointCloud[ nSplats++ ] = pack( (unsigned) p.x, (unsigned) p.y, (unsigned) p.z );
 			}
 
 			if( point2Valid )
 			{
-				float tmp[4];
-				storeu( tmp, point2 );
-				outPointCloud[ nSplats++ ] = pack( (unsigned) tmp[0], (unsigned) tmp[1], (unsigned) tmp[2] );
+				float4 p = store( point2 );
+				outPointCloud[ nSplats++ ] = pack( (unsigned) p.x, (unsigned) p.y, (unsigned) p.z );
 			}
 
 			if( point3Valid )
 			{
-				float tmp[4];
-				storeu( tmp, point3 );
-				outPointCloud[ nSplats++ ] = pack( (unsigned) tmp[0], (unsigned) tmp[1], (unsigned) tmp[2] );
+				float4 p = store( point3 );
+				outPointCloud[ nSplats++ ] = pack( (unsigned) p.x, (unsigned) p.y, (unsigned) p.z );
 			}
 		}
 	}
@@ -258,9 +254,10 @@ void Integrator::UpdateVoxels
 	Volume & volume,
 	util::vector2d< float > const & frame,
 
-	util::float4 eye,
-	util::float4 forward,
-	util::float4x4 const & viewProjection
+	DepthSensorParams const & cameraParams,
+	util::float4 const & eye,
+	util::float4 const & forward,
+	util::float4x4 const & worldToClip
 )
 {
 	using namespace util;
@@ -269,9 +266,9 @@ void Integrator::UpdateVoxels
 
 	vector frameSize = set( (float) frame.width(), (float) frame.height(), std::numeric_limits< float >::max(), std::numeric_limits< float >::max() );
 
-	vector _eye = set( eye );
-	vector _forward = set( forward );
-	matrix _viewProjection = set( viewProjection );
+	vector _eye = load( eye );
+	vector _forward = load( forward );
+	matrix _worldToClip = load( worldToClip );
 
 	for( std::size_t i = 0, end = volume.Data().size() / 4 * 4; i < end; i += 4 )
 	{
@@ -304,66 +301,62 @@ void Integrator::UpdateVoxels
 		float dist2f = storess( dist2 );
 		float dist3f = storess( dist3 );
 
-		k0 = homogenize( _viewProjection * k0 );
-		k1 = homogenize( _viewProjection * k1 );
-		k2 = homogenize( _viewProjection * k2 );
-		k3 = homogenize( _viewProjection * k3 );
+		k0 = homogenize( _worldToClip * k0 );
+		k1 = homogenize( _worldToClip * k1 );
+		k2 = homogenize( _worldToClip * k2 );
+		k3 = homogenize( _worldToClip * k3 );
 
-		k0 = fma( k0, ndcToUV, ndcToUV );
-		k1 = fma( k1, ndcToUV, ndcToUV );
-		k2 = fma( k2, ndcToUV, ndcToUV );
-		k3 = fma( k3, ndcToUV, ndcToUV );
-
-		int k0valid = dist0f >= 0.8f && all( k0 >= zero() & k0 < frameSize );
-		int k1valid = dist1f >= 0.8f && all( k1 >= zero() & k1 < frameSize );
-		int k2valid = dist2f >= 0.8f && all( k2 >= zero() & k2 < frameSize );
-		int k3valid = dist3f >= 0.8f && all( k3 >= zero() & k3 < frameSize );
+		k0 = k0 * ndcToUV + ndcToUV;
+		k1 = k1 * ndcToUV + ndcToUV;
+		k2 = k2 * ndcToUV + ndcToUV;
+		k3 = k3 * ndcToUV + ndcToUV;
+		
+		int k0valid = dist0f >= cameraParams.SensibleRangeMeters().x && all( k0 >= zero() & k0 < frameSize );
+		int k1valid = dist1f >= cameraParams.SensibleRangeMeters().x && all( k1 >= zero() & k1 < frameSize );
+		int k2valid = dist2f >= cameraParams.SensibleRangeMeters().x && all( k2 >= zero() & k2 < frameSize );
+		int k3valid = dist3f >= cameraParams.SensibleRangeMeters().x && all( k3 >= zero() & k3 < frameSize );
 
 		if( k0valid )
 		{
-			float uv[4];
-			storeu( uv, k0 );
+			float4 uv = store( k0 );
 
-			float depth = frame( (unsigned) uv[0], frame.height() - (unsigned) uv[1] - 1 );
+			float depth = frame( (unsigned) uv.x, frame.height() - (unsigned) uv.y - 1 );
 			float signedDist = depth - dist0f;
 				
-			if( signedDist >= -volume.TruncationMargin() && depth > 0.0f )
+			if( depth > 0.0f && signedDist >= -volume.TruncationMargin() )
 				volume.Data().values_begin()[ i ].Update( std::min( signedDist, volume.TruncationMargin() ) );
 		}
 
 		if( k1valid )
 		{
-			float uv[4];
-			storeu( uv, k1 );
+			float4 uv = store( k1 );
 
-			float depth = frame( (unsigned) uv[0], frame.height() - (unsigned) uv[1] - 1 );
+			float depth = frame( (unsigned) uv.x, frame.height() - (unsigned) uv.y - 1 );
 			float signedDist = depth - dist1f;
 				
-			if( signedDist >= -volume.TruncationMargin() && depth > 0.0f )
+			if( depth > 0.0f && signedDist >= -volume.TruncationMargin() )
 				volume.Data().values_begin()[ i + 1 ].Update( std::min( signedDist, volume.TruncationMargin() ) );
 		}
 
 		if( k2valid )
 		{
-			float uv[4];
-			storeu( uv, k2 );
+			float4 uv = store( k2 );
 
-			float depth = frame( (unsigned) uv[0], frame.height() - (unsigned) uv[1] - 1 );
+			float depth = frame( (unsigned) uv.x, frame.height() - (unsigned) uv.y - 1 );
 			float signedDist = depth - dist2f;
 				
-			if( signedDist >= -volume.TruncationMargin() && depth > 0.0f )
+			if( depth > 0.0f && signedDist >= -volume.TruncationMargin() )
 				volume.Data().values_begin()[ i + 2 ].Update( std::min( signedDist, volume.TruncationMargin() ) );
 		}
 
 		if( k3valid )
 		{
-			float uv[4];
-			storeu( uv, k3 );
+			float4 uv = store( k3 );
 
-			float depth = frame( (unsigned) uv[0], frame.height() - (unsigned) uv[1] - 1 );
+			float depth = frame( (unsigned) uv.x, frame.height() - (unsigned) uv.y - 1 );
 			float signedDist = depth - dist3f;
 				
-			if( signedDist >= -volume.TruncationMargin() && depth > 0.0f )
+			if( depth > 0.0f && signedDist >= -volume.TruncationMargin() )
 				volume.Data().values_begin()[ i + 3 ].Update( std::min( signedDist, volume.TruncationMargin() ) );
 		}	
 	}

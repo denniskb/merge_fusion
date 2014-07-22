@@ -18,7 +18,4 @@
     <ClCompile Include="util\iterator.cpp" />
     <ClCompile Include="Mesher.cpp" />
   </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="helper_test.h" />
-  </ItemGroup>
 </Project>
