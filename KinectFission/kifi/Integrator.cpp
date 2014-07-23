@@ -29,28 +29,28 @@ void Integrator::Integrate
 	util::float4x4 const & worldToEye
 )
 {
-	assert( frame.width() == cameraParams.ResolutionXInPixels() );
-	assert( frame.height() == cameraParams.ResolutionYInPixels() );
+	assert( frame.width() == cameraParams.ResolutionPixels().x );
+	assert( frame.height() == cameraParams.ResolutionPixels().y );
 
 	m_tmpPointCloud.resize ( frame.size() );
 	m_tmpScratchPad.reserve( frame.size() );
 
 	util::float4x4 worldToClip = cameraParams.EyeToClipRH() * worldToEye;
 	util::float4x4 eyeToWorld  = worldToEye; util::invert_transform( eyeToWorld );
-	util::float4 eye     =  eyeToWorld.col3;
-	util::float4 forward = -eyeToWorld.col2;
+
+	
 
 	std::size_t nSplats = DepthMap2PointCloud( volume, frame, cameraParams, eyeToWorld, m_tmpPointCloud );
-
+	
 	util::radix_sort( m_tmpPointCloud.data(), m_tmpPointCloud.data() + nSplats, m_tmpScratchPad.data() );
-
+	
 	m_tmpPointCloud.resize(
 		std::distance( 
 			m_tmpPointCloud.begin(), 
 			std::unique( m_tmpPointCloud.begin(), m_tmpPointCloud.begin() + nSplats ) 
 		)
 	);
-
+	
 	ExpandChunks( m_tmpPointCloud, m_tmpScratchPad );
 	
 	volume.Data().insert(
@@ -58,7 +58,7 @@ void Integrator::Integrate
 		util::make_const_iterator( Voxel() )
 	);
 	
-	UpdateVoxels( volume, frame, cameraParams, eye, forward, worldToClip );
+	UpdateVoxels( volume, frame, cameraParams, eyeToWorld.col3, -eyeToWorld.col2, worldToClip );
 }
 
 

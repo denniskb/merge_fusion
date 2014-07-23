@@ -69,7 +69,7 @@ DepthSensorParams DepthSensorParams::KinectParams( KinectDepthSensorResolution r
 {
 	util::int2 res = ( KinectDepthSensorResolution320x240 == resolution ) ? util::int2( 320, 240 ) : util::int2( 640, 480 );
 	// TODO: Make sure those are good default values!
-	float fl = ( KinectDepthSensorResolution320x240 == resolution ) ? 285.63f : 571.26f;
+	float fl = ( KinectDepthSensorResolution320x240 == resolution ) ? 285.63f : 585.0f;//571.26f;
 	util::float2 range = ( KinectDepthSensorModeNear == mode ) ? util::float2( 0.4f, 3.0f ) : util::float2( 0.8f, 4.0f );
 
 	return DepthSensorParams
