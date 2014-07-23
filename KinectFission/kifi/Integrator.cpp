@@ -19,11 +19,6 @@ using namespace kifi;
 
 
 
-// HACK
-#include <kifi/util/stop_watch.h>
-
-
-
 // static 
 void Integrator::Integrate
 ( 
@@ -62,11 +57,8 @@ void Integrator::Integrate
 		m_tmpPointCloud.cbegin(), m_tmpPointCloud.cend(),
 		util::make_const_iterator( Voxel() )
 	);
-	util::chrono::stop_watch sw;
+	
 	UpdateVoxels( volume, frame, cameraParams, eye, forward, worldToClip );
-	sw.take_time( "tupdate" );
-
-	sw.print_times();
 }
 
 

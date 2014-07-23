@@ -3,7 +3,6 @@
 #include <cstdint>
 
 #include <kifi/util/math.h>
-#include <kifi/util/stop_watch.h>
 
 #include <kifi/Mesher.h>
 #include <kifi/Volume.h>
@@ -91,8 +90,6 @@ void Mesher::Generate( Volume const & volume, std::vector< util::float3 > & outV
 	outVertices.clear();
 	m_vertexIDs.clear();
 	m_indexIDs.clear();
-
-	util::chrono::stop_watch t;
 
 	auto const keys           = volume.Data().keys_cbegin();
 	auto const values         = volume.Data().values_cbegin();
@@ -256,9 +253,6 @@ void Mesher::Generate( Volume const & volume, std::vector< util::float3 > & outV
 				m_indexIDs.push_back(  localToGlobal[ TriTable()[ i ] ] );
 		}
 	}
-
-	t.take_time( "tsplat" );
-	t.print_times();
 }
 
 template void Mesher::Generate< true > ( Volume const &, std::vector< util::float3 > & );
