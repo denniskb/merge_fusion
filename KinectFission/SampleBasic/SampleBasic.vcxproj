@@ -44,26 +44,37 @@
   <PropertyGroup />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)..;$(CUDA_PATH)\include;$(NVCUDASAMPLES_ROOT)\common\inc</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..;$(FREEGLUT_ROOT)\include</AdditionalIncludeDirectories>
       <FloatingPointExceptions>true</FloatingPointExceptions>
+      <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Link />
     <Link>
-      <AdditionalDependencies>cudart.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(CUDA_PATH)\lib\x64</AdditionalLibraryDirectories>
+      <AdditionalDependencies>freeglut.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(FREEGLUT_ROOT)\lib\x64</AdditionalLibraryDirectories>
+      <SubSystem>Windows</SubSystem>
+      <AdditionalOptions>/ENTRY:mainCRTStartup %(AdditionalOptions)</AdditionalOptions>
     </Link>
+    <PostBuildEvent>
+      <Command>copy $(SolutionDir)thrid_party\freeglut.dll $(ProjectDir)$(OutDir)freeglut.dll</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)..;$(CUDA_PATH)\include;$(NVCUDASAMPLES_ROOT)\common\inc</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..;$(FREEGLUT_ROOT)\include</AdditionalIncludeDirectories>
       <FloatingPointModel>Fast</FloatingPointModel>
       <FloatingPointExceptions>false</FloatingPointExceptions>
+      <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Link />
     <Link>
-      <AdditionalDependencies>cudart.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(CUDA_PATH)\lib\x64</AdditionalLibraryDirectories>
+      <AdditionalDependencies>freeglut.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(FREEGLUT_ROOT)\lib\x64</AdditionalLibraryDirectories>
+      <AdditionalOptions>/ENTRY:mainCRTStartup %(AdditionalOptions)</AdditionalOptions>
     </Link>
+    <PostBuildEvent>
+      <Command>copy $(SolutionDir)thrid_party\freeglut.dll $(ProjectDir)$(OutDir)freeglut.dll</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />

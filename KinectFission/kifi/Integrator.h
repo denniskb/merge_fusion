@@ -58,10 +58,6 @@ private:
 	(
 		Volume & volume,
 		util::vector2d< float > const & frame,
-
-		DepthSensorParams const & cameraParams,
-		util::float4 const & eye,
-		util::float4 const & forward,
 		util::float4x4 const & worldToClip
 	);
 };

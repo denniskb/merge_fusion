@@ -24,6 +24,8 @@
     <ClInclude Include="Mesher.h" />
     <ClInclude Include="DepthSensorParams.h" />
     <ClInclude Include="Pipeline.h" />
+    <ClInclude Include="Renderer.h" />
+    <ClInclude Include="ICP.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="util\barrier.cpp" />
@@ -38,5 +40,6 @@
     <ClCompile Include="invariants.cpp" />
     <ClCompile Include="DepthSensorParams.cpp" />
     <ClCompile Include="Pipeline.cpp" />
+    <ClCompile Include="Renderer.cpp" />
   </ItemGroup>
 </Project>

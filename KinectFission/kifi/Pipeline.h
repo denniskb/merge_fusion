@@ -3,7 +3,10 @@
 #include <kifi/util/vector2d.h>
 
 #include <kifi/DepthSensorParams.h>
+#include <kifi/ICP.h>
 #include <kifi/Integrator.h>
+#include <kifi/Mesher.h>
+#include <kifi/Renderer.h>
 #include <kifi/Volume.h>
 
 
@@ -24,19 +27,31 @@ public:
 
 	// TODO: Compute worldToEye via ICP instead of asking for it.
 	// TODO: Overload for vector2d< short >
+	// TODO: output synth depth as by-product
 	void Integrate
 	(
 		util::vector2d< float > rawDepthMap,
 		util::float4x4 const & worldToEye
 	);
 
-	// TODO: Replace this with direct meshing functionality
+	void Mesh( std::vector< util::float3 > & outVertices );
+	void Mesh( std::vector< util::float3 > & outVertices, std::vector< unsigned > & outIndices );
+
 	Volume const & Volume() const;
 
 private:
 	DepthSensorParams m_camParams;
 	kifi::Volume m_volume;
+	ICP m_icp;
 	Integrator m_integrator;
+	Mesher m_mesher;
+	Renderer m_renderer;
+
+	int m_iFrame;
+	util::float4x4 m_worldToEye; // or eyeToWorld???
+
+	std::vector< util::float3 > m_tmpSynthPointCloud;
+	util::vector2d< util::float3 > m_tmpSynthPointBuffer;
 };
 
 } // namespace

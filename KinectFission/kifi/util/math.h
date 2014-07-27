@@ -45,6 +45,7 @@ struct float4
 	inline float4();
 	inline float4( float s );
 	inline float4( float x, float y, float z, float w );
+	inline float4( float3 xyz, float w );
 
 	inline float & operator[]( int i );
 	inline float   operator[]( int i ) const;
@@ -208,6 +209,7 @@ float3::float3( float x, float y, float z ) : x( x ), y( y ), z( z ) {}
 float4::float4() {}
 float4::float4( float s ) : x( s ), y( s ), z( s ), w( s ) {}
 float4::float4( float x, float y, float z, float w ) : x( x ), y( y ), z( z ), w( w ) {}
+float4::float4( float3 xyz, float w ) : x( xyz.x ), y( xyz.y ), z( xyz.z ), w( w ) {}
 float4 float4::operator-() const { return float4( -x, -y, -z, -w ); }
 
 

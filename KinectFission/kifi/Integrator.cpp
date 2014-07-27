@@ -17,6 +17,9 @@
 
 using namespace kifi;
 
+// HACK
+#include <kifi/util/stop_watch.h>
+
 
 
 // static 
@@ -39,7 +42,6 @@ void Integrator::Integrate
 	util::float4x4 eyeToWorld  = worldToEye; util::invert_transform( eyeToWorld );
 
 	
-
 	std::size_t nSplats = DepthMap2PointCloud( volume, frame, cameraParams, eyeToWorld, m_tmpPointCloud );
 	
 	util::radix_sort( m_tmpPointCloud.data(), m_tmpPointCloud.data() + nSplats, m_tmpScratchPad.data() );
@@ -58,7 +60,11 @@ void Integrator::Integrate
 		util::make_const_iterator( Voxel() )
 	);
 	
-	UpdateVoxels( volume, frame, cameraParams, eyeToWorld.col3, -eyeToWorld.col2, worldToClip );
+	util::chrono::stop_watch sw;
+	UpdateVoxels( volume, frame, worldToClip );
+	sw.take_time( "tupd" );
+
+	sw.print_times();
 }
 
 
@@ -139,10 +145,10 @@ std::size_t Integrator::DepthMap2PointCloud
 			point2 = volume.VoxelIndex( point2 ) - half;
 			point3 = volume.VoxelIndex( point3 ) - half;
 
-			int point0Valid = (depthsValid & 0x1) && all( ( point0 >= zero() ) & ( point0 < maxIndex ) );
-			int point1Valid = (depthsValid & 0x2) && all( ( point1 >= zero() ) & ( point1 < maxIndex ) );
-			int point2Valid = (depthsValid & 0x4) && all( ( point2 >= zero() ) & ( point2 < maxIndex ) );
-			int point3Valid = (depthsValid & 0x8) && all( ( point3 >= zero() ) & ( point3 < maxIndex ) );
+			int point0Valid = (depthsValid & 0x1) && all( point0 >= zero() & point0 < maxIndex );
+			int point1Valid = (depthsValid & 0x2) && all( point1 >= zero() & point1 < maxIndex );
+			int point2Valid = (depthsValid & 0x4) && all( point2 >= zero() & point2 < maxIndex );
+			int point3Valid = (depthsValid & 0x8) && all( point3 >= zero() & point3 < maxIndex );
 
 			if( point0Valid )
 			{
@@ -245,10 +251,6 @@ void Integrator::UpdateVoxels
 (
 	Volume & volume,
 	util::vector2d< float > const & frame,
-
-	DepthSensorParams const & cameraParams,
-	util::float4 const & eye,
-	util::float4 const & forward,
 	util::float4x4 const & worldToClip
 )
 {
@@ -256,10 +258,9 @@ void Integrator::UpdateVoxels
 
 	vector ndcToUV = set( frame.width() * 0.5f, frame.height() * 0.5f, 0.0f, 0.0f );
 
-	vector frameSize = set( (float) frame.width(), (float) frame.height(), std::numeric_limits< float >::max(), std::numeric_limits< float >::max() );
+	vector minUV = set( 0.0f, 0.0f, -1.0f, -std::numeric_limits< float >::max() );
+	vector maxUV = set( (float) frame.width(), (float) frame.height(), 1.0f, std::numeric_limits< float >::max() );
 
-	vector _eye = load( eye );
-	vector _forward = load( forward );
 	matrix _worldToClip = load( worldToClip );
 
 	for( std::size_t i = 0, end = volume.Data().size() / 4 * 4; i < end; i += 4 )
@@ -282,33 +283,33 @@ void Integrator::UpdateVoxels
 		k1 = volume.VoxelCenter( k1 );
 		k2 = volume.VoxelCenter( k2 );
 		k3 = volume.VoxelCenter( k3 );
-		 
-		vector dist0 = dot( k0 - _eye, _forward );
-		vector dist1 = dot( k1 - _eye, _forward );
-		vector dist2 = dot( k2 - _eye, _forward );
-		vector dist3 = dot( k3 - _eye, _forward );
 
-		float dist0f = storess( dist0 );
-		float dist1f = storess( dist1 );
-		float dist2f = storess( dist2 );
-		float dist3f = storess( dist3 );
+		k0 = _worldToClip * k0;
+		k1 = _worldToClip * k1;
+		k2 = _worldToClip * k2;
+		k3 = _worldToClip * k3;
 
-		k0 = homogenize( _worldToClip * k0 );
-		k1 = homogenize( _worldToClip * k1 );
-		k2 = homogenize( _worldToClip * k2 );
-		k3 = homogenize( _worldToClip * k3 );
+		vector k0w = broadcast< 3 >( k0 );
+		vector k1w = broadcast< 3 >( k1 );
+		vector k2w = broadcast< 3 >( k2 );
+		vector k3w = broadcast< 3 >( k3 );
+
+		float dist0f = storess( k0w );
+		float dist1f = storess( k1w );
+		float dist2f = storess( k2w );
+		float dist3f = storess( k3w );
+
+		k0 /= k0w;
+		k1 /= k1w;
+		k2 /= k2w;
+		k3 /= k3w;
 
 		k0 = k0 * ndcToUV + ndcToUV;
 		k1 = k1 * ndcToUV + ndcToUV;
 		k2 = k2 * ndcToUV + ndcToUV;
 		k3 = k3 * ndcToUV + ndcToUV;
 		
-		int k0valid = dist0f >= cameraParams.SensibleRangeMeters().x && all( k0 >= zero() & k0 < frameSize );
-		int k1valid = dist1f >= cameraParams.SensibleRangeMeters().x && all( k1 >= zero() & k1 < frameSize );
-		int k2valid = dist2f >= cameraParams.SensibleRangeMeters().x && all( k2 >= zero() & k2 < frameSize );
-		int k3valid = dist3f >= cameraParams.SensibleRangeMeters().x && all( k3 >= zero() & k3 < frameSize );
-
-		if( k0valid )
+		if( all( k0 >= minUV & k0 < maxUV ) )
 		{
 			float4 uv = store( k0 );
 
@@ -319,7 +320,7 @@ void Integrator::UpdateVoxels
 				volume.Data().values_begin()[ i ].Update( std::min( signedDist, volume.TruncationMargin() ) );
 		}
 
-		if( k1valid )
+		if( all( k1 >= minUV & k1 < maxUV ) )
 		{
 			float4 uv = store( k1 );
 
@@ -330,7 +331,7 @@ void Integrator::UpdateVoxels
 				volume.Data().values_begin()[ i + 1 ].Update( std::min( signedDist, volume.TruncationMargin() ) );
 		}
 
-		if( k2valid )
+		if( all( k2 >= minUV & k2 < maxUV ) )
 		{
 			float4 uv = store( k2 );
 
@@ -341,7 +342,7 @@ void Integrator::UpdateVoxels
 				volume.Data().values_begin()[ i + 2 ].Update( std::min( signedDist, volume.TruncationMargin() ) );
 		}
 
-		if( k3valid )
+		if( all( k3 >= minUV & k3 < maxUV ) )
 		{
 			float4 uv = store( k3 );
 
