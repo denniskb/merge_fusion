@@ -16,8 +16,9 @@ Pipeline::Pipeline
 	m_volume( volumeResolution, volumeSideLength, truncationMargin ),
 
 	m_iFrame( 0 ),
-	m_worldToEye( util::identity )
+	m_eyeToWorld( util::float4x4::identity() )
 {
+	m_eyeToWorld.col3.z = 2.0f;
 }
 
 
@@ -28,22 +29,23 @@ void Pipeline::Integrate
 	util::float4x4 const & worldToEye
 )
 {
-#if 1
-	m_integrator.Integrate( m_volume, rawDepthMap, m_camParams, worldToEye );
-#else
-	// TODO: For testing purposes set m_worldToEye to the first worldToView matrix from the depth stream
-	// => consequtive matrices should be equal
-
 	if( m_iFrame > 0 )
-		m_worldToEye = m_icp.Align( rawDepthMap, m_worldToEye, m_tmpSynthPointBuffer, m_worldToEye, m_camParams );
+	//	// TODO: Swap dst and src
+		m_eyeToWorld = m_icp.Align( rawDepthMap, m_eyeToWorld, m_tmpSynthPointBuffer, m_eyeToWorld, m_camParams );
 
-	m_integrator.Integrate( m_volume, rawDepthMap, m_camParams, m_worldToEye );
+	util::float4x4 tmp = m_eyeToWorld;
+	util::invert_transform( tmp );
+
+	// TODO: Change interface of integrator to accept eyeToWorld
+	//if( m_iFrame == 0 )
+		m_integrator.Integrate( m_volume, rawDepthMap, m_camParams, tmp );
+
 	m_mesher.Mesh( m_volume, m_tmpSynthPointCloud );
-	m_renderer.Bin( m_tmpSynthPointCloud, m_camParams.EyeToClipRH() * m_worldToEye, m_tmpSynthPointBuffer );
-	// Depth map is not a by-product of the rendering step =S
+	//
+	m_tmpSynthPointBuffer.resize( m_camParams.ResolutionPixels().x, m_camParams.ResolutionPixels().y );
+	m_renderer.Bin( m_tmpSynthPointCloud, m_camParams.EyeToClipRH() * tmp, m_tmpSynthPointBuffer );
 
 	++m_iFrame;
-#endif
 }
 
 
@@ -63,6 +65,11 @@ void Pipeline::Mesh( std::vector< util::float3 > & outVertices, std::vector< uns
 Volume const & Pipeline::Volume() const
 {
 	return m_volume;
+}
+
+util::float4x4 const & Pipeline::EyeToWorld() const
+{
+	return m_eyeToWorld;
 }
 
 } // namespace

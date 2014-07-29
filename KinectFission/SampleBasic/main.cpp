@@ -15,11 +15,12 @@ using namespace kifi::util;
 
 
 
-util::vector2d< int > backBuffer( 1024, 768 );
+util::vector2d< int > backBuffer( 640, 480 );
 
-DepthStream depthStreamHouse( "I:/tmp/house.depth" );
+DepthStream depthStreamHouse( "I:/tmp/icp_test.depth" );
 vector2d< float > synthDepthFrame;
-DepthSensorParams cameraParams( int2( 640, 480 ), float2( 585.0f ), float2( 320, 240 ), float2( 0.8f, 4.0f ) );
+//DepthSensorParams cameraParams( int2( 640, 480 ), float2( 585.0f ), float2( 320, 240 ), float2( 0.8f, 4.0f ) );
+DepthSensorParams cameraParams( DepthSensorParams::KinectParams( KinectDepthSensorResolution640x480, KinectDepthSensorModeFar ) );
 
 Pipeline pipeline( cameraParams );
 
@@ -28,16 +29,18 @@ std::vector< unsigned > indices;
 
 Renderer r;
 
-void myIdleFunc()
+//void myIdleFunc()
+void myIdleFunc( int button, int state, int x, int y )
 {
 	float4x4 worldToEye;
 
-	if( depthStreamHouse.NextFrame( synthDepthFrame, worldToEye ) )
+	if( GLUT_MIDDLE_BUTTON == state && depthStreamHouse.NextFrame( synthDepthFrame, worldToEye ) )
 	{
 		pipeline.Integrate( synthDepthFrame, worldToEye );
 		pipeline.Mesh( vertices, indices );
 
-		r.Render( vertices, cameraParams.EyeToClipRH() * worldToEye, backBuffer );
+		float4x4 tmp = pipeline.EyeToWorld(); invert_transform( tmp );
+		r.Render( vertices, cameraParams.EyeToClipRH() * tmp, backBuffer );
 
 		glutPostRedisplay();
 	}
@@ -67,7 +70,8 @@ int main( int argc, char ** argv )
 	glutCreateWindow( "KinectFission" );
 
 	glutDisplayFunc( myDisplayFunc );
-	glutIdleFunc( myIdleFunc );
+	glutMouseFunc( myIdleFunc );
+	//glutIdleFunc( myIdleFunc );
 
 	// Set up the texture
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);

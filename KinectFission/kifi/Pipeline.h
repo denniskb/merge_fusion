@@ -38,8 +38,9 @@ public:
 	void Mesh( std::vector< util::float3 > & outVertices, std::vector< unsigned > & outIndices );
 
 	Volume const & Volume() const;
+	util::float4x4 const & EyeToWorld() const;
 
-private:
+//private:
 	DepthSensorParams m_camParams;
 	kifi::Volume m_volume;
 	ICP m_icp;
@@ -48,7 +49,7 @@ private:
 	Renderer m_renderer;
 
 	int m_iFrame;
-	util::float4x4 m_worldToEye; // or eyeToWorld???
+	util::float4x4 m_eyeToWorld; // or eyeToWorld???
 
 	std::vector< util::float3 > m_tmpSynthPointCloud;
 	util::vector2d< util::float3 > m_tmpSynthPointBuffer;

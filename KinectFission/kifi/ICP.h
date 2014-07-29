@@ -1,5 +1,8 @@
 #pragma once
 
+#include <utility>
+#include <vector>
+
 #include <kifi/util/math.h>
 #include <kifi/util/vector2d.h>
 
@@ -24,6 +27,8 @@ public:
 	);
 
 private:
+	std::vector< std::pair< util::float3, util::float3 > > m_assocs;
+
 	util::float4x4 AlignStep
 	(
 		util::vector2d< float > const & rawDepthMap,

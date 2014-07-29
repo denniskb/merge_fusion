@@ -41,5 +41,6 @@
     <ClCompile Include="DepthSensorParams.cpp" />
     <ClCompile Include="Pipeline.cpp" />
     <ClCompile Include="Renderer.cpp" />
+    <ClCompile Include="ICP.cpp" />
   </ItemGroup>
 </Project>

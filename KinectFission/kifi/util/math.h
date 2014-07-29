@@ -51,6 +51,7 @@ struct float4
 	inline float   operator[]( int i ) const;
 
 	inline float4 operator-() const;
+	inline float3 xyz() const;
 };
 
 
@@ -74,15 +75,9 @@ struct float4x4
 
 	inline float & operator()( int iRow, int iCol );
 	inline float const & operator()( int iRow, int iCol ) const;
-};
 
-float4x4 const identity
-(
-	1.0f, 0.0f, 0.0f, 0.0f,
-	0.0f, 1.0f, 0.0f, 0.0f,
-	0.0f, 0.0f, 1.0f, 0.0f,
-	0.0f, 0.0f, 0.0f, 1.0f
-);
+	static inline float4x4 identity();
+};
 
 
 
@@ -116,8 +111,11 @@ template< typename T >
 T               clamp     ( T x, T a, T b );
 inline float    dot       ( float4 u, float4 v );
 inline float4   homogenize( float4 v );
+inline float    len       ( float4 v );
+inline float    len2      ( float4 v );
 template< typename T >
 T               lerp      ( T a, T b, T weightB );
+inline float4   normalize ( float4 v );
 inline unsigned	pack      ( unsigned x, unsigned y, unsigned z );
 inline bool     powerOf2  ( int x );
 inline void     unpack    ( unsigned v, unsigned & outX, unsigned & outY, unsigned & outZ );
@@ -133,12 +131,15 @@ template< int index >
 inline vector   broadcast ( vector v );
 inline vector   dot       ( vector u, vector v );
 inline vector   homogenize( vector v );
+inline vector   len       ( vector v );
+inline vector   len2      ( vector v );
 inline vector   load      ( float4 src );
 inline matrix   load      ( float4x4 src );
 inline vector   load      ( float const * src );
 inline vector   loadu     ( float const * src );
 inline vector   loadss    ( float src );
 inline int      none      ( vector v );
+inline vector   normalize ( vector v );
 inline vector   set       ( float s );
 inline vector   set       ( float x, float y, float z, float w );
 template< int a0, int a1, int b0, int b1 >
@@ -194,23 +195,24 @@ namespace util {
 
 #pragma region Types
 
-int2::int2() {}
+int2::int2() : x( 0 ), y( 0 ) {}
 int2::int2( int i ) : x( i ), y( i ) {}
 int2::int2( int x, int y ) : x( x ), y( y ) {}
 
-float2::float2() {}
+float2::float2() : x( 0.0f ), y( 0.0f ) {}
 float2::float2( float s ) : x( s ), y( s ) {}
 float2::float2( float x, float y ) : x( x ), y( y ) {}
 
-float3::float3() {}
+float3::float3() : x( 0.0f ), y( 0.0f ), z( 0.0f ) {}
 float3::float3( float s ) : x( s ), y( s ), z( s ) {}
 float3::float3( float x, float y, float z ) : x( x ), y( y ), z( z ) {}
 
-float4::float4() {}
+float4::float4() : x( 0.0f ), y( 0.0f ), z( 0.0f ), w( 0.0f ) {}
 float4::float4( float s ) : x( s ), y( s ), z( s ), w( s ) {}
 float4::float4( float x, float y, float z, float w ) : x( x ), y( y ), z( z ), w( w ) {}
 float4::float4( float3 xyz, float w ) : x( xyz.x ), y( xyz.y ), z( xyz.z ), w( w ) {}
 float4 float4::operator-() const { return float4( -x, -y, -z, -w ); }
+float3 float4::xyz() const { return float3( x, y, z ); }
 
 
 
@@ -274,6 +276,17 @@ float const & float4x4::operator()( int iRow, int iCol ) const
 	assert( iCol >= 0 && iCol < 4 );
 
 	return reinterpret_cast< float const * >( this )[ iRow + 4 * iCol ];
+}
+
+float4x4 float4x4::identity()
+{
+	return float4x4
+	(
+		1.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, 1.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 1.0f, 0.0f,
+		0.0f, 0.0f, 0.0f, 1.0f
+	);
 }
 
 #pragma endregion
@@ -411,10 +424,25 @@ float4 homogenize( float4 v )
 	return v / v.w;
 }
 
+float len( float4 v )
+{
+	return std::sqrt( len2( v ) );
+}
+
+float len2( float4 v )
+{
+	return dot( v, v );
+}
+
 template< typename T >
 T lerp( T a, T b, T weightB )
 {
 	return a + (b-a) * weightB;
+}
+
+float4 normalize( float4 v )
+{
+	return v / len( v );
 }
 
 unsigned pack( unsigned x, unsigned y, unsigned z )
@@ -441,19 +469,13 @@ void eigen( float4x4 const & m, float4 & outEigenValues, float4x4 & outEigenVect
 	float4 tmp;
 	outEigenVectors = m;
 
-	std::function< void ( float4x4 &, float4 &, float4 & ) > tred2;
-	std::function< void ( float4 &, float4 &, float4x4 & ) > tqli;
-
-	tred2( outEigenVectors, outEigenValues, tmp );
-	tqli ( outEigenValues, tmp, outEigenVectors );
-
 	// TODO: Replace copy-righted code.
 #pragma region tred2/tqli implementation
 
 	static int const MAX_ITERS = 30;
 	auto SIGN = [] ( float a, float b ) { return b < 0.0f ? -std::abs( a ) : std::abs( a ); };
 
-	tred2 = [] ( float4x4 & a, float4 & d, float4 & e )
+	std::function< void ( float4x4 &, float4 &, float4 & ) > tred2 = [] ( float4x4 & a, float4 & d, float4 & e )
 	{
 		int l, k, j, i;
         float scale, hh, h, g, f;
@@ -532,7 +554,7 @@ void eigen( float4x4 const & m, float4 & outEigenValues, float4x4 & outEigenVect
         }
 	};
 
-	tqli = [ & SIGN ] ( float4 & d, float4 & e, float4x4 & z )
+	std::function< void ( float4 &, float4 &, float4x4 & ) > tqli = [ & SIGN ] ( float4 & d, float4 & e, float4x4 & z )
 	{
 		int m,l,iter,i,k;  
         float s,r,p,g,f,dd,c,b;  
@@ -591,6 +613,9 @@ void eigen( float4x4 const & m, float4 & outEigenValues, float4x4 & outEigenVect
 	};
 
 #pragma endregion
+
+	tred2( outEigenVectors, outEigenValues, tmp );
+	tqli ( outEigenValues, tmp, outEigenVectors );
 }
 
 void invert_transform( float4x4 & tR )
@@ -654,6 +679,16 @@ vector homogenize( vector v )
 	return v / broadcast< 3 >( v );
 }
 
+vector len( vector v )
+{
+	return _mm_sqrt_ps( len2( v ) );
+}
+
+vector len2( vector v )
+{
+	return dot( v, v );
+}
+
 vector load( float4 src )
 {
 	return loadu( reinterpret_cast< float * >( & src ) );
@@ -691,6 +726,10 @@ int none( vector v )
 	return ( 0 == _mm_movemask_ps( v ) );
 }
 
+vector normalize( vector v )
+{
+	return v / len( v );
+}
 
 vector set( float s )
 {

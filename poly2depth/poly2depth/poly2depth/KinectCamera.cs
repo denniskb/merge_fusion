@@ -38,7 +38,7 @@ namespace poly2depth
             // ppY = 240, fl = 571.26
             // 2 * atan( ppY / fl ) = 0.795466679
             const float radiansKinectFovY = 0.795466679f;
-
+            
             return
                 GetView() *
                 Matrix.CreatePerspectiveFieldOfView(radiansKinectFovY, 640.0f / 480.0f, 0.8f, 4.0f);
@@ -48,7 +48,7 @@ namespace poly2depth
         {
             // first translate, then rotate
 
-            float maxMoveDelta = 2.0f / 60.0f;
+            float maxMoveDelta = 1.0f / 60.0f;
             float maxRotDelta = 0.5f * MathHelper.Pi / 60.0f;
 
             Vector3 up = new Vector3(0.0f, 1.0f, 0.0f);

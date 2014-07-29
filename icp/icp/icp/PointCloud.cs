@@ -110,20 +110,18 @@ namespace icp
 
             for (int ii = 0; ii < src.points.Length; ii++)
             {
-                Vector3 vdst = Vector3.Transform(dst.points[ii], dstWorld) - centerDst;
                 Vector3 vsrc = Vector3.Transform(src.points[ii], srcWorld) - centerSrc;
+                Vector3 vdst = Vector3.Transform(dst.points[ii], dstWorld) - centerDst;
 
-                Sxx += vdst.X * vsrc.X;
-                Sxy += vdst.X * vsrc.Y;
-                Sxz += vdst.X * vsrc.Z;
-
-                Syx += vdst.Y * vsrc.X;
-                Syy += vdst.Y * vsrc.Y;
-                Syz += vdst.Y * vsrc.Z;
-
-                Szx += vdst.Z * vsrc.X;
-                Szy += vdst.Z * vsrc.Y;
-                Szz += vdst.Z * vsrc.Z;
+                Sxx += vsrc.X * vdst.X;
+                Sxy += vsrc.X * vdst.Y;
+                Sxz += vsrc.X * vdst.Z;
+                Syx += vsrc.Y * vdst.X;
+                Syy += vsrc.Y * vdst.Y;
+                Syz += vsrc.Y * vdst.Z;
+                Szx += vsrc.Z * vdst.X;
+                Szy += vsrc.Z * vdst.Y;
+                Szz += vsrc.Z * vdst.Z;
             }
 
             double[,] N = { 
@@ -140,59 +138,6 @@ namespace icp
             N[3, 0] = N[0, 3];
             N[3, 1] = N[1, 3];
             N[3, 2] = N[2, 3];
-
-            // compute my own ev
-            double a = N[0, 0];
-            double b = N[1, 1];
-            double c = N[2, 2];
-            double d = N[3, 3];
-            double e = N[1, 0];
-            double f = N[2, 1];
-            double g = N[3, 2];
-            double h = N[2, 0];
-            double i = N[3, 1];
-            double j = N[3, 0];
-
-            // todo: double check c0..c4
-            //double c4 = 1.0;
-            //double c3 = 0.0;
-            double c2 = a * c - h * h + b * c - f * f + a * d - j * j + b * d - i * i;
-            double c1 = -b * (c * d - g * g) + f * (d * f - g * i) - i * (f * g - c * i)
-                - a * (c * d - g * g) + h * (d * h - g * j) - j * (g * h - c * j)
-                - a * (b * d - i * i) + e * (d * e - i * j) - j * (e * i - b * j)
-                - a * (b * c - f * f) + e * (c * e - f * h) - h * (e * f - b * h);
-            double c0 = (a * b - e * e) * (c * d - g * g) + (e * h - a * f) * (f * d - g * i)
-                + (a * i - e * j) * (f * g - c * i) + (e * f - b * h) * (h * d - g * j)
-                + (b * j - e * i) * (h * g - c * j) + (h * i - f * j) * (h * i - f * j);
-
-            // a = c4
-            // b = c3
-            // c = c2
-            // d = c1
-            // e = c0
-            double delta =
-                /*256 * c4 * c4 * c4 * c0 * c0 * c0 
-                - 192 * c4 * c4 * c3 * c1 * c0 * c0 
-                - 128 * c4 * c4 * c2 * c2 * c0 * c0
-                + 144 * c4 * c4 * c2 * c1 * c1 * c0 
-                - 27 * c4 * c4 * c1 * c1 * c1 * c1
-                + 144 * c4 * c3 * c3 * c2 * c0 * c0 
-                - 6 * c4 * c3 * c3 * c1 * c1 * c0 
-                - 80 * c4 * c3 * c2 * c2 * c1 * c0
-                + 18 * c4 * c3 * c2 * c1 * c1 * c1 
-                + 16 * c4 * c2 * c2 * c2 * c2 * c0 
-                - 4 * c4 * c2 * c2 * c2 * c1 * c1
-                - 27 * c3 * c3 * c3 * c3 * c0 * c0 
-                + 18 * c3 * c3 * c3 * c2 * c1 * c0 
-                - 4 * c3 * c3 * c3 * c1 * c1 * c1 
-                - 4 * c3 * c3 * c2 * c2 * c2 * c0
-                + c3 * c3 * c2 * c2 * c1 * c1;*/
-                256 * c0 * c0 * c0
-                - 128 * c2 * c2 * c0 * c0
-                + 144 * c2 * c1 * c1 * c0
-                - 27 * c1 * c1 * c1 * c1
-                + 16 * c2 * c2 * c2 * c2 * c0
-                - 4 * c2 * c2 * c2 * c1 * c1;
 
             double[,] N2 = new double[4, 4];
             for (int row = 0; row < 4; row++)
@@ -253,6 +198,7 @@ namespace icp
             q2.Normalize();
 
             Matrix R = Matrix.Identity;
+            float xx = q.X * q.X;
             float xy = q.X * q.Y;
             float xz = q.X * q.Z;
             float xw = q.X * q.W;
@@ -263,17 +209,20 @@ namespace icp
             float zw = q.Z * q.W;
             float ww = q.W * q.W;
 
-            R.M11 = 1.0f - 2.0f * (zz + ww);
+            R.M11 = (xx + yy) - (zz + ww);
             R.M12 = 2.0f * (yz - xw);
             R.M13 = 2.0f * (yw + xz);
 
             R.M21 = 2.0f * (yz + xw);
-            R.M22 = 1.0f - 2.0f * (yy + ww);
+            R.M22 = (xx + zz) - (yy + ww);
             R.M23 = 2.0f * (zw - xy);
 
             R.M31 = 2.0f * (yw - xz);
             R.M32 = 2.0f * (zw + xy);
-            R.M33 = 1.0f - 2.0f * (yy + zz);
+            R.M33 = (xx + ww) - (yy + zz);
+
+            // row vectors
+            R = Matrix.Transpose(R);
 
             Vector3 t = centerDst - Vector3.Transform(centerSrc, R);
 

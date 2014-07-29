@@ -51,7 +51,7 @@ void Renderer::Bin
 
 	// float3( 0, 0, 0 ) is interpreted as invalid
 	// TODO: Investigate performance of point validity mask (vector< bool >)
-	std::fill( outPointBuffer.begin(), outPointBuffer.end(), util::float3( 0.0f, 0.0f, 0.0f ) );
+	std::fill( outPointBuffer.begin(), outPointBuffer.end(), util::float3( 0.0f ) );
 
 	float halfWidth = outPointBuffer.width() * 0.5f;
 	float halfHeight = outPointBuffer.height() * 0.5f;
