@@ -2,6 +2,7 @@
 
 #include <boost/test/auto_unit_test.hpp>
 
+#include <kifi/util/functional.h>
 #include <kifi/util/iterator.h>
 
 using namespace kifi;

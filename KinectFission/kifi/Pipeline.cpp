@@ -29,6 +29,11 @@ void Pipeline::Integrate
 	util::float4x4 const & worldToEye
 )
 {
+#if 1
+	m_eyeToWorld = worldToEye;
+	util::invert_transform( m_eyeToWorld );
+	m_integrator.Integrate( m_volume, rawDepthMap, m_camParams, worldToEye );
+#else
 	if( m_iFrame > 0 )
 	//	// TODO: Swap dst and src
 		m_eyeToWorld = m_icp.Align( rawDepthMap, m_eyeToWorld, m_tmpSynthPointBuffer, m_eyeToWorld, m_camParams );
@@ -42,10 +47,12 @@ void Pipeline::Integrate
 
 	m_mesher.Mesh( m_volume, m_tmpSynthPointCloud );
 	//
-	m_tmpSynthPointBuffer.resize( m_camParams.ResolutionPixels().x, m_camParams.ResolutionPixels().y );
+	//m_tmpSynthPointBuffer.resize( m_camParams.ResolutionPixels().x, m_camParams.ResolutionPixels().y );
+	m_tmpSynthPointBuffer.resize( 1024, 768 );
 	m_renderer.Bin( m_tmpSynthPointCloud, m_camParams.EyeToClipRH() * tmp, m_tmpSynthPointBuffer );
 
 	++m_iFrame;
+#endif
 }
 
 

@@ -46,7 +46,7 @@ util::float2 DepthSensorParams::SensibleRangeMeters() const
 
 util::float4x4 DepthSensorParams::EyeToClipRH() const
 {
-	util::float4x4 result( 0.0f );
+	util::float4x4 result;
 
 	result( 0, 0 ) = 2.0f * m_fl.x / m_res.x;
 	result( 0, 2 ) = m_res.x - 2.0f * m_pp.x;

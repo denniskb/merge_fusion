@@ -19,7 +19,7 @@ util::float4x4 ICP::Align
 {
 	util::float4x4 result = rawDepthMapEyeToWorldGuess;
 	
-	for( int i = 0; i < 3; i++ )
+	for( int i = 0; i < 4; i++ )
 		result = AlignStep
 		(
 			rawDepthMap, result,
@@ -97,16 +97,16 @@ util::float4x4 ICP::AlignStep
 				dstMedianSum += dst;
 			}*/
 
-			int u = (int) (uv.x * halfWidth + halfWidth) - 5;
-			int v = (int) synthDepthBuffer.height() - 1 - (int) (uv.y * halfHeight + halfHeight) - 5;
+			int u = (int) (uv.x * halfWidth + halfWidth) - 10;
+			int v = (int) synthDepthBuffer.height() - 1 - (int) (uv.y * halfHeight + halfHeight) - 10;
 
 			u = std::max( 0, u );
 			v = std::max( 0, v );
 
-			float mind = 100.0f;
+			float mind = 0.01f;
 			float4 p1, p2;
-			for( int y1 = v; y1 < std::min( 480, v + 10 ); y1++ )
-			for( int x1 = u; x1 < std::min( 640, u + 10 ); x1++ )
+			for( int y1 = v; y1 < std::min( 480, v + 21 ); y1++ )
+			for( int x1 = u; x1 < std::min( 640, u + 21 ); x1++ )
 			{
 				float4 dst = float4( synthDepthBuffer( x1, y1 ), 1.0f );
 				if( dst.x == 0 && dst.y == 0 && dst.z == 0 ) // invalid point
@@ -123,7 +123,7 @@ util::float4x4 ICP::AlignStep
 				//srcMedianSum += point;
 				//dstMedianSum += dst;
 			}
-			if( mind < 100.0f )
+			if( mind < 0.01f )
 			{
 				m_assocs.push_back( std::make_pair( p1.xyz(), p2.xyz() ) );
 				srcMedianSum += p1;

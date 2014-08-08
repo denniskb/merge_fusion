@@ -3,8 +3,6 @@
 #include <cstddef>
 #include <iterator>
 
-#include <kifi/util/functional.h>
-
 
 
 namespace kifi {
@@ -18,20 +16,20 @@ class const_iterator : public std::iterator< std::input_iterator_tag, T >
 {
 public:
 	// all
-	const_iterator( T value ) : m_value( value ) {}
+	const_iterator( T const & value );
 
-	const_iterator & operator++() { return * this; }
-	const_iterator operator++( int ) { return * this; }
+	const_iterator & operator++();
+	const_iterator operator++( int );
 
-	// input
+	// input, not implemented!
 	bool operator==( const_iterator const & rhs ) const;
 	bool operator!=( const_iterator const & rhs ) const;
 
-	T const & operator*() const { return m_value; }
-	T const * operator->() const { return & m_value; }
+	T const & operator*() const;
+	T const * operator->() const;
 
 private:
-	T m_value;
+	T const & m_value;
 };
 
 #pragma warning( pop )
@@ -108,13 +106,44 @@ transform_iterator< Iterator, UnaryOperation > make_transform_iterator( Iterator
 namespace kifi {
 namespace util {
 
+template< typename T >
+const_iterator< T >::const_iterator( T const & value ) :
+	m_value( value ) 
+{
+}
+
+template< typename T >
+const_iterator< T > & const_iterator< T >::operator++()
+{
+	return * this;
+}
+
+template< typename T >
+const_iterator< T > const_iterator< T >::operator++( int )
+{
+	return * this;
+}
+
+template< typename T >
+T const & const_iterator< T >::operator*() const
+{
+	return m_value; 
+}
+
+template< typename T >
+T const * const_iterator< T >::operator->() const
+{
+	return & m_value; 
+}
+
+
+
 template< class Iterator, class UnaryOperation >
 transform_iterator< Iterator, UnaryOperation >::transform_iterator( Iterator it, UnaryOperation op ) :
 	m_it( it ),
 	m_op( op )
-{}
-
-
+{
+}
 
 template< class Iterator, class UnaryOperation >
 transform_iterator< Iterator, UnaryOperation > & transform_iterator< Iterator, UnaryOperation >::operator++()
@@ -131,8 +160,6 @@ transform_iterator< Iterator, UnaryOperation > transform_iterator< Iterator, Una
 	return result;
 }
 
-
-
 template< class Iterator, class UnaryOperation >
 bool transform_iterator< Iterator, UnaryOperation >::operator==( transform_iterator const & rhs ) const
 {
@@ -145,23 +172,18 @@ bool transform_iterator< Iterator, UnaryOperation >::operator!=( transform_itera
 	return m_it != rhs.m_it;
 }
 
-
-
 template< class Iterator, class UnaryOperation >
 typename transform_iterator< Iterator, UnaryOperation >::value_type transform_iterator< Iterator, UnaryOperation >::operator*() const
 {
 	return m_op( * m_it );
 }
 
-
-
 template< class Iterator, class UnaryOperation >
 transform_iterator< Iterator, UnaryOperation >::transform_iterator() :
 	m_it( Iterator() ),
 	m_op( id< value_type >() )
-{}
-
-
+{
+}
 
 template< class Iterator, class UnaryOperation >
 transform_iterator< Iterator, UnaryOperation > & transform_iterator< Iterator, UnaryOperation >::operator--()
@@ -177,8 +199,6 @@ transform_iterator< Iterator, UnaryOperation > transform_iterator< Iterator, Una
 	--(* this);
 	return result;
 }
-
-
 
 template< class Iterator, class UnaryOperation >
 transform_iterator< Iterator, UnaryOperation > transform_iterator< Iterator, UnaryOperation >::operator+( difference_type n )
@@ -197,8 +217,6 @@ typename transform_iterator< Iterator, UnaryOperation >::difference_type transfo
 {
 	return m_it - rhs.m_it;
 }
-
-
 
 template< class Iterator, class UnaryOperation >
 bool transform_iterator< Iterator, UnaryOperation >::operator<( transform_iterator const & rhs ) const
@@ -224,8 +242,6 @@ bool transform_iterator< Iterator, UnaryOperation >::operator>=( transform_itera
 	return m_it >= rhs.m_it;
 }
 
-
-
 template< class Iterator, class UnaryOperation >
 transform_iterator< Iterator, UnaryOperation > & transform_iterator< Iterator, UnaryOperation >::operator+=( difference_type n )
 {
@@ -240,15 +256,11 @@ transform_iterator< Iterator, UnaryOperation > & transform_iterator< Iterator, U
 	return * this;
 }
 
-
-
 template< class Iterator, class UnaryOperation >
 typename transform_iterator< Iterator, UnaryOperation >::value_type transform_iterator< Iterator, UnaryOperation >::operator[]( std::size_t n ) const
 {
 	return m_op( m_it[ n ] );
 }
-
-
 
 template< class Iterator, class UnaryOperation >
 transform_iterator< Iterator, UnaryOperation > make_transform_iterator( Iterator it, UnaryOperation op )

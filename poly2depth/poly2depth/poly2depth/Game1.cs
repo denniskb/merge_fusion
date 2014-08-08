@@ -87,7 +87,7 @@ namespace poly2depth
                 Matrix.CreateScale(0.1f)
             );
 
-            /*
+            //*
             vizEffect = skinnedViz;
             depthEffect = skinnedDepth;
             model = imrod;
@@ -106,6 +106,8 @@ namespace poly2depth
         {
         }
 
+        bool updated = false;
+
         /// <summary>
         /// Allows the game to run logic such as updating the world,
         /// checking for collisions, gathering input, and playing audio.
@@ -118,7 +120,11 @@ namespace poly2depth
                 this.Exit();
 
             cam.Update();
-            imrod.Update(gameTime);
+            if (!updated)
+            {
+                imrod.Update(gameTime);
+                updated = true;
+            }
             recorder.Update();
 
             base.Update(gameTime);

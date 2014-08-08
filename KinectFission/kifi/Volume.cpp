@@ -45,7 +45,7 @@ int Volume::Resolution() const
 
 float Volume::VoxelLength() const
 {
-	return m_sideLen / m_res;
+	return m_tmpVoxelLenf;
 }
 
 float Volume::SideLength() const
@@ -68,6 +68,28 @@ util::float4 Volume::Minimum() const
 util::float4 Volume::Maximum() const
 {
 	return util::float4( 0.5f * m_sideLen );
+}
+
+
+
+util::vector Volume::VoxelCenter( util::vector index ) const
+{
+	return index * m_tmpVoxelLen + m_tmpVoxelLenOver2PlusMin;
+}
+
+util::float3 Volume::VoxelCenter( int x, int y, int z ) const
+{
+	return util::float3
+	(
+		x * m_tmpVoxelLenf + m_tmpVoxelLenOver2PlusMinf,
+		y * m_tmpVoxelLenf + m_tmpVoxelLenOver2PlusMinf,
+		z * m_tmpVoxelLenf + m_tmpVoxelLenOver2PlusMinf
+	);
+}
+
+util::vector Volume::VoxelIndex( util::vector world ) const
+{
+	return world * m_tmpVoxelLenInv + m_tmpMinOverNegVoxelLen;
 }
 
 

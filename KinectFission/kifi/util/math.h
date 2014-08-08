@@ -232,15 +232,9 @@ float float4::operator[]( int i ) const
 
 
 
-float4x4::float4x4() {}
+float4x4::float4x4() : col0( 0.0f ), col1( 0.0f ), col2( 0.0f ), col3( 0.0f ) {}
 
-float4x4::float4x4( float s ) :
-	col0( s ),
-	col1( s ),
-	col2( s ),
-	col3( s )
-{
-}
+float4x4::float4x4( float s ) :	col0( s ), col1( s ), col2( s ), col3( s ) {}
 
 float4x4::float4x4
 (
