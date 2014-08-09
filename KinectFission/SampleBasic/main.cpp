@@ -41,8 +41,8 @@ void myIdleFunc( int button, int state, int x, int y )
 		{
 			pipeline.Integrate( synthDepthFrame, worldToEye );
 			chrono::stop_watch sw;
-			//pipeline.Mesh( vertices, indices );
-			pipeline.Mesh( vertices );
+			pipeline.Mesh( vertices, indices );
+			//pipeline.Mesh( vertices );
 			sw.take_time( "tmesh" );
 			//sw.print_times();
 
@@ -60,7 +60,7 @@ void myDisplayFunc()
 {
 	glClear( GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT );
 	glEnable( GL_DEPTH_TEST );
-	glDisable( GL_CULL_FACE );
+	glShadeModel( GL_FLAT );
 	
 	/*glTexImage2D( GL_TEXTURE_2D, 0, 3, backBuffer.width(), backBuffer.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, backBuffer.data() );
 
@@ -77,7 +77,7 @@ void myDisplayFunc()
 	glPushMatrix();
 	glLoadMatrixf( reinterpret_cast< float * >( & m ) );
 	
-	/*glBegin( GL_TRIANGLES );
+	glBegin( GL_TRIANGLES );
 		for( int i = 0; i < indices.size(); i++ )
 		{
 			auto v = vertices[ indices[ i ] ];
@@ -88,9 +88,9 @@ void myDisplayFunc()
 			float gray = (vproj.w - 0.9f) * 1.0f;
 			glColor3f( gray, gray, gray );
 		}
-	glEnd();*/
+	glEnd();
 
-	glPointSize( 1.0f );
+	/*glPointSize( 1.0f );
 	glBegin( GL_POINTS );
 		for( int i = 0; i < vertices.size(); i++ )
 		{
@@ -100,7 +100,7 @@ void myDisplayFunc()
 			float gray = 1.0f;
 			glColor3f( gray, gray, gray );
 		}
-	glEnd();
+	glEnd();*/
 
 	glPopMatrix();
 
