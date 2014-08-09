@@ -7,9 +7,6 @@
 #include <kifi/Mesher.h>
 #include <kifi/Volume.h>
 
-// HACK
-#include <kifi/util/stop_watch.h>
-
 
 
 namespace kifi {
@@ -115,8 +112,8 @@ void Mesher::Generate( Volume const & volume, std::vector< util::float3 > & outV
 		util::pack( 0, 1, 1 ), // front-top
 		util::pack( 1, 1, 1 )  // front-top-right
 	};
-	util::chrono::stop_watch sw;
-	// Skip the last voxel to avoid special cases in loop
+	
+	// Iterate in reverse and skip the last voxel to avoid special cases in the loop body.
 	for( int i = (int) volume.Data().size() - 2; i >= 0; --i )
 	{
 		if( 0.0f == values[ i ].Weight() )
@@ -244,8 +241,6 @@ void Mesher::Generate( Volume const & volume, std::vector< util::float3 > & outV
 				m_indexIDs.push_back(  localToGlobal[ TriTable()[ i ] ] );
 		}
 	}
-	sw.take_time("tmesh");
-	sw.print_times();
 }
 
 template void Mesher::Generate< true > ( Volume const &, std::vector< util::float3 > & );
