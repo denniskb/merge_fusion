@@ -140,12 +140,7 @@ void Mesher::Generate( Volume const & volume, std::vector< util::float3 > & outV
 		if( voxels[ 1 ].Weight() > 0.0f && dself * voxels[ 1 ].Distance() <= 0.0f )
 		{
 			util::float3 vert = vert000;
-
-			vert.x += util::lerp( 
-				0.0f, 
-				volume.VoxelLength(), 
-				abs( dself ) / (abs( dself ) + abs( voxels[ 1 ].Distance() ))
-			);
+			vert.x += abs( dself ) / ( abs( dself ) + abs( voxels[ 1 ].Distance() ) ) * volume.VoxelLength();
 
 			outVertices.push_back( vert );
 			if( GenerateTriangles )
@@ -155,12 +150,7 @@ void Mesher::Generate( Volume const & volume, std::vector< util::float3 > & outV
 		if( voxels[ 2 ].Weight() > 0.0f && dself * voxels[ 2 ].Distance() <= 0.0f )
 		{
 			util::float3 vert = vert000;
-
-			vert.y += util::lerp(
-				0.0f, 
-				volume.VoxelLength(), 
-				abs( dself ) / (abs( dself ) + abs( voxels[ 2 ].Distance() ))
-			);
+			vert.y += abs( dself ) / ( abs( dself ) + abs( voxels[ 2 ].Distance() ) ) * volume.VoxelLength();
 
 			outVertices.push_back( vert );
 			if( GenerateTriangles )
@@ -170,12 +160,7 @@ void Mesher::Generate( Volume const & volume, std::vector< util::float3 > & outV
 		if( voxels[ 4 ].Weight() > 0.0f && dself * voxels[ 4 ].Distance() <= 0.0f )
 		{
 			util::float3 vert = vert000;
-
-			vert.z += util::lerp( 
-				0.0f, 
-				volume.VoxelLength(), 
-				abs( dself ) / (abs( dself ) + abs( voxels[ 4 ].Distance() ))
-			);
+			vert.z += abs( dself ) / ( abs( dself ) + abs( voxels[ 4 ].Distance() ) ) * volume.VoxelLength();
 
 			outVertices.push_back( vert );
 			if( GenerateTriangles )
