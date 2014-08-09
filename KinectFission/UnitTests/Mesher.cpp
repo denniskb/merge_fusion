@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE( Mesh )
 	ds.NextFrame( depth, view );
 	i.Integrate( v, depth, DepthSensorParams::KinectParams( KinectDepthSensorResolution640x480, KinectDepthSensorModeFar ), view );
 
-	std::vector< util::float3 > verts;
+	std::vector< VertexPositionNormal > verts;
 	std::vector< unsigned > indices;
 	
 	m.Mesh( v, verts );

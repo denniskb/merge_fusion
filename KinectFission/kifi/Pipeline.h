@@ -34,8 +34,8 @@ public:
 		util::float4x4 const & worldToEye
 	);
 
-	void Mesh( std::vector< util::float3 > & outVertices );
-	void Mesh( std::vector< util::float3 > & outVertices, std::vector< unsigned > & outIndices );
+	void Mesh( std::vector< VertexPositionNormal > & outVertices );
+	void Mesh( std::vector< VertexPositionNormal > & outVertices, std::vector< unsigned > & outIndices );
 
 	Volume const & Volume() const;
 	util::float4x4 const & EyeToWorld() const;

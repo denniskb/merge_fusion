@@ -55,6 +55,8 @@ void Integrator::Integrate
 	);
 	
 	ExpandChunks( m_tmpPointCloud, m_tmpScratchPad );
+	// HACK
+	ExpandChunks( m_tmpPointCloud, m_tmpScratchPad );
 	
 	sw.restart();
 	volume.Data().insert(

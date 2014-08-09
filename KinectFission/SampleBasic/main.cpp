@@ -24,9 +24,9 @@ vector2d< float > synthDepthFrame;
 //DepthSensorParams cameraParams( int2( 640, 480 ), float2( 585.0f ), float2( 320, 240 ), float2( 0.8f, 4.0f ) );
 DepthSensorParams cameraParams( DepthSensorParams::KinectParams( KinectDepthSensorResolution640x480, KinectDepthSensorModeFar ) );
 
-Pipeline pipeline( cameraParams, 512, 2.0f, 0.01f );
+Pipeline pipeline( cameraParams, 1024, 2.0f, 0.01f );
 
-std::vector< float3   > vertices;
+std::vector< VertexPositionNormal > vertices;
 std::vector< unsigned > indices;
 
 Renderer r;
@@ -60,7 +60,8 @@ void myDisplayFunc()
 {
 	glClear( GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT );
 	glEnable( GL_DEPTH_TEST );
-	glShadeModel( GL_FLAT );
+	//glShadeModel( GL_FLAT );
+	glShadeModel( GL_SMOOTH );
 	
 	/*glTexImage2D( GL_TEXTURE_2D, 0, 3, backBuffer.width(), backBuffer.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, backBuffer.data() );
 
@@ -81,12 +82,13 @@ void myDisplayFunc()
 		for( int i = 0; i < indices.size(); i++ )
 		{
 			auto v = vertices[ indices[ i ] ];
-			glVertex3f( v.x, v.y, v.z );
-			
-			auto vproj = m * float4( v, 1.0f );
-			//float gray = 1.0f - (vproj.w - 0.5f) * 0.25f;
-			float gray = (vproj.w - 0.9f) * 1.0f;
-			glColor3f( gray, gray, gray );
+			glVertex3f( v.position.x, v.position.y, v.position.z );
+			glColor3f
+			(
+				v.normal.x * 0.5f + 0.5f, 
+				v.normal.y * 0.5f + 0.5f, 
+				v.normal.z * 0.5f + 0.5f 
+			);
 		}
 	glEnd();
 

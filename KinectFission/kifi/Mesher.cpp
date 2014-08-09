@@ -11,18 +11,30 @@
 
 namespace kifi {
 
-void Mesher::Mesh( Volume const & volume, std::vector< util::float3 > & outVertices )
+VertexPositionNormal::VertexPositionNormal()
+{
+}
+
+VertexPositionNormal::VertexPositionNormal( util::float3 position, util::float3 normal ) :
+	position( position ),
+	normal( normal )
+{
+}
+
+
+
+void Mesher::Mesh( Volume const & volume, std::vector< VertexPositionNormal > & outVertices )
 {
 	Generate< false >( volume, outVertices );
 }
 
-void Mesher::Mesh( Volume const & volume, std::vector< util::float3 > & outVertices, std::vector< unsigned > & outIndices )
+void Mesher::Mesh( Volume const & volume, std::vector< VertexPositionNormal > & outVertices, std::vector< unsigned > & outIndices )
 {
 	// TODO: Cleanup
 
 	Generate< true >( volume, outVertices );
 	
-	m_tmpScratchPad.resize( 4 * m_vertexIDs.size() );
+	m_tmpScratchPad.resize( 7 * m_vertexIDs.size() );
 	util::radix_sort( m_vertexIDs.data(), m_vertexIDs.data() + m_vertexIDs.size(), outVertices.data(), m_tmpScratchPad.data() );
 	
 	outIndices.resize( m_indexIDs.size() );
@@ -49,7 +61,7 @@ void Mesher::Mesh( Volume const & volume, std::vector< util::float3 > & outVerti
 // static 
 void Mesher::Mesh2Obj
 (
-	std::vector< util::float3 > const & vertices,
+	std::vector< VertexPositionNormal > const & vertices,
 	std::vector< unsigned > const & indices,
 
 	char const * outObjFileName
@@ -58,21 +70,11 @@ void Mesher::Mesh2Obj
 	FILE * file;
 	fopen_s( & file, outObjFileName, "w" );
 
-	for( int i = 0; i < vertices.size(); i++ )
-	{
-		auto v = vertices[ i ];
-		fprintf_s( file, "v %f %f %f\n", v.x, v.y, v.z );
-	}
+	for( VertexPositionNormal v : vertices )
+		std::fprintf( file, "v %f %f %f\n", v.position.x, v.position.y, v.position.z );
 	
 	for( int i = 0; i < indices.size(); i += 3 )
-	{
-		fprintf_s
-		(
-			file, 
-			"f %d %d %d\n", 
-			indices[ i ] + 1, indices[ i + 1 ] + 1, indices[ i + 2 ] + 1
-		);
-	}
+		std::fprintf( file, "f %d %d %d\n", indices[ i ] + 1, indices[ i + 1 ] + 1, indices[ i + 2 ] + 1 );
 
 	fclose( file );
 }
@@ -83,13 +85,14 @@ void Mesher::Mesh2Obj
 #pragma warning( disable : 4127 ) // conditional expression is constant
 
 template< bool GenerateTriangles >
-void Mesher::Generate( Volume const & volume, std::vector< util::float3 > & outVertices )
+void Mesher::Generate( Volume const & volume, std::vector< VertexPositionNormal > & outVertices )
 {
 	assert( 1 == util::pack( 1, 0, 0 ) );
 
 	outVertices.clear();
 	m_vertexIDs.clear();
 	m_indexIDs.clear();
+	m_tmpNormals.resize( volume.Data().size() );
 
 	auto const keys   = volume.Data().keys_cbegin();
 	auto const values = volume.Data().values_cbegin();
@@ -137,12 +140,33 @@ void Mesher::Generate( Volume const & volume, std::vector< util::float3 > & outV
 
 		float dself = voxels[ 0 ].Distance();
 
+		util::float3 n
+		(
+			voxels[ 1 ].SafeDistance() - dself,
+			voxels[ 2 ].SafeDistance() - dself,
+			voxels[ 4 ].SafeDistance() - dself
+		);
+		float nlen = n.x * n.x + n.y * n.y + n.z * n.z;
+		nlen = 1.0f / ( std::sqrt( nlen ) + 0.0001f );
+
+		n.x *= nlen;
+		n.y *= nlen;
+		n.z *= nlen;
+
+		m_tmpNormals[ i ] = n;
+
 		if( voxels[ 1 ].Weight() > 0.0f && dself * voxels[ 1 ].Distance() <= 0.0f )
 		{
 			util::float3 vert = vert000;
-			vert.x += abs( dself ) / ( abs( dself ) + abs( voxels[ 1 ].Distance() ) ) * volume.VoxelLength();
+			float weightB = abs( dself ) / ( abs( dself ) + abs( voxels[ 1 ].Distance() ) );
+			vert.x += weightB * volume.VoxelLength();
 
-			outVertices.push_back( vert );
+			auto m = m_tmpNormals[ i + 1 ];
+			m.x = util::lerp( n.x, m.x, weightB );
+			m.y = util::lerp( n.y, m.y, weightB );
+			m.z = util::lerp( n.z, m.z, weightB );
+
+			outVertices.push_back( VertexPositionNormal( vert, m ) );
 			if( GenerateTriangles )
 				m_vertexIDs.push_back( 3 * keys[ i ] );
 		}
@@ -150,9 +174,15 @@ void Mesher::Generate( Volume const & volume, std::vector< util::float3 > & outV
 		if( voxels[ 2 ].Weight() > 0.0f && dself * voxels[ 2 ].Distance() <= 0.0f )
 		{
 			util::float3 vert = vert000;
-			vert.y += abs( dself ) / ( abs( dself ) + abs( voxels[ 2 ].Distance() ) ) * volume.VoxelLength();
+			float weightB = abs( dself ) / ( abs( dself ) + abs( voxels[ 2 ].Distance() ) );
+			vert.y += weightB * volume.VoxelLength();
 
-			outVertices.push_back( vert );
+			auto m = m_tmpNormals[ iTop ];
+			m.x = util::lerp( n.x, m.x, weightB );
+			m.y = util::lerp( n.y, m.y, weightB );
+			m.z = util::lerp( n.z, m.z, weightB );
+
+			outVertices.push_back( VertexPositionNormal( vert, m ) );
 			if( GenerateTriangles )
 				m_vertexIDs.push_back( 3 * keys[ i ] + 1 );
 		}
@@ -160,9 +190,15 @@ void Mesher::Generate( Volume const & volume, std::vector< util::float3 > & outV
 		if( voxels[ 4 ].Weight() > 0.0f && dself * voxels[ 4 ].Distance() <= 0.0f )
 		{
 			util::float3 vert = vert000;
-			vert.z += abs( dself ) / ( abs( dself ) + abs( voxels[ 4 ].Distance() ) ) * volume.VoxelLength();
+			float weightB = abs( dself ) / ( abs( dself ) + abs( voxels[ 4 ].Distance() ) );
+			vert.z += weightB * volume.VoxelLength();
 
-			outVertices.push_back( vert );
+			auto m = m_tmpNormals[ iFront ];
+			m.x = util::lerp( n.x, m.x, weightB );
+			m.y = util::lerp( n.y, m.y, weightB );
+			m.z = util::lerp( n.z, m.z, weightB );
+
+			outVertices.push_back( VertexPositionNormal( vert, m ) );
 			if( GenerateTriangles )
 				m_vertexIDs.push_back( 3 * keys[ i ] + 2 );
 		}
@@ -228,8 +264,8 @@ void Mesher::Generate( Volume const & volume, std::vector< util::float3 > & outV
 	}
 }
 
-template void Mesher::Generate< true > ( Volume const &, std::vector< util::float3 > & );
-template void Mesher::Generate< false >( Volume const &, std::vector< util::float3 > & );
+template void Mesher::Generate< true > ( Volume const &, std::vector< VertexPositionNormal > & );
+template void Mesher::Generate< false >( Volume const &, std::vector< VertexPositionNormal > & );
 
 #pragma warning( pop )
 

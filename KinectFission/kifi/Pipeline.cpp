@@ -57,12 +57,12 @@ void Pipeline::Integrate
 
 
 
-void Pipeline::Mesh( std::vector< util::float3 > & outVertices )
+void Pipeline::Mesh( std::vector< VertexPositionNormal > & outVertices )
 {
 	m_mesher.Mesh( m_volume, outVertices );
 }
 
-void Pipeline::Mesh( std::vector< util::float3 > & outVertices, std::vector< unsigned > & outIndices )
+void Pipeline::Mesh( std::vector< VertexPositionNormal > & outVertices, std::vector< unsigned > & outIndices )
 {
 	m_mesher.Mesh( m_volume, outVertices, outIndices );
 }
