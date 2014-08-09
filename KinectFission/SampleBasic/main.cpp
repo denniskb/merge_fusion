@@ -24,7 +24,7 @@ vector2d< float > synthDepthFrame;
 //DepthSensorParams cameraParams( int2( 640, 480 ), float2( 585.0f ), float2( 320, 240 ), float2( 0.8f, 4.0f ) );
 DepthSensorParams cameraParams( DepthSensorParams::KinectParams( KinectDepthSensorResolution640x480, KinectDepthSensorModeFar ) );
 
-Pipeline pipeline( cameraParams, 1024, 4.0f, 0.01f );
+Pipeline pipeline( cameraParams, 512, 4.0f, 0.01f );
 
 std::vector< float3   > vertices;
 std::vector< unsigned > indices;
@@ -41,8 +41,8 @@ void myIdleFunc( int button, int state, int x, int y )
 		{
 			pipeline.Integrate( synthDepthFrame, worldToEye );
 			chrono::stop_watch sw;
-			pipeline.Mesh( vertices, indices );
-			//pipeline.Mesh( vertices );
+			//pipeline.Mesh( vertices, indices );
+			pipeline.Mesh( vertices );
 			sw.take_time( "tmesh" );
 			//sw.print_times();
 

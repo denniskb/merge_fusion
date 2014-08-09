@@ -7,6 +7,9 @@
 #include <kifi/Mesher.h>
 #include <kifi/Volume.h>
 
+// HACK
+#include <kifi/util/stop_watch.h>
+
 
 
 namespace kifi {
@@ -91,15 +94,13 @@ void Mesher::Generate( Volume const & volume, std::vector< util::float3 > & outV
 	m_vertexIDs.clear();
 	m_indexIDs.clear();
 
-	auto const keys           = volume.Data().keys_cbegin();
-	auto const values         = volume.Data().values_cbegin();
-	std::size_t nKeys         = volume.Data().size();
-	std::size_t maxVoxelIndex = nKeys - 1;
+	auto const keys   = volume.Data().keys_cbegin();
+	auto const values = volume.Data().values_cbegin();
 
 	// voxel indices
-	int iTop = 0;
-	int iFront = 0;
-	int iFrontTop = 0;
+	int iTop      = (int) volume.Data().size() - 2;
+	int iFront    = (int) volume.Data().size() - 2;
+	int iFrontTop = (int) volume.Data().size() - 2;
 
 	Voxel voxels[ 8 ];
 
@@ -114,23 +115,24 @@ void Mesher::Generate( Volume const & volume, std::vector< util::float3 > & outV
 		util::pack( 0, 1, 1 ), // front-top
 		util::pack( 1, 1, 1 )  // front-top-right
 	};
-
-	for( std::size_t i = 0; i < nKeys; ++i )
+	util::chrono::stop_watch sw;
+	// Skip the last voxel to avoid special cases in loop
+	for( int i = (int) volume.Data().size() - 2; i >= 0; --i )
 	{
 		if( 0.0f == values[ i ].Weight() )
 			continue;
 
-		while( keys[ iTop ] < keys[ i ] + deltas[ 2 ] && iTop < maxVoxelIndex )
-			++iTop;
+		while( keys[ iTop ] > keys[ i ] + deltas[ 2 ] )
+			--iTop;
 
-		while( keys[ iFront ] < keys[ i ] + deltas[ 4 ] && iFront < maxVoxelIndex )
-			++iFront;
+		while( keys[ iFront ] > keys[ i ] + deltas[ 4 ] )
+			--iFront;
 
 		voxels[ 0 ] = values[ i ];
 		voxels[ 2 ] = ( keys[ iTop ]   == keys[ i ] + deltas[ 2 ] ) ? values[ iTop ]   : Voxel();
 		voxels[ 4 ] = ( keys[ iFront ] == keys[ i ] + deltas[ 4 ] ) ? values[ iFront ] : Voxel();
 
-		voxels[ 1 ] = ( i < maxVoxelIndex && keys[ i + 1 ] == keys[ i ] + deltas[ 1 ] ) ? values[ i + 1 ] : Voxel();
+		voxels[ 1 ] = ( keys[ i + 1 ]  == keys[ i ] + deltas[ 1 ] ) ? values[ i + 1 ]  : Voxel();
 
 		unsigned x0, y0, z0;
 		util::unpack( keys[ i ], x0, y0, z0 );
@@ -187,25 +189,14 @@ void Mesher::Generate( Volume const & volume, std::vector< util::float3 > & outV
 
 		if( GenerateTriangles )
 		{
-			while( keys[ iFrontTop ] < keys[ i ] + deltas[ 6 ] && iFrontTop < maxVoxelIndex )
-				++iFrontTop;
+			while( keys[ iFrontTop ] > keys[ i ] + deltas[ 6 ] )
+				--iFrontTop;
 
 			voxels[ 6 ] = ( keys[ iFrontTop ] == keys[ i ] + deltas[ 6 ] ) ? values[ iFrontTop ] : Voxel();
 
-			voxels[ 3 ] = 
-				( iTop < maxVoxelIndex && keys[ iTop + 1 ] == keys[ i ] + deltas[ 3 ] ) 
-				? 
-				values[ iTop + 1 ] : Voxel();
-			
-			voxels[ 5 ] = 
-				( iFront < maxVoxelIndex && keys[ iFront + 1 ] == keys[ i ] + deltas[ 5 ] ) 
-				?
-				values[ iFront + 1 ] : Voxel();
-
-			voxels[ 7 ] =
-				( iFrontTop < maxVoxelIndex && keys[ iFrontTop + 1 ] == keys[ i ] + deltas[ 7 ] )
-				?
-				values[ iFrontTop + 1 ] : Voxel();
+			voxels[ 3 ] = ( keys[ iTop + 1 ]      == keys[ i ] + deltas[ 3 ] ) ? values[ iTop + 1 ]      : Voxel();			
+			voxels[ 5 ] = ( keys[ iFront + 1 ]    == keys[ i ] + deltas[ 5 ] ) ? values[ iFront + 1 ]    : Voxel();
+			voxels[ 7 ] = ( keys[ iFrontTop + 1 ] == keys[ i ] + deltas[ 7 ] ) ? values[ iFrontTop + 1 ] : Voxel();
 
 			int skip = 0;
 			for( int i = 1; i < 8; ++i )
@@ -253,6 +244,8 @@ void Mesher::Generate( Volume const & volume, std::vector< util::float3 > & outV
 				m_indexIDs.push_back(  localToGlobal[ TriTable()[ i ] ] );
 		}
 	}
+	sw.take_time("tmesh");
+	sw.print_times();
 }
 
 template void Mesher::Generate< true > ( Volume const &, std::vector< util::float3 > & );
