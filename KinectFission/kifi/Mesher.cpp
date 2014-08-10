@@ -7,6 +7,9 @@
 #include <kifi/Mesher.h>
 #include <kifi/Volume.h>
 
+// HACK
+#include <kifi/util/stop_watch.h>
+
 
 
 namespace kifi {
@@ -115,7 +118,7 @@ void Mesher::Generate( Volume const & volume, std::vector< VertexPositionNormal 
 		util::pack( 0, 1, 1 ), // front-top
 		util::pack( 1, 1, 1 )  // front-top-right
 	};
-	
+	util::chrono::stop_watch sw;
 	// Iterate in reverse and skip the last voxel to avoid special cases in the loop body.
 	for( int i = (int) volume.Data().size() - 2; i >= 0; --i )
 	{
@@ -162,9 +165,9 @@ void Mesher::Generate( Volume const & volume, std::vector< VertexPositionNormal 
 			vert.x += weightB * volume.VoxelLength();
 
 			auto m = m_tmpNormals[ i + 1 ];
-			m.x = util::lerp( n.x, m.x, weightB );
-			m.y = util::lerp( n.y, m.y, weightB );
-			m.z = util::lerp( n.z, m.z, weightB );
+			m.x = util::lerp( n.x, m.x, weightB ) * 0.5f + 0.5f;
+			m.y = util::lerp( n.y, m.y, weightB ) * 0.5f + 0.5f;
+			m.z = util::lerp( n.z, m.z, weightB ) * 0.5f + 0.5f;
 
 			outVertices.push_back( VertexPositionNormal( vert, m ) );
 			if( GenerateTriangles )
@@ -178,9 +181,9 @@ void Mesher::Generate( Volume const & volume, std::vector< VertexPositionNormal 
 			vert.y += weightB * volume.VoxelLength();
 
 			auto m = m_tmpNormals[ iTop ];
-			m.x = util::lerp( n.x, m.x, weightB );
-			m.y = util::lerp( n.y, m.y, weightB );
-			m.z = util::lerp( n.z, m.z, weightB );
+			m.x = util::lerp( n.x, m.x, weightB ) * 0.5f + 0.5f;
+			m.y = util::lerp( n.y, m.y, weightB ) * 0.5f + 0.5f;
+			m.z = util::lerp( n.z, m.z, weightB ) * 0.5f + 0.5f;
 
 			outVertices.push_back( VertexPositionNormal( vert, m ) );
 			if( GenerateTriangles )
@@ -194,9 +197,9 @@ void Mesher::Generate( Volume const & volume, std::vector< VertexPositionNormal 
 			vert.z += weightB * volume.VoxelLength();
 
 			auto m = m_tmpNormals[ iFront ];
-			m.x = util::lerp( n.x, m.x, weightB );
-			m.y = util::lerp( n.y, m.y, weightB );
-			m.z = util::lerp( n.z, m.z, weightB );
+			m.x = util::lerp( n.x, m.x, weightB ) * 0.5f + 0.5f;
+			m.y = util::lerp( n.y, m.y, weightB ) * 0.5f + 0.5f;
+			m.z = util::lerp( n.z, m.z, weightB ) * 0.5f + 0.5f;
 
 			outVertices.push_back( VertexPositionNormal( vert, m ) );
 			if( GenerateTriangles )
@@ -262,6 +265,8 @@ void Mesher::Generate( Volume const & volume, std::vector< VertexPositionNormal 
 				m_indexIDs.push_back(  localToGlobal[ TriTable()[ i ] ] );
 		}
 	}
+	sw.take_time( "tmesh" );
+	sw.print_times();
 }
 
 template void Mesher::Generate< true > ( Volume const &, std::vector< VertexPositionNormal > & );

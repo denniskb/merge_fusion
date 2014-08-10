@@ -1,7 +1,8 @@
 #include <vector>
 
-#include <GL/freeglut.h>
+#include <GL/glew.h>
 #include <GL/GL.h>
+#include <GL/freeglut.h>
 
 #include <kifi/util/math.h>
 #include <kifi/util/vector2d.h>
@@ -15,21 +16,25 @@
 using namespace kifi;
 using namespace kifi::util;
 
+#define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
 
-util::vector2d< int > backBuffer( 1024, 768 );
+
+util::vector2d< int > backBuffer( 1280, 960 );
 
 DepthStream depthStreamHouse( "I:/tmp/imrod.depth" );
 vector2d< float > synthDepthFrame;
 //DepthSensorParams cameraParams( int2( 640, 480 ), float2( 585.0f ), float2( 320, 240 ), float2( 0.8f, 4.0f ) );
 DepthSensorParams cameraParams( DepthSensorParams::KinectParams( KinectDepthSensorResolution640x480, KinectDepthSensorModeFar ) );
 
-Pipeline pipeline( cameraParams, 1024, 2.0f, 0.01f );
+Pipeline pipeline( cameraParams, 512, 4.0f, 0.02f );
 
 std::vector< VertexPositionNormal > vertices;
 std::vector< unsigned > indices;
 
 Renderer r;
+
+unsigned vbID, ibID; // opengl vertex plus index buffer
 
 //void myIdleFunc()
 void myIdleFunc( int button, int state, int x, int y )
@@ -78,31 +83,16 @@ void myDisplayFunc()
 	glPushMatrix();
 	glLoadMatrixf( reinterpret_cast< float * >( & m ) );
 	
-	glBegin( GL_TRIANGLES );
-		for( int i = 0; i < indices.size(); i++ )
-		{
-			auto v = vertices[ indices[ i ] ];
-			glVertex3f( v.position.x, v.position.y, v.position.z );
-			glColor3f
-			(
-				v.normal.x * 0.5f + 0.5f, 
-				v.normal.y * 0.5f + 0.5f, 
-				v.normal.z * 0.5f + 0.5f 
-			);
-		}
-	glEnd();
+	glEnableClientState( GL_VERTEX_ARRAY );
+	glVertexPointer( 3, GL_FLOAT, 24, vertices.data() );
 
-	/*glPointSize( 1.0f );
-	glBegin( GL_POINTS );
-		for( int i = 0; i < vertices.size(); i++ )
-		{
-			auto v = vertices[ i ];
-			glVertex3f( v.x, v.y, v.z );
-			
-			float gray = 1.0f;
-			glColor3f( gray, gray, gray );
-		}
-	glEnd();*/
+	glEnableClientState( GL_COLOR_ARRAY );
+	glColorPointer( 3, GL_FLOAT, 24, reinterpret_cast< float * >( vertices.data() ) + 3 );
+
+	glDrawElements( GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, indices.data() );
+
+	glDisableClientState( GL_COLOR_ARRAY );
+	glDisableClientState( GL_VERTEX_ARRAY );
 
 	glPopMatrix();
 
@@ -111,13 +101,14 @@ void myDisplayFunc()
 
 int main( int argc, char ** argv )
 {
-#if 1
 	glutInit( & argc, argv );
 
 	glutInitDisplayMode( GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH );
 	glutInitWindowPosition( 250, 80 );
 	glutInitWindowSize( backBuffer.width(), backBuffer.height() );
 	glutCreateWindow( "KinectFission" );
+
+	glewInit();
 
 	glutDisplayFunc( myDisplayFunc );
 	glutMouseFunc( myIdleFunc );
@@ -135,26 +126,4 @@ int main( int argc, char ** argv )
 	glutMainLoop();
 
 	return 0;
-#else	
-	DepthStream depthStreamHouse( "I:/tmp/house.depth" );
-	vector2d< float > synthDepthFrame;	
-	float4x4 worldToEye;
-
-	Pipeline pipeline( DepthSensorParams( int2( 640, 480 ), float2( 585.0f ), float2( 320, 240 ), float2( 0.8f, 4.0f ) ) );
-
-	for( int i = 0; i < 200; i++ ) 
-	{
-		depthStreamHouse.NextFrame( synthDepthFrame, worldToEye );
-		pipeline.Integrate( synthDepthFrame, worldToEye );
-	}
-
-	std::vector< float3   > vertices;
-	std::vector< unsigned > indices;
-
-	pipeline.Mesh( vertices, indices );
-	
-	Mesher::Mesh2Obj( vertices, indices, "I:/tmp/house.obj" );
-
-	return 0;
-#endif
 }
