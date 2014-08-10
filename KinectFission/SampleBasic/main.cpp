@@ -10,10 +10,11 @@
 #include <kifi/Pipeline.h>
 #include <kifi/Renderer.h>
 
-#include <kifi/util/stop_watch.h>
-
 using namespace kifi;
 using namespace kifi::util;
+
+// HACK
+#include <kifi/util/stop_watch.h>
 
 
 
@@ -40,13 +41,10 @@ void myIdleFunc( int button, int state, int x, int y )
 		if( depthStreamHouse.NextFrame( synthDepthFrame, worldToEye ) )
 		{
 			pipeline.Integrate( synthDepthFrame, worldToEye );
-			chrono::stop_watch sw;
 			pipeline.Mesh( vertices, indices );
 			//pipeline.Mesh( vertices );
-			sw.take_time( "tmesh" );
-			//sw.print_times();
 
-			float4x4 tmp = pipeline.EyeToWorld(); invert_transform( tmp );
+			//float4x4 tmp = pipeline.EyeToWorld(); invert_transform( tmp );
 			//r.Render( vertices, cameraParams.EyeToClipRH() * tmp, backBuffer );
 			//r.Render( vertices, cameraParams.EyeToClipRH() * worldToEye, backBuffer );
 
@@ -60,8 +58,7 @@ void myDisplayFunc()
 {
 	glClear( GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT );
 	glEnable( GL_DEPTH_TEST );
-	glShadeModel( GL_FLAT );
-	
+
 	/*glTexImage2D( GL_TEXTURE_2D, 0, 3, backBuffer.width(), backBuffer.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, backBuffer.data() );
 
 	glBegin( GL_QUADS );
@@ -77,30 +74,12 @@ void myDisplayFunc()
 	glPushMatrix();
 	glLoadMatrixf( reinterpret_cast< float * >( & m ) );
 	
-	glBegin( GL_TRIANGLES );
-		for( int i = 0; i < indices.size(); i++ )
-		{
-			auto v = vertices[ indices[ i ] ];
-			glVertex3f( v.x, v.y, v.z );
-			
-			auto vproj = m * float4( v, 1.0f );
-			//float gray = 1.0f - (vproj.w - 0.5f) * 0.25f;
-			float gray = (vproj.w - 0.9f) * 1.0f;
-			glColor3f( gray, gray, gray );
-		}
-	glEnd();
+	glEnableClientState( GL_VERTEX_ARRAY );
+	glVertexPointer( 3, GL_FLOAT, sizeof( float3 ), vertices.data() );
 
-	/*glPointSize( 1.0f );
-	glBegin( GL_POINTS );
-		for( int i = 0; i < vertices.size(); i++ )
-		{
-			auto v = vertices[ i ];
-			glVertex3f( v.x, v.y, v.z );
-			
-			float gray = 1.0f;
-			glColor3f( gray, gray, gray );
-		}
-	glEnd();*/
+	glDrawArrays( GL_POINTS, 0, vertices.size() );
+
+	glDisableClientState( GL_VERTEX_ARRAY );
 
 	glPopMatrix();
 
@@ -109,7 +88,6 @@ void myDisplayFunc()
 
 int main( int argc, char ** argv )
 {
-#if 1
 	glutInit( & argc, argv );
 
 	glutInitDisplayMode( GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH );
@@ -133,26 +111,4 @@ int main( int argc, char ** argv )
 	glutMainLoop();
 
 	return 0;
-#else	
-	DepthStream depthStreamHouse( "I:/tmp/house.depth" );
-	vector2d< float > synthDepthFrame;	
-	float4x4 worldToEye;
-
-	Pipeline pipeline( DepthSensorParams( int2( 640, 480 ), float2( 585.0f ), float2( 320, 240 ), float2( 0.8f, 4.0f ) ) );
-
-	for( int i = 0; i < 200; i++ ) 
-	{
-		depthStreamHouse.NextFrame( synthDepthFrame, worldToEye );
-		pipeline.Integrate( synthDepthFrame, worldToEye );
-	}
-
-	std::vector< float3   > vertices;
-	std::vector< unsigned > indices;
-
-	pipeline.Mesh( vertices, indices );
-	
-	Mesher::Mesh2Obj( vertices, indices, "I:/tmp/house.obj" );
-
-	return 0;
-#endif
 }
