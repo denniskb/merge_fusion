@@ -18,7 +18,7 @@ using namespace kifi::util;
 
 
 
-util::vector2d< int > backBuffer( 1024, 768 );
+util::vector2d< int > backBuffer( 640, 480 );
 
 DepthStream depthStreamHouse( "I:/tmp/imrod.depth" );
 vector2d< float > synthDepthFrame;

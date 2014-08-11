@@ -1,0 +1,11 @@
+*.opensdf
+*.pdb
+*.sdf
+*.suo
+*.vcxproj.user
+
+/Debug
+/Release
+
+/PointRenderer/Debug
+/PointRenderer/Release
