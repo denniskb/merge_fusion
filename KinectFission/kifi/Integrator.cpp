@@ -44,31 +44,31 @@ void Integrator::Integrate
 
 	util::chrono::stop_watch sw;
 	std::size_t nSplats = DepthMap2PointCloud( volume, frame, cameraParams, eyeToWorld, m_tmpPointCloud );
-
+	sw.take_time( "tsplat" );
 	util::radix_sort( m_tmpPointCloud.data(), m_tmpPointCloud.data() + nSplats, m_tmpScratchPad.data() );
-	
+	sw.take_time( "tsort" );
+
 	m_tmpPointCloud.resize(
 		std::distance( 
 			m_tmpPointCloud.begin(), 
 			std::unique( m_tmpPointCloud.begin(), m_tmpPointCloud.begin() + nSplats ) 
 		)
 	);
-	
+
 	ExpandChunks( m_tmpPointCloud, m_tmpScratchPad );
 	// HACK
 	ExpandChunks( m_tmpPointCloud, m_tmpScratchPad );
-	
-	sw.restart();
+	sw.take_time( "texp" );
+
 	volume.Data().insert(
 		m_tmpPointCloud.cbegin(), m_tmpPointCloud.cend(),
 		util::make_const_iterator( Voxel() )
 	);
 	sw.take_time( "tmerge" );
-	
-	sw.restart();
-	UpdateVoxels( volume, frame, worldToClip );
-	sw.take_time( "tupd" );
 
+	UpdateVoxels( volume, frame, worldToClip );
+	
+	sw.take_time( "tupd" );
 	sw.print_times();
 }
 

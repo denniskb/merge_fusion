@@ -72,6 +72,7 @@ DepthSensorParams DepthSensorParams::KinectParams( KinectDepthSensorResolution r
 	float fl = ( KinectDepthSensorResolution320x240 == resolution ) ? 285.63f : 571.26f;
 	util::float2 range = ( KinectDepthSensorModeNear == mode ) ? util::float2( 0.4f, 3.0f ) : util::float2( 0.8f, 4.0f );
 
+	// TODO: Make single parameter vector class ctors explicit
 	return DepthSensorParams
 	(
 		res,

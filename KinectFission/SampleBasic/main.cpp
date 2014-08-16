@@ -20,14 +20,14 @@ using namespace kifi::util;
 
 
 
-util::vector2d< int > backBuffer( 1280, 960 );
+util::vector2d< int > backBuffer( 1024, 768 );
 
 DepthStream depthStreamHouse( "I:/tmp/imrod.depth" );
 vector2d< float > synthDepthFrame;
 //DepthSensorParams cameraParams( int2( 640, 480 ), float2( 585.0f ), float2( 320, 240 ), float2( 0.8f, 4.0f ) );
 DepthSensorParams cameraParams( DepthSensorParams::KinectParams( KinectDepthSensorResolution640x480, KinectDepthSensorModeFar ) );
 
-Pipeline pipeline( cameraParams, 512, 4.0f, 0.02f );
+Pipeline pipeline( cameraParams, 512, 2.0f, 0.01f );
 
 std::vector< VertexPositionNormal > vertices;
 std::vector< unsigned > indices;
@@ -51,8 +51,6 @@ void myIdleFunc( int button, int state, int x, int y )
 			sw.take_time( "tmesh" );
 			//sw.print_times();
 
-			float4x4 tmp = pipeline.EyeToWorld(); invert_transform( tmp );
-			//r.Render( vertices, cameraParams.EyeToClipRH() * tmp, backBuffer );
 			//r.Render( vertices, cameraParams.EyeToClipRH() * worldToEye, backBuffer );
 
 			glutPostRedisplay();
@@ -90,6 +88,7 @@ void myDisplayFunc()
 	glColorPointer( 3, GL_FLOAT, 24, reinterpret_cast< float * >( vertices.data() ) + 3 );
 
 	glDrawElements( GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, indices.data() );
+	//glDrawArrays( GL_POINTS, 0, vertices.size() );
 
 	glDisableClientState( GL_COLOR_ARRAY );
 	glDisableClientState( GL_VERTEX_ARRAY );

@@ -29,7 +29,7 @@ void Pipeline::Integrate
 	util::float4x4 const & worldToEye
 )
 {
-#if 1
+#if 0
 	m_eyeToWorld = worldToEye;
 	util::invert_transform( m_eyeToWorld );
 	m_integrator.Integrate( m_volume, rawDepthMap, m_camParams, worldToEye );
