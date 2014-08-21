@@ -34,11 +34,7 @@ void Mesher::Mesh( Volume const & volume, std::vector< VertexPositionNormal > & 
 void Mesher::Mesh( Volume const & volume, std::vector< VertexPositionNormal > & outVertices, std::vector< unsigned > & outIndices )
 {
 	// TODO: Cleanup
-
 	Generate< true >( volume, outVertices );
-	
-	m_tmpScratchPad.resize( 7 * m_vertexIDs.size() );
-	util::radix_sort( m_vertexIDs.data(), m_vertexIDs.data() + m_vertexIDs.size(), outVertices.data(), m_tmpScratchPad.data() );
 	
 	outIndices.resize( m_indexIDs.size() );
 	for( unsigned i = 0; i < m_indexIDs.size(); ++i )
@@ -47,10 +43,10 @@ void Mesher::Mesh( Volume const & volume, std::vector< VertexPositionNormal > & 
 	m_tmpScratchPad.resize( 2 * m_indexIDs.size() );
 	util::radix_sort( m_indexIDs.data(), m_indexIDs.data() + m_indexIDs.size(), outIndices.data(), m_tmpScratchPad.data() );
 
-	unsigned j = 0;
+	int j = (int) m_indexIDs.size() - 1;
 	for( unsigned i = 0; i < m_vertexIDs.size(); ++i )
-		while( j < m_indexIDs.size() && m_indexIDs[ j ] == m_vertexIDs[ i ] )
-			m_indexIDs[ j++ ] = i;
+		while( j >= 0 && m_indexIDs[ j ] == m_vertexIDs[ i ] )
+			m_indexIDs[ j-- ] = i;
 
 	m_tmpScratchPad.resize( m_indexIDs.size() );
 	for( int i = 0; i < m_indexIDs.size(); i++ )
@@ -158,22 +154,22 @@ void Mesher::Generate( Volume const & volume, std::vector< VertexPositionNormal 
 
 		m_tmpNormals[ i ] = n;
 
-		if( voxels[ 1 ].Weight() > 0.0f && dself * voxels[ 1 ].Distance() <= 0.0f )
+		if( voxels[ 4 ].Weight() > 0.0f && dself * voxels[ 4 ].Distance() <= 0.0f )
 		{
 			util::float3 vert = vert000;
-			float weightB = abs( dself ) / ( abs( dself ) + abs( voxels[ 1 ].Distance() ) );
-			vert.x += weightB * volume.VoxelLength();
+			float weightB = abs( dself ) / ( abs( dself ) + abs( voxels[ 4 ].Distance() ) );
+			vert.z += weightB * volume.VoxelLength();
 
-			auto m = m_tmpNormals[ i + 1 ];
+			auto m = m_tmpNormals[ iFront ];
 			m.x = util::lerp( n.x, m.x, weightB ) * 0.5f + 0.5f;
 			m.y = util::lerp( n.y, m.y, weightB ) * 0.5f + 0.5f;
 			m.z = util::lerp( n.z, m.z, weightB ) * 0.5f + 0.5f;
 
 			outVertices.push_back( VertexPositionNormal( vert, m ) );
 			if( GenerateTriangles )
-				m_vertexIDs.push_back( 3 * keys[ i ] );
+				m_vertexIDs.push_back( 3 * keys[ i ] + 2 );
 		}
-				
+						
 		if( voxels[ 2 ].Weight() > 0.0f && dself * voxels[ 2 ].Distance() <= 0.0f )
 		{
 			util::float3 vert = vert000;
@@ -189,21 +185,21 @@ void Mesher::Generate( Volume const & volume, std::vector< VertexPositionNormal 
 			if( GenerateTriangles )
 				m_vertexIDs.push_back( 3 * keys[ i ] + 1 );
 		}
-				
-		if( voxels[ 4 ].Weight() > 0.0f && dself * voxels[ 4 ].Distance() <= 0.0f )
+
+		if( voxels[ 1 ].Weight() > 0.0f && dself * voxels[ 1 ].Distance() <= 0.0f )
 		{
 			util::float3 vert = vert000;
-			float weightB = abs( dself ) / ( abs( dself ) + abs( voxels[ 4 ].Distance() ) );
-			vert.z += weightB * volume.VoxelLength();
+			float weightB = abs( dself ) / ( abs( dself ) + abs( voxels[ 1 ].Distance() ) );
+			vert.x += weightB * volume.VoxelLength();
 
-			auto m = m_tmpNormals[ iFront ];
+			auto m = m_tmpNormals[ i + 1 ];
 			m.x = util::lerp( n.x, m.x, weightB ) * 0.5f + 0.5f;
 			m.y = util::lerp( n.y, m.y, weightB ) * 0.5f + 0.5f;
 			m.z = util::lerp( n.z, m.z, weightB ) * 0.5f + 0.5f;
 
 			outVertices.push_back( VertexPositionNormal( vert, m ) );
 			if( GenerateTriangles )
-				m_vertexIDs.push_back( 3 * keys[ i ] + 2 );
+				m_vertexIDs.push_back( 3 * keys[ i ] );
 		}
 
 

@@ -46,8 +46,8 @@ void myIdleFunc( int button, int state, int x, int y )
 		{
 			pipeline.Integrate( synthDepthFrame, worldToEye );
 			chrono::stop_watch sw;
-			pipeline.Mesh( vertices, indices );
-			//pipeline.Mesh( vertices );
+			//pipeline.Mesh( vertices, indices );
+			pipeline.Mesh( vertices );
 			sw.take_time( "tmesh" );
 			//sw.print_times();
 
@@ -87,8 +87,8 @@ void myDisplayFunc()
 	glEnableClientState( GL_COLOR_ARRAY );
 	glColorPointer( 3, GL_FLOAT, 24, reinterpret_cast< float * >( vertices.data() ) + 3 );
 
-	glDrawElements( GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, indices.data() );
-	//glDrawArrays( GL_POINTS, 0, vertices.size() );
+	//glDrawElements( GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, indices.data() );
+	glDrawArrays( GL_POINTS, 0, vertices.size() );
 
 	glDisableClientState( GL_COLOR_ARRAY );
 	glDisableClientState( GL_VERTEX_ARRAY );

@@ -16,11 +16,54 @@ struct g
 	{}
 };
 
-//static kifi::util::float2 bi( kifi::util::vector2d< kifi::util::float2 > const & img, float x, float y )
-//{
-//
-//}
-/*
+static g bi( kifi::util::vector2d< g > const & img, float x, float y )
+{
+	x *= img.width();
+	y *= img.height();
+
+	x -= 0.5f;
+	y -= 0.5f;
+
+	int ix = (int) x;
+	int iy = (int) y;
+
+	x -= ix;
+	y -= iy;
+
+	ix = std::max< int >( 0, ix );
+	iy = std::max< int >( 0, iy );
+
+	ix = std::min< int >( (int) img.width() - 1, ix );
+	iy = std::min< int >( (int) img.height() - 1, iy );
+
+	int ix2 = ix + 1;
+	int iy2 = iy + 1;
+
+	ix2 = std::min< int >( (int) img.width() - 1, ix2 );
+	iy2 = std::min< int >( (int) img.height() - 1, iy2 );
+
+	auto a = img( ix, iy );
+	auto b = img( ix2, iy );
+
+	auto c = img( ix, iy2 );
+	auto d = img( ix2, iy2 );
+
+	// just avg n for now, keep rest.. later: only avg valid fuckers!
+	a.n.x = kifi::util::lerp( a.n.x, b.n.x, x );
+	a.n.y = kifi::util::lerp( a.n.y, b.n.y, x );
+	a.n.z = kifi::util::lerp( a.n.z, b.n.z, x );
+
+	c.n.x = kifi::util::lerp( c.n.x, d.n.x, x );
+	c.n.y = kifi::util::lerp( c.n.y, d.n.y, x );
+	c.n.z = kifi::util::lerp( c.n.z, d.n.z, x );
+
+	a.n.x = kifi::util::lerp( a.n.x, c.n.x, y );
+	a.n.y = kifi::util::lerp( a.n.y, c.n.y, y );
+	a.n.z = kifi::util::lerp( a.n.z, c.n.z, y );
+
+	return a;
+}
+
 static kifi::util::vector2d< g > down_sample( kifi::util::vector2d< g > map )
 {
 	using namespace kifi::util;
@@ -63,11 +106,16 @@ static void fill_holes( kifi::util::vector2d< g > & fine, kifi::util::vector2d< 
 {
 	for( int y = 0; y < fine.height(); y++ )
 		for( int x = 0; x < fine.width(); x++ )
-			//if( fine( x, y ).r == 0.0f )
-				fine( x, y ) = coarse( x / 2, y / 2 );
-}*/
+		{
+			auto parent = bi( coarse, (x + 0.5f) / fine.width(), (y + 0.5f) / fine.height() );
 
-static kifi::util::vector2d< g > fill_holes2( kifi::util::vector2d< g > const & splat )
+			auto & self = fine( x, y );
+			if( self.r == 0.0f || self.d.x > parent.d.y )
+				self.n = parent.n;
+		}
+}
+
+/*static kifi::util::vector2d< g > fill_holes2( kifi::util::vector2d< g > const & splat )
 {
 	using namespace kifi::util;
 
@@ -137,7 +185,7 @@ static kifi::util::vector2d< g > fill_holes2( kifi::util::vector2d< g > const & 
 		}
 
 	return result;
-}
+}*/
 
 
 
@@ -186,21 +234,26 @@ void Renderer::Render
 			if( w < depth )
 			{
 				depthRadius( u, v ).d.x = w;
-				depthRadius( u, v ).d.y = w + 1.0f / 512;
+				depthRadius( u, v ).d.y = w + 2.0f / 512;
 				depthRadius( u, v ).r = r;
 				depthRadius( u, v ).n = pointCloud[ i ].normal;
 			}
 		}
 	}
 
-	auto test = fill_holes2( depthRadius );
+	auto tmp1 = down_sample( depthRadius );
+	auto tmp2 = down_sample( tmp1 );
+	auto tmp3 = down_sample( tmp2 );
+	fill_holes( tmp2, tmp3 );
+	fill_holes( tmp1, tmp2 );
+	fill_holes( depthRadius, tmp1 );
 
 	// TODO: Average and fill gaps, start with simplest solution and work your way up
 	for( int i = 0; i < outRgba.size(); i++ )
 	{
-		int r = (int) (test[ i ].n.x * 255);
-		int g = (int) (test[ i ].n.y * 255);
-		int b = (int) (test[ i ].n.z * 255);
+		int r = (int) (depthRadius[ i ].n.x * 255);
+		int g = (int) (depthRadius[ i ].n.y * 255);
+		int b = (int) (depthRadius[ i ].n.z * 255);
 		outRgba[ i ] = b << 16 | g << 8 | r;
 	}
 }
