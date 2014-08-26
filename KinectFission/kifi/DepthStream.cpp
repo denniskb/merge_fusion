@@ -67,8 +67,7 @@ bool DepthStream::NextFrame
 
 	float view[ 16 ];
 	m_file.read( reinterpret_cast< char * >( view ), 64 );
-	outView = util::float4x4( view );
-	util::transpose( outView ); // .depth uses row vectors, we use column vectors
+	outView = util::transpose( util::float4x4( view ) ); // .depth uses row vectors, we use column vectors
 
 	outFrame.resize( m_frameWidth, m_frameHeight );
 

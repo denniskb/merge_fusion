@@ -49,17 +49,17 @@ static g bi( kifi::util::vector2d< g > const & img, float x, float y )
 	auto d = img( ix2, iy2 );
 
 	// just avg n for now, keep rest.. later: only avg valid fuckers!
-	a.n.x = kifi::util::lerp( a.n.x, b.n.x, x );
-	a.n.y = kifi::util::lerp( a.n.y, b.n.y, x );
-	a.n.z = kifi::util::lerp( a.n.z, b.n.z, x );
+	a.n.x() = kifi::util::lerp( a.n.x(), b.n.x(), x );
+	a.n.y() = kifi::util::lerp( a.n.y(), b.n.y(), x );
+	a.n.z() = kifi::util::lerp( a.n.z(), b.n.z(), x );
 
-	c.n.x = kifi::util::lerp( c.n.x, d.n.x, x );
-	c.n.y = kifi::util::lerp( c.n.y, d.n.y, x );
-	c.n.z = kifi::util::lerp( c.n.z, d.n.z, x );
+	c.n.x() = kifi::util::lerp( c.n.x(), d.n.x(), x );
+	c.n.y() = kifi::util::lerp( c.n.y(), d.n.y(), x );
+	c.n.z() = kifi::util::lerp( c.n.z(), d.n.z(), x );
 
-	a.n.x = kifi::util::lerp( a.n.x, c.n.x, y );
-	a.n.y = kifi::util::lerp( a.n.y, c.n.y, y );
-	a.n.z = kifi::util::lerp( a.n.z, c.n.z, y );
+	a.n.x() = kifi::util::lerp( a.n.x(), c.n.x(), y );
+	a.n.y() = kifi::util::lerp( a.n.y(), c.n.y(), y );
+	a.n.z() = kifi::util::lerp( a.n.z(), c.n.z(), y );
 
 	return a;
 }
@@ -81,20 +81,20 @@ static kifi::util::vector2d< g > down_sample( kifi::util::vector2d< g > map )
 
 			float ivstart = std::numeric_limits< float >::max();
 			float ivend = -std::numeric_limits< float >::max();
-			if( a.d.x < ivstart ) { ivstart = a.d.x; ivend = a.d.y; }
-			if( b.d.x < ivstart ) { ivstart = b.d.x; ivend = b.d.y; }
-			if( c.d.x < ivstart ) { ivstart = c.d.x; ivend = c.d.y; }
-			if( d.d.x < ivstart ) { ivstart = d.d.x; ivend = d.d.y; }
+			if( a.d.x() < ivstart ) { ivstart = a.d.x(); ivend = a.d.y(); }
+			if( b.d.x() < ivstart ) { ivstart = b.d.x(); ivend = b.d.y(); }
+			if( c.d.x() < ivstart ) { ivstart = c.d.x(); ivend = c.d.y(); }
+			if( d.d.x() < ivstart ) { ivstart = d.d.x(); ivend = d.d.y(); }
 			
 			g avg;
 			avg.d = float2( std::numeric_limits< float >::max(), -std::numeric_limits< float >::max() );
 			int n = 0;
-			if( a.r > 0.0f && a.d.x <= ivend ) { avg.d.x = std::min( avg.d.x, a.d.x ); avg.d.y = std::max( avg.d.y, a.d.y ); avg.r += a.r; avg.n.x += a.n.x; avg.n.y += a.n.y; avg.n.z += a.n.z; n++; }
-			if( b.r > 0.0f && b.d.x <= ivend ) { avg.d.x = std::min( avg.d.x, b.d.x ); avg.d.y = std::max( avg.d.y, b.d.y ); avg.r += b.r; avg.n.x += b.n.x; avg.n.y += b.n.y; avg.n.z += b.n.z; n++; }
-			if( c.r > 0.0f && c.d.x <= ivend ) { avg.d.x = std::min( avg.d.x, c.d.x ); avg.d.y = std::max( avg.d.y, c.d.y ); avg.r += c.r; avg.n.x += c.n.x; avg.n.y += c.n.y; avg.n.z += c.n.z; n++; }
-			if( d.r > 0.0f && d.d.x <= ivend ) { avg.d.x = std::min( avg.d.x, d.d.x ); avg.d.y = std::max( avg.d.y, d.d.y ); avg.r += d.r; avg.n.x += d.n.x; avg.n.y += d.n.y; avg.n.z += d.n.z; n++; }
+			if( a.r > 0.0f && a.d.x() <= ivend ) { avg.d.x() = std::min( avg.d.x(), a.d.x() ); avg.d.y() = std::max( avg.d.y(), a.d.y() ); avg.r += a.r; avg.n.x() += a.n.x(); avg.n.y() += a.n.y(); avg.n.z() += a.n.z(); n++; }
+			if( b.r > 0.0f && b.d.x() <= ivend ) { avg.d.x() = std::min( avg.d.x(), b.d.x() ); avg.d.y() = std::max( avg.d.y(), b.d.y() ); avg.r += b.r; avg.n.x() += b.n.x(); avg.n.y() += b.n.y(); avg.n.z() += b.n.z(); n++; }
+			if( c.r > 0.0f && c.d.x() <= ivend ) { avg.d.x() = std::min( avg.d.x(), c.d.x() ); avg.d.y() = std::max( avg.d.y(), c.d.y() ); avg.r += c.r; avg.n.x() += c.n.x(); avg.n.y() += c.n.y(); avg.n.z() += c.n.z(); n++; }
+			if( d.r > 0.0f && d.d.x() <= ivend ) { avg.d.x() = std::min( avg.d.x(), d.d.x() ); avg.d.y() = std::max( avg.d.y(), d.d.y() ); avg.r += d.r; avg.n.x() += d.n.x(); avg.n.y() += d.n.y(); avg.n.z() += d.n.z(); n++; }
 
-			if( n > 0 ) { avg.r /= n; avg.n.x /= n; avg.n.y /= n; avg.n.z /= n; }
+			if( n > 0 ) { avg.r /= n; avg.n.x() /= n; avg.n.y() /= n; avg.n.z() /= n; }
 
 			result( x / 2, y / 2 ) = avg;
 		}
@@ -110,7 +110,7 @@ static void fill_holes( kifi::util::vector2d< g > & fine, kifi::util::vector2d< 
 			auto parent = bi( coarse, (x + 0.5f) / fine.width(), (y + 0.5f) / fine.height() );
 
 			auto & self = fine( x, y );
-			if( self.r == 0.0f || self.d.x > parent.d.y )
+			if( self.r == 0.0f || self.d.x() > parent.d.y() )
 				self.n = parent.n;
 		}
 }
@@ -218,23 +218,23 @@ void Renderer::Render
 		util::float4 point( pointCloud[ i ].position, 1.0f );
 
 		point = worldToClip * point;
-		float w = point.w;
+		float w = point.w();
 		// r == half voxel len
 		float r = (1.0f / 512) * (2.0f * 571.26f / 640) / w * halfWidth;
 
 		point /= w;
-		int u = (int) (point.x * halfWidth + halfWidth);
-		int v = (int) outRgba.height() - 1 - (int) (point.y * halfHeight + halfHeight);
+		int u = (int) (point.x() * halfWidth + halfWidth);
+		int v = (int) outRgba.height() - 1 - (int) (point.y() * halfHeight + halfHeight);
 
 		if( u >= 0 && u < outRgba.width() &&
 			v >= 0 && v < outRgba.height() &&
-			point.z >= -1.0f && point.z < 1.0f )
+			point.z() >= -1.0f && point.z() < 1.0f )
 		{
-			float depth = depthRadius( u, v ).d.x;
+			float depth = depthRadius( u, v ).d.x();
 			if( w < depth )
 			{
-				depthRadius( u, v ).d.x = w;
-				depthRadius( u, v ).d.y = w + 2.0f / 512;
+				depthRadius( u, v ).d.x() = w;
+				depthRadius( u, v ).d.y() = w + 2.0f / 512;
 				depthRadius( u, v ).r = r;
 				depthRadius( u, v ).n = pointCloud[ i ].normal;
 			}
@@ -251,9 +251,9 @@ void Renderer::Render
 	// TODO: Average and fill gaps, start with simplest solution and work your way up
 	for( int i = 0; i < outRgba.size(); i++ )
 	{
-		int r = (int) (depthRadius[ i ].n.x * 255);
-		int g = (int) (depthRadius[ i ].n.y * 255);
-		int b = (int) (depthRadius[ i ].n.z * 255);
+		int r = (int) (depthRadius[ i ].n.x() * 255);
+		int g = (int) (depthRadius[ i ].n.y() * 255);
+		int b = (int) (depthRadius[ i ].n.z() * 255);
 		outRgba[ i ] = b << 16 | g << 8 | r;
 	}
 }
@@ -262,10 +262,10 @@ void Renderer::Render
 
 void Renderer::Bin
 (
-	std::vector< util::float3 > const & pointCloud,
+	std::vector< VertexPositionNormal > const & pointCloud,
 	util::float4x4 const & worldToClip,
 
-	util::vector2d< util::float3 > & outPointBuffer
+	util::vector2d< VertexPositionNormal > & outPointBuffer
 )
 {
 	// TODO: Optimize this entire routine
@@ -275,29 +275,29 @@ void Renderer::Bin
 
 	// float3( 0, 0, 0 ) is interpreted as invalid
 	// TODO: Investigate performance of point validity mask (vector< bool >)
-	std::fill( outPointBuffer.begin(), outPointBuffer.end(), util::float3( 0.0f ) );
+	std::fill( outPointBuffer.begin(), outPointBuffer.end(), VertexPositionNormal() );
 
 	float halfWidth = outPointBuffer.width() * 0.5f;
 	float halfHeight = outPointBuffer.height() * 0.5f;
 
 	for( std::size_t i = 0; i < pointCloud.size(); ++i )
 	{
-		util::float3 tmp = pointCloud[ i ];
+		util::float3 tmp = pointCloud[ i ].position;
 		util::float4 point( tmp, 1.0f );
 
 		point = util::homogenize( worldToClip * point );
-		int u = (int) (point.x * halfWidth + halfWidth);
-		int v = (int) outPointBuffer.height() - 1 - (int) (point.y * halfHeight + halfHeight);
+		int u = (int) (point.x() * halfWidth + halfWidth);
+		int v = (int) outPointBuffer.height() - 1 - (int) (point.y() * halfHeight + halfHeight);
 
 		if( u >= 0 && u < outPointBuffer.width()  &&
 			v >= 0 && v < outPointBuffer.height() &&
-			point.z >= -1.0f && point.z <= 1.0f )
+			point.z() >= -1.0f && point.z() <= 1.0f )
 		{
 			float depth = m_depthBuffer( u, v );
-			if( point.z < depth )
+			if( point.z() < depth )
 			{
-				m_depthBuffer( u, v ) = point.z;
-				outPointBuffer( u, v ) = tmp;
+				m_depthBuffer( u, v ) = point.z();
+				outPointBuffer( u, v ) = pointCloud[ i ];
 			}
 		}
 	}

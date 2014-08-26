@@ -6,80 +6,108 @@
 
 
 
+#define kifi_for( n ) for( int i = 0; i < (n); i++ )
+
+
+
 namespace kifi {
 namespace util {
 
-#pragma region Types
+#pragma region vec< T, N >
 
-struct int2
+template< typename T, int N >
+struct vec : public std::array< T, N >
 {
-	int x, y;
+	// does not initialize!
+	inline vec();
+	// initializes to s
+	inline explicit vec( T s );
+	// only implemented for N == 2/3/4 respectively
+	inline vec( T x, T y );
+	inline vec( T x, T y, T z );
+	inline vec( T x, T y, T z, T w );
+	inline vec( vec< T, 3 > xyz, T w );
 
-	inline int2();
-	inline int2( int i );
-	inline int2( int x, int y );
+	// only implemented for N >= 1/2/3/4 respectively
+	inline T & x();
+	inline T & y();
+	inline T & z();
+	inline T & w();
+
+	inline T const & x() const;
+	inline T const & y() const;
+	inline T const & z() const;
+	inline T const & w() const;
+
+	inline T & r();
+	inline T & g();
+	inline T & b();
+	inline T & a();
+
+	inline T const & r() const;
+	inline T const & g() const;
+	inline T const & b() const;
+	inline T const & a() const;
+
+	inline vec operator-() const;
+
+	template< typename U >
+	inline explicit operator vec< U, N >() const;
+
+	// only implemented for N == 4
+	inline vec< T, 3 > xyz() const;
+	inline vec< T, 3 > rgb() const;
+
+	// invariants
+	static_assert( N > 0, "a vector must have 1 or more components." );
 };
 
-struct float2
+typedef vec< float, 2 > float2;
+typedef vec< float, 3 > float3;
+typedef vec< float, 4 > float4;
+typedef vec< int  , 2 > int2;
+
+#pragma endregion
+
+#pragma region mat< T, R, C >
+
+template< typename T, int R, int C >
+struct mat
 {
-	float x, y;
+	std::array< vec< T, R >, C > cols;
 
-	inline float2();
-	inline float2( float s );
-	inline float2( float x, float y );
-};
-
-struct float3
-{
-	float x, y, z;
-
-	inline float3();
-	inline float3( float s );
-	inline float3( float x, float y, float z );
-};
-
-struct float4
-{
-	float x, y, z, w;
-
-	inline float4();
-	inline float4( float s );
-	inline float4( float x, float y, float z, float w );
-	inline float4( float3 xyz, float w );
-
-	inline float & operator[]( int i );
-	inline float   operator[]( int i ) const;
-
-	inline float4 operator-() const;
-	inline float3 xyz() const;
-};
-
-
-
-struct float4x4
-{
-	float4 col0, col1, col2, col3;
-
-	inline float4x4();
-	explicit inline float4x4( float s );
-	inline float4x4
+	// does not initialize!
+	inline mat();
+	// initializes to s
+	inline explicit mat( T s );
+	// only implemented for 4x4 matrices
+	inline mat
 	(
-		float m00, float m01, float m02, float m03,
-		float m10, float m11, float m12, float m13,
-		float m20, float m21, float m22, float m23,
-		float m30, float m31, float m32, float m33
+		T m00, T m01, T m02, T m03,
+		T m10, T m11, T m12, T m13,
+		T m20, T m21, T m22, T m23,
+		T m30, T m31, T m32, T m33
 	);
-
 	// src must be in row-major order
-	inline explicit float4x4( float const * src );
+	inline explicit mat( T const * src );
 
-	inline float & operator()( int iRow, int iCol );
-	inline float const & operator()( int iRow, int iCol ) const;
+	inline T & operator()( int iRow, int iCol );
+	inline T const & operator()( int iRow, int iCol ) const;
 
-	static inline float4x4 identity();
+	template< typename U >
+	inline explicit operator mat< U, R, C >() const;
+
+	static inline mat identity();
+
+	// invariants
+	static_assert( R > 0 && C > 0, "a matrix must have at least 1 row and 1 column." );
 };
 
+typedef mat< float, 4, 4 > float4x4;
 
+#pragma endregion
+
+#pragma region vector/matrix (SSE)
 
 typedef __m128 vector;
 struct matrix { vector col0, col1, col2, col3; };
@@ -88,67 +116,142 @@ struct matrix { vector col0, col1, col2, col3; };
 
 #pragma region Operators
 
-inline float4 operator+( float4 u, float4 v );
-inline float4 operator-( float4 u, float4 v );
-inline float4 operator*( float4 u, float4 v );
-inline float4 operator/( float4 u, float4 v );
+// vector op vector
+template< typename T, int N >
+inline vec< T, N > operator+( vec< T, N > const & a, vec< T, N > const & b );
+template< typename T, int N >
+inline vec< T, N > operator-( vec< T, N > const & a, vec< T, N > const & b );
+template< typename T, int N >
+inline vec< T, N > operator*( vec< T, N > const & a, vec< T, N > const & b );
+template< typename T, int N >
+inline vec< T, N > operator/( vec< T, N > const & a, vec< T, N > const & b );
 
-inline float4 & operator+=( float4 & u, float4 v );
-inline float4 & operator-=( float4 & u, float4 v );
-inline float4 & operator*=( float4 & u, float4 v );
-inline float4 & operator/=( float4 & u, float4 v );
+// vector op= vector
+template< typename T, int N >
+inline vec< T, N > & operator+=( vec< T, N > & a, vec< T, N > const & b );
+template< typename T, int N >
+inline vec< T, N > & operator-=( vec< T, N > & a, vec< T, N > const & b );
+template< typename T, int N >
+inline vec< T, N > & operator*=( vec< T, N > & a, vec< T, N > const & b );
+template< typename T, int N >
+inline vec< T, N > & operator/=( vec< T, N > & a, vec< T, N > const & b );
 
-inline float4   operator*( float4x4 m, float4 v   );
-inline float4x4 operator*( float4x4 m, float4x4 n );
+// vector op scalar
+template< typename T, int N >
+inline vec< T, N > operator+( vec< T, N > const & a, T b );
+template< typename T, int N >
+inline vec< T, N > operator-( vec< T, N > const & a, T b );
+template< typename T, int N >
+inline vec< T, N > operator*( vec< T, N > const & a, T b );
+template< typename T, int N >
+inline vec< T, N > operator/( vec< T, N > const & a, T b );
 
+// vector op= scalar
+template< typename T, int N >
+inline vec< T, N > & operator+=( vec< T, N > & a, T b );
+template< typename T, int N >
+inline vec< T, N > & operator-=( vec< T, N > & a, T b );
+template< typename T, int N >
+inline vec< T, N > & operator*=( vec< T, N > & a, T b );
+template< typename T, int N >
+inline vec< T, N > & operator/=( vec< T, N > & a, T b );
+
+// scalar op vector
+template< typename T, int N >
+inline vec< T, N > operator+( T a, vec< T, N > const & b );
+template< typename T, int N >
+inline vec< T, N > operator-( T a, vec< T, N > const & b );
+template< typename T, int N >
+inline vec< T, N > operator*( T a, vec< T, N > const & b );
+template< typename T, int N >
+inline vec< T, N > operator/( T a, vec< T, N > const & b );
+
+// matrix op vector/matrix
+template< typename T, int R, int C >
+inline vec< T, R > operator*( mat< T, R, C > const & m, vec< T, C > const & v );
+template< typename T, int R, int C1, int C2 >
+inline mat< T, R, C2 > operator*( mat< T, R, C1 > const & m, mat< T, C1, C2 > const & n );
+
+// matrix op vector (SSE)
 inline vector operator* ( matrix m, vector v );
 
 #pragma endregion
 
 #pragma region Functions
 
-template< typename T >
-T               clamp     ( T x, T a, T b );
-inline float    dot       ( float4 u, float4 v );
-inline float4   homogenize( float4 v );
-inline float    len       ( float4 v );
-inline float    len2      ( float4 v );
-template< typename T >
-T               lerp      ( T a, T b, T weightB );
-inline float4   normalize ( float4 v );
-inline unsigned	pack      ( unsigned x, unsigned y, unsigned z );
-inline bool     powerOf2  ( int x );
-inline void     unpack    ( unsigned v, unsigned & outX, unsigned & outY, unsigned & outZ );
+// vector
 
+template< typename T >
+inline vec< T, 3 >           cross         ( vec< T, 3 > const & a, vec< T, 3 > const & b );
+// returns ( cross( a.xyz(), b.xyz() ), 0 )
+template< typename T >
+inline vec< T, 4 >           cross         ( vec< T, 4 > const & a, vec< T, 4 > const & b );
+template< typename T, int N >
+inline T                     dot           ( vec< T, N > const & a, vec< T, N > const & b );
+template< typename T >
+inline vec< T, 4 >           homogenize    ( vec< T, 4 > const & a );
+template< typename T, int N >
+inline double                length        ( vec< T, N > const & a );
+template< int N >
+inline float                 length        ( vec< float, N > const & a );
+template< int N >
+inline long double           length        ( vec< long double, N > const & a );
+template< typename T, int N >
+inline T                     length_squared( vec< T, N > const & a );
+template< typename T, int N >
+inline vec< double, N >      normalize     ( vec< T, N > const & a );
+template< int N >
+inline vec< float, N >       normalize     ( vec< float, N > const & a );
+template< int N >
+inline vec< long double, N > normalize     ( vec< long double, N > const & a );
+
+// matrix
+
+// Computes Eigenvectors of a symmetric matrix m.
 // Eigenvectors are stored in the columns of 'outEigenVectors'. 'm' and 'outEigenVectors' are allowed to be identical.
-inline void eigen           ( float4x4 const & m, float4 & outEigenValues, float4x4 & outEigenVectors );
-inline void invert_transform( float4x4 & tR );
-inline void transpose       ( float4x4 & m );
+template< typename T, int N >
+inline void           eigen           ( mat< T, N, N > const & m, vec< T, N > & outEigenValues, mat< T, N, N > & outEigenVectors );
+template< typename T >
+inline mat< T, 4, 4 > invert_transform( mat< T, 4, 4 > const & tR );
+template< typename T, int R, int C >
+inline mat< T, C, R > transpose       ( mat< T, R, C > const & m );
 
-inline int      all       ( vector v );
-inline int      any       ( vector v );
-template< int index >	  
-inline vector   broadcast ( vector v );
-inline vector   dot       ( vector u, vector v );
-inline vector   homogenize( vector v );
-inline vector   len       ( vector v );
-inline vector   len2      ( vector v );
-inline vector   load      ( float4 src );
-inline matrix   load      ( float4x4 src );
-inline vector   load      ( float const * src );
-inline vector   loadu     ( float const * src );
-inline vector   loadss    ( float src );
-inline int      none      ( vector v );
-inline vector   normalize ( vector v );
-inline vector   set       ( float s );
-inline vector   set       ( float x, float y, float z, float w );
+// SSE
+
+inline int    all           ( vector v );
+inline int    any           ( vector v );
+template< int index >	      
+inline vector broadcast     ( vector v );
+inline vector dot           ( vector u, vector v );
+inline vector homogenize    ( vector v );
+inline vector length        ( vector v );
+inline vector length_squared( vector v );
+inline vector load          ( float4 const & src );
+inline matrix load          ( float4x4 const & src );
+inline vector load          ( float const * src );
+inline vector loadu         ( float const * src );
+inline vector loadss        ( float src );
+inline int    none          ( vector v );
+inline vector normalize     ( vector v );
+inline vector set           ( float s );
+inline vector set           ( float x, float y, float z, float w );
 template< int a0, int a1, int b0, int b1 >
-inline vector   shuffle   ( vector a, vector b );
-inline float4   store     ( vector src );
-inline void     store     ( float * dst, vector src );
-inline void     storeu    ( float * dst, vector src );
-inline float    storess   ( vector src );
-inline vector   zero      ();
+inline vector shuffle       ( vector a, vector b );
+inline float4 store         ( vector src );
+inline void   store         ( float * dst, vector src );
+inline void   storeu        ( float * dst, vector src );
+inline float  storess       ( vector src );
+inline vector zero          ();
+
+// Other
+
+template< typename T >
+T               clamp   ( T x, T a, T b );
+template< typename T >
+T               lerp    ( T a, T b, T weightB );
+inline unsigned	pack    ( unsigned x, unsigned y, unsigned z );
+inline bool     powerOf2( int x );
+inline void     unpack  ( unsigned v, unsigned & outX, unsigned & outY, unsigned & outZ );
 
 #pragma endregion
 
@@ -182,10 +285,8 @@ inline __m128 operator&( __m128 u, __m128 v );
 
 #pragma region Implementation
 
-#include <algorithm>
 #include <cassert>
 #include <cmath>
-#include <cstring>
 #include <functional>
 
 
@@ -193,190 +294,585 @@ inline __m128 operator&( __m128 u, __m128 v );
 namespace kifi {
 namespace util {
 
-#pragma region Types
+#pragma region vec< T, N >
 
-int2::int2() : x( 0 ), y( 0 ) {}
-int2::int2( int i ) : x( i ), y( i ) {}
-int2::int2( int x, int y ) : x( x ), y( y ) {}
+// Constructors
 
-float2::float2() : x( 0.0f ), y( 0.0f ) {}
-float2::float2( float s ) : x( s ), y( s ) {}
-float2::float2( float x, float y ) : x( x ), y( y ) {}
-
-float3::float3() : x( 0.0f ), y( 0.0f ), z( 0.0f ) {}
-float3::float3( float s ) : x( s ), y( s ), z( s ) {}
-float3::float3( float x, float y, float z ) : x( x ), y( y ), z( z ) {}
-
-float4::float4() : x( 0.0f ), y( 0.0f ), z( 0.0f ), w( 0.0f ) {}
-float4::float4( float s ) : x( s ), y( s ), z( s ), w( s ) {}
-float4::float4( float x, float y, float z, float w ) : x( x ), y( y ), z( z ), w( w ) {}
-float4::float4( float3 xyz, float w ) : x( xyz.x ), y( xyz.y ), z( xyz.z ), w( w ) {}
-float4 float4::operator-() const { return float4( -x, -y, -z, -w ); }
-float3 float4::xyz() const { return float3( x, y, z ); }
-
-
-
-float & float4::operator[]( int i )
-{
-	assert( i >= 0 && i < 4 );
-
-	return reinterpret_cast< float * >( this )[ i ];
+template< typename T, int N >
+vec< T, N >::vec()
+{	
 }
 
-float float4::operator[]( int i ) const
+template< typename T, int N >
+vec< T, N >::vec( T s )
 {
-	assert( i >= 0 && i < 4 );
+	fill( s );		
+}
 
-	return reinterpret_cast< float const * >( this )[ i ];
+template< typename T, int N >
+vec< T, N >::vec( T x, T y )
+{
+	static_assert( 2 == N, "this constructor is only implemented for 2-component vectors" );
+
+	(*this)[ 0 ] = x;
+	(*this)[ 1 ] = y;
+}
+
+template< typename T, int N >
+vec< T, N >::vec( T x, T y, T z )
+{
+	static_assert( 3 == N, "this constructor is only implemented for 3-component vectors" );
+
+	(*this)[ 0 ] = x;
+	(*this)[ 1 ] = y;
+	(*this)[ 2 ] = z;
+}
+
+template< typename T, int N >
+vec< T, N >::vec( T x, T y, T z, T w )
+{
+	static_assert( 4 == N, "this constructor is only implemented for 4-component vectors" );
+
+	(*this)[ 0 ] = x;
+	(*this)[ 1 ] = y;
+	(*this)[ 2 ] = z;
+	(*this)[ 3 ] = w;
+}
+
+template< typename T, int N >
+vec< T, N >::vec( vec< T, 3 > xyz, T w )
+{
+	static_assert( 4 == N, "this constructor is only implemented for 4-component vectors" );
+
+	(*this)[ 0 ] = xyz.x();
+	(*this)[ 1 ] = xyz.y();
+	(*this)[ 2 ] = xyz.z();
+	(*this)[ 3 ] = w;
+}
+
+// Acessors
+
+template< typename T, int N >
+T & vec< T, N >::x()
+{
+	static_assert( 1 <= N, "can't access x-component of a vector with less than 1 component");
+
+	return (*this)[ 0 ];
+}
+
+template< typename T, int N >
+T & vec< T, N >::y()
+{
+	static_assert( 2 <= N, "can't access y-component of a vector with less than 2 components");
+
+	return (*this)[ 1 ];
+}
+
+template< typename T, int N >
+T & vec< T, N >::z()
+{
+	static_assert( 3 <= N, "can't access z-component of a vector with less than 3 components");
+
+	return (*this)[ 2 ];
+}
+
+template< typename T, int N >
+T & vec< T, N >::w()
+{
+	static_assert( 4 <= N, "can't access w-component of a vector with less than 4 components");
+
+	return (*this)[ 3 ];
 }
 
 
 
-float4x4::float4x4() : col0( 0.0f ), col1( 0.0f ), col2( 0.0f ), col3( 0.0f ) {}
+template< typename T, int N >
+T const & vec< T, N >::x() const
+{
+	static_assert( 1 <= N, "can't access x-component of a vector with less than 1 component");
 
-float4x4::float4x4( float s ) :	col0( s ), col1( s ), col2( s ), col3( s ) {}
+	return (*this)[ 0 ];
+}
 
-float4x4::float4x4
+template< typename T, int N >
+T const & vec< T, N >::y() const
+{
+	static_assert( 2 <= N, "can't access y-component of a vector with less than 2 components");
+
+	return (*this)[ 1 ];
+}
+
+template< typename T, int N >
+T const & vec< T, N >::z() const
+{
+	static_assert( 3 <= N, "can't access z-component of a vector with less than 3 components");
+
+	return (*this)[ 2 ];
+}
+
+template< typename T, int N >
+T const & vec< T, N >::w() const
+{
+	static_assert( 4 <= N, "can't access w-component of a vector with less than 4 components");
+
+	return (*this)[ 3 ];
+}
+
+
+
+template< typename T, int N >
+T & vec< T, N >::r()
+{
+	return x();
+}
+
+template< typename T, int N >
+T & vec< T, N >::g()
+{
+	return y();
+}
+
+template< typename T, int N >
+T & vec< T, N >::b()
+{
+	return z();
+}
+
+template< typename T, int N >
+T & vec< T, N >::a()
+{
+	return w();
+}
+
+
+
+template< typename T, int N >
+T const & vec< T, N >::r() const
+{
+	return x();
+}
+
+template< typename T, int N >
+T const & vec< T, N >::g() const
+{
+	return y();
+}
+
+template< typename T, int N >
+T const & vec< T, N >::b() const
+{
+	return z();
+}
+
+template< typename T, int N >
+T const & vec< T, N >::a() const
+{
+	return w();
+}
+
+// Methods
+
+template< typename T, int N >
+vec< T, N > vec< T, N >::operator-() const
+{
+	vec< T, N > result;
+
+	kifi_for( N )
+		result[ i ] = -(*this)[ i ];
+
+	return result;
+}
+
+template< typename T, int N >
+template< typename U >
+vec< T, N >::operator vec< U, N >() const
+{
+	vec< U, N > result;
+
+	kifi_for( N )
+		result[ i ] = (U) (*this)[ i ];
+
+	return result;
+}
+
+template< typename T, int N >
+vec< T, 3 > vec< T, N >::xyz() const
+{
+	static_assert( 4 == N, "this method is only implemented for 4-component vectors" );
+
+	return vec< T, 3 >( x(), y(), z() );
+}
+
+template< typename T, int N >
+vec< T, 3 > vec< T, N >::rgb() const
+{
+	return xyz();
+}
+
+#pragma endregion
+
+#pragma region mat< T, R, C >
+
+// Constructors
+
+template< typename T, int R, int C >
+mat< T, R, C >::mat()
+{
+}
+
+template< typename T, int R, int C >
+mat< T, R, C >::mat( T s )
+{
+	cols.fill( vec< T, R >( s ) );
+}
+
+template< typename T, int R, int C >
+mat< T, R, C >::mat
 (
-	float m00, float m01, float m02, float m03,
-	float m10, float m11, float m12, float m13,
-	float m20, float m21, float m22, float m23,
-	float m30, float m31, float m32, float m33
-) :
-	col0( m00, m10, m20, m30 ),
-	col1( m01, m11, m21, m31 ),
-	col2( m02, m12, m22, m32 ),
-	col3( m03, m13, m23, m33 )
+	T m00, T m01, T m02, T m03,
+	T m10, T m11, T m12, T m13,
+	T m20, T m21, T m22, T m23,
+	T m30, T m31, T m32, T m33
+)
 {
+	static_assert( 4 == R && 4 == C, "this constructor is only implemented for 4x4 matrices" );
+
+	cols[ 0 ] = vec< T, R >( m00, m10, m20, m30 );
+	cols[ 1 ] = vec< T, R >( m01, m11, m21, m31 );
+	cols[ 2 ] = vec< T, R >( m02, m12, m22, m32 );
+	cols[ 3 ] = vec< T, R >( m03, m13, m23, m33 );
+}
+	
+template< typename T, int R, int C >
+mat< T, R, C >::mat( T const * src )
+{
+	for( int col = 0; col < C; col++ )
+		for( int row = 0; row < R; row++ )
+			(*this)( row, col ) = src[ col + row * C ];
 }
 
-float4x4::float4x4( float const * src )
+// Accessors
+
+template< typename T, int R, int C >
+T & mat< T, R, C >::operator()( int iRow, int iCol )
 {
-	std::memcpy( this, src, 64 );
-	transpose( * this );
+	assert( iRow >= 0 && iRow < R &&
+			iCol >= 0 && iCol < C );
+
+	return cols[ iCol ][ iRow ];
 }
 
-float & float4x4::operator()( int iRow, int iCol )
+template< typename T, int R, int C >
+T const & mat< T, R, C >::operator()( int iRow, int iCol ) const
 {
-	assert( iRow >= 0 && iRow < 4 );
-	assert( iCol >= 0 && iCol < 4 );
+	assert( iRow >= 0 && iRow < R &&
+			iCol >= 0 && iCol < C );
 
-	return reinterpret_cast< float * >( this )[ iRow + 4 * iCol ];
+	return cols[ iCol ][ iRow ];
 }
 
-float const & float4x4::operator()( int iRow, int iCol ) const
-{
-	assert( iRow >= 0 && iRow < 4 );
-	assert( iCol >= 0 && iCol < 4 );
+// Methods
 
-	return reinterpret_cast< float const * >( this )[ iRow + 4 * iCol ];
+template< typename T, int R, int C >
+template< typename U >
+mat< T, R, C >::operator mat< U, R, C >() const
+{
+	mat< U, R, C > result;
+
+	for( int col = 0; col < C; col++ )
+		for( int row = 0; row < R; row++ )
+			result( row, col ) = (U) (*this)( row, col );
+
+	return result;
 }
 
-float4x4 float4x4::identity()
+// static 
+template< typename T, int R, int C >
+mat< T, R, C > mat< T, R, C >::identity()
 {
-	return float4x4
-	(
-		1.0f, 0.0f, 0.0f, 0.0f,
-		0.0f, 1.0f, 0.0f, 0.0f,
-		0.0f, 0.0f, 1.0f, 0.0f,
-		0.0f, 0.0f, 0.0f, 1.0f
-	);
+	mat< T, R, C > result( (T) 0 );
+
+	kifi_for( std::min( R, C ) )
+		result( i, i ) = (T) 1;
+
+	return result;
 }
 
 #pragma endregion
 
 #pragma region Operators
 
-float4 operator+( float4 u, float4 v )
+// vector op vector
+
+template< typename T, int N >
+vec< T, N > operator+( vec< T, N > const & a, vec< T, N > const & b )
 {
-	return float4
-	(
-		u.x + v.x,
-		u.y + v.y,
-		u.z + v.z,
-		u.w + v.w
-	);
-}
+	vec< T, N > result;
 
-float4 operator-( float4 u, float4 v )
-{
-	return float4
-	(
-		u.x - v.x,
-		u.y - v.y,
-		u.z - v.z,
-		u.w - v.w
-	);
-}
-
-float4 operator*( float4 u, float4 v )
-{
-	return float4
-	(
-		u.x * v.x,
-		u.y * v.y,
-		u.z * v.z,
-		u.w * v.w
-	);
-}
-
-float4 operator/( float4 u, float4 v )
-{
-	return float4
-	(
-		u.x / v.x,
-		u.y / v.y,
-		u.z / v.z,
-		u.w / v.w
-	);
-}
-
-
-
-float4 & operator+=( float4 & u, float4 v )
-{
-	u = u + v;
-	return u;
-}
-
-float4 & operator-=( float4 & u, float4 v )
-{
-	u = u - v;
-	return u;
-}
-
-float4 & operator*=( float4 & u, float4 v )
-{
-	u = u * v;
-	return u;
-}
-
-float4 & operator/=( float4 & u, float4 v )
-{
-	u = u / v;
-	return u;
-}
-
-
-
-float4 operator*( float4x4 m, float4 v )
-{
-	return ( m.col0 * v.x + m.col1 * v.y ) + ( m.col2 * v.z + m.col3 * v.w );
-}
-
-float4x4 operator*( float4x4 m, float4x4 n )
-{
-	float4x4 result;
-
-	result.col0 = m * n.col0;
-	result.col1 = m * n.col1;
-	result.col2 = m * n.col2;
-	result.col3 = m * n.col3;
+	kifi_for( N )
+		result[ i ] = a[ i ] + b[ i ];
 
 	return result;
 }
 
+template< typename T, int N >
+vec< T, N > operator-( vec< T, N > const & a, vec< T, N > const & b )
+{
+	vec< T, N > result;
 
+	kifi_for( N )
+		result[ i ] = a[ i ] - b[ i ];
+
+	return result;
+}
+
+template< typename T, int N >
+vec< T, N > operator*( vec< T, N > const & a, vec< T, N > const & b )
+{
+	vec< T, N > result;
+
+	kifi_for( N )
+		result[ i ] = a[ i ] * b[ i ];
+
+	return result;
+}
+
+template< typename T, int N >
+vec< T, N > operator/( vec< T, N > const & a, vec< T, N > const & b )
+{
+	vec< T, N > result;
+
+	kifi_for( N )
+		result[ i ] = a[ i ] / b[ i ];
+
+	return result;
+}
+
+// vector op= vector
+
+template< typename T, int N >
+vec< T, N > & operator+=( vec< T, N > & a, vec< T, N > const & b )
+{
+	kifi_for( N )
+		a[ i ] += b[ i ];
+
+	return a;
+}
+
+template< typename T, int N >
+vec< T, N > & operator-=( vec< T, N > & a, vec< T, N > const & b )
+{
+	kifi_for( N )
+		a[ i ] -= b[ i ];
+
+	return a;
+}
+
+template< typename T, int N >
+vec< T, N > & operator*=( vec< T, N > & a, vec< T, N > const & b )
+{
+	kifi_for( N )
+		a[ i ] *= b[ i ];
+
+	return a;
+}
+
+template< typename T, int N >
+vec< T, N > & operator/=( vec< T, N > & a, vec< T, N > const & b )
+{
+	kifi_for( N )
+		a[ i ] /= b[ i ];
+
+	return a;
+}
+
+// vector op scalar
+
+template< typename T, int N >
+vec< T, N > operator+( vec< T, N > const & a, T b )
+{
+	vec< T, N > result;
+
+	kifi_for( N )
+		result[ i ] = a[ i ] + b;
+
+	return result;
+}
+
+template< typename T, int N >
+vec< T, N > operator-( vec< T, N > const & a, T b )
+{
+	vec< T, N > result;
+
+	kifi_for( N )
+		result[ i ] = a[ i ] - b;
+
+	return result;
+}
+
+template< typename T, int N >
+vec< T, N > operator*( vec< T, N > const & a, T b )
+{
+	vec< T, N > result;
+
+	kifi_for( N )
+		result[ i ] = a[ i ] * b;
+
+	return result;
+}
+
+template< typename T, int N >
+vec< T, N > operator/( vec< T, N > const & a, T b )
+{
+	vec< T, N > result;
+
+	kifi_for( N )
+		result[ i ] = a[ i ] / b;
+
+	return result;
+}
+
+template< int N >
+vec< float, N > operator/( vec< float, N > const & a, float b )
+{
+	return a * (1.0f / b);
+}
+
+template< int N >
+vec< double, N > operator/( vec< double, N > const & a, double b )
+{
+	return a * (1.0 / b);
+}
+
+template< int N >
+vec< long double, N > operator/( vec< long double, N > const & a, long double b )
+{
+	return a * (1.0 / b);
+}
+
+// vector op= scalar
+
+template< typename T, int N >
+vec< T, N > & operator+=( vec< T, N > & a, T b )
+{
+	kifi_for( N )
+		a[ i ] += b;
+
+	return a;
+}
+
+template< typename T, int N >
+vec< T, N > & operator-=( vec< T, N > & a, T b )
+{
+	kifi_for( N )
+		a[ i ] -= b;
+
+	return a;
+}
+
+template< typename T, int N >
+vec< T, N > & operator*=( vec< T, N > & a, T b )
+{
+	kifi_for( N )
+		a[ i ] *= b;
+
+	return a;
+}
+
+template< typename T, int N >
+vec< T, N > & operator/=( vec< T, N > & a, T b )
+{
+	kifi_for( N )
+		a[ i ] /= b;
+
+	return a;
+}
+
+template< int N >
+vec< float, N > & operator/=( vec< float, N > & a, float b )
+{
+	return a *= (1.0f / b);
+}
+
+template< int N >
+vec< double, N > & operator/=( vec< double, N > & a, double b )
+{
+	return a *= (1.0 / b);
+}
+
+template< int N >
+vec< long double, N > & operator/=( vec< long double, N > & a, long double b )
+{
+	return a *= (1.0 / b);
+}
+
+// scalar op vector
+
+template< typename T, int N >
+inline vec< T, N > operator+( T a, vec< T, N > const & b )
+{
+	return b + a;
+}
+
+template< typename T, int N >
+inline vec< T, N > operator-( T a, vec< T, N > const & b )
+{
+	vec< T, N > result;
+
+	kifi_for( N )
+		result[ i ] = a - b[ i ];
+
+	return result;
+}
+
+template< typename T, int N >
+inline vec< T, N > operator*( T a, vec< T, N > const & b )
+{
+	return b * a;
+}
+
+template< typename T, int N >
+inline vec< T, N > operator/( T a, vec< T, N > const & b )
+{
+	vec< T, N > result;
+
+	kifi_for( N )
+		result[ i ] = a / b[ i ];
+
+	return result;
+}
+
+// matrix op vector/matrix
+
+template< typename T, int R, int C >
+vec< T, R > operator*( mat< T, R, C > const & m, vec< T, C > const & v )
+{
+	vec< T, R > result( (T) 0 );
+
+	kifi_for( C )
+		result += m.cols[ i ] * v[ i ];
+
+	return result;
+}
+
+template< typename T, int R >
+vec< T, R > operator*( mat< T, R, 4 > const & m, vec< T, 4 > const & v )
+{
+	return ( m.cols[ 0 ] * v.x() + m.cols[ 1 ] * v.y() ) + ( m.cols[ 2 ] * v.z() + m.cols[ 3 ] * v.w() );
+}
+
+template< typename T, int R, int C1, int C2 >
+mat< T, R, C2 > operator*( mat< T, R, C1 > const & m, mat< T, C1, C2 > const & n )
+{
+	mat< T, R, C2 > result;
+
+	kifi_for( C2 )
+		result.cols[ i ] = m * n.cols[ i ];
+
+	return result;
+}
+
+// matrix op vector (SSE)
 
 vector operator*( matrix m, vector v )
 {
@@ -400,89 +896,124 @@ vector operator*( matrix m, vector v )
 
 #pragma region Functions
 
+// vector
+
 template< typename T >
-T clamp( T x, T a, T b )
+inline vec< T, 3 > cross( vec< T, 3 > const & a, vec< T, 3 > const & b )
 {
-	return std::max( a, std::min( x, b ) );
-}
-
-float dot( float4 u, float4 v )
-{
-	return (u.x * v.x + u.y * v.y) + (u.z * v.z + u.w * v.w);
-}
-
-float4 homogenize( float4 v )
-{
-	assert( v.w != 0.0f );
-
-	return v / v.w;
-}
-
-float len( float4 v )
-{
-	return std::sqrt( len2( v ) );
-}
-
-float len2( float4 v )
-{
-	return dot( v, v );
+	return vec< T, 3 >
+	(
+		a.y() * b.z() - a.z() * b.y(),
+		a.z() * b.x() - a.x() * b.z(),
+		a.x() * b.y() - a.y() * b.x()
+	);
 }
 
 template< typename T >
-T lerp( T a, T b, T weightB )
+inline vec< T, 4 > cross( vec< T, 4 > const & a, vec< T, 4 > const & b )
 {
-	return a + (b-a) * weightB;
+	return vec< T, 4 >
+	(
+		a.y() * b.z() - a.z() * b.y(),
+		a.z() * b.x() - a.x() * b.z(),
+		a.x() * b.y() - a.y() * b.x(),
+		T()
+	);
 }
 
-float4 normalize( float4 v )
+template< typename T, int N >
+inline T dot( vec< T, N > const & a, vec< T, N > const & b )
 {
-	return v / len( v );
+	T result = T();
+
+	kifi_for( N )
+		result += a[ i ] * b[ i ];
+
+	return result;
 }
 
-unsigned pack( unsigned x, unsigned y, unsigned z )
+template< typename T >
+inline T dot( vec< T, 4 > const & a, vec< T, 4 > const & b )
 {
-	return z << 20 | y << 10 | x;
+	return ( a.x() * b.x() + a.y() * b.y() ) + ( a.z() * b.z() + a.w() * b.w() );
 }
 
-bool powerOf2( int x )
+template< typename T >
+inline vec< T, 4 > homogenize( vec< T, 4 > const & a )
 {
-	return x > 0 && ! (x & (x - 1));
+	return a / a.w();
 }
 
-void unpack( unsigned v, unsigned & outX, unsigned & outY, unsigned & outZ )
+template< typename T, int N >
+inline double length( vec< T, N > const & a )
 {
-	outX = v & 0x3ff;
-	outY = v >> 10 & 0x3ff;
-	outZ = v >> 20;
+	return std::sqrt( length_squared( a ) );
 }
 
-
-
-void eigen( float4x4 const & m, float4 & outEigenValues, float4x4 & outEigenVectors )
+template< int N >
+inline float length( vec< float, N > const & a )
 {
-	float4 tmp;
+	return std::sqrt( length_squared( a ) );
+}
+
+template< int N >
+inline long double length( vec< long double, N > const & a )
+{
+	return std::sqrt( length_squared( a ) );
+}
+
+template< typename T, int N >
+inline T length_squared( vec< T, N > const & a )
+{
+	return dot( a, a );
+}
+
+template< typename T, int N >
+inline vec< double, N > normalize( vec< T, N > const & a )
+{
+	return (vec< double, N >) a / length( a );
+}
+
+template< int N >
+inline vec< float, N > normalize( vec< float, N > const & a )
+{
+	return a / length( a );
+}
+
+template< int N >
+inline vec< long double, N > normalize( vec< long double, N > const & a )
+{
+	return a / length( a );
+}
+
+// matrix
+
+template< typename T, int N >
+void eigen( mat< T, N, N > const & m, vec< T, N > & outEigenValues, mat< T, N, N > & outEigenVectors )
+{
+	vec< T, N > tmp;
 	outEigenVectors = m;
 
 	// TODO: Replace copy-righted code.
 #pragma region tred2/tqli implementation
 
 	static int const MAX_ITERS = 30;
-	auto SIGN = [] ( float a, float b ) { return b < 0.0f ? -std::abs( a ) : std::abs( a ); };
+	auto SIGN = [] ( T a, T b ) { return b < ((T)0) ? -std::abs( a ) : std::abs( a ); };
 
-	std::function< void ( float4x4 &, float4 &, float4 & ) > tred2 = [] ( float4x4 & a, float4 & d, float4 & e )
+	auto tred2 = [] ( mat< T, N, N > & a, vec< T, N > & d, vec< T, N > & e )
 	{
 		int l, k, j, i;
-        float scale, hh, h, g, f;
+        T scale, hh, h, g, f;
 
-        for (i = 3; i >= 1; i--)
+        for (i = N - 1; i >= 1; i--)
         {
             l = i - 1;
-            h = scale = 0.0f;
+            h = scale = ((T)0);
             if (l > 0)
             {
                 for (k = 0; k <= l; k++)
                     scale += std::abs(a(i,k));
-                if (scale == 0.0f)
+                if (scale == ((T)0))
                     e[i] = a(i,l);
                 else
                 {
@@ -496,12 +1027,12 @@ void eigen( float4x4 const & m, float4 & outEigenValues, float4x4 & outEigenVect
                     e[i] = scale * g;
                     h -= f * g;
                     a(i,l) = f - g;
-                    f = 0.0f;
+                    f = ((T)0);
                     for (j = 0; j <= l; j++)
                     {
                         /* Next statement can be omitted if eigenvectors not wanted */
                         a(j,i) = a(i,j) / h;
-                        g = 0.0f;
+                        g = ((T)0);
                         for (k = 0; k <= j; k++)
                             g += a(j,k) * a(i,k);
                         for (k = j + 1; k <= l; k++)
@@ -524,18 +1055,18 @@ void eigen( float4x4 const & m, float4 & outEigenValues, float4x4 & outEigenVect
             d[i] = h;
         }
         /* Next statement can be omitted if eigenvectors not wanted */
-        d[0] = 0.0f;
-        e[0] = 0.0f;
+        d[0] = ((T)0);
+        e[0] = ((T)0);
         /* Contents of this loop can be omitted if eigenvectors not 
                 wanted except for statement d[i]=a(i,i); */
-        for (i = 0; i < 4; i++)
+        for (i = 0; i < N; i++)
         {
             l = i - 1;
-            if (d[i] != 0.0f)
+            if (d[i] != ((T)0))
             {
                 for (j = 0; j <= l; j++)
                 {
-                    g = 0.0f;
+                    g = ((T)0);
                     for (k = 0; k <= l; k++)
                         g += a(i,k) * a(k,j);
                     for (k = 0; k <= l; k++)
@@ -543,55 +1074,55 @@ void eigen( float4x4 const & m, float4 & outEigenValues, float4x4 & outEigenVect
                 }
             }
             d[i] = a(i,i);
-            a(i,i) = 1.0f;
-            for (j = 0; j <= l; j++) a(j,i) = a(i,j) = 0.0f;
+            a(i,i) = ((T)1);
+            for (j = 0; j <= l; j++) a(j,i) = a(i,j) = ((T)0);
         }
 	};
 
-	std::function< void ( float4 &, float4 &, float4x4 & ) > tqli = [ & SIGN ] ( float4 & d, float4 & e, float4x4 & z )
+	auto tqli =	[ & SIGN ] ( vec< T, N > & d, vec< T, N > & e, mat< T, N, N > & z )
 	{
 		int m,l,iter,i,k;  
-        float s,r,p,g,f,dd,c,b;  
+        T s,r,p,g,f,dd,c,b;  
       
-        for (i=1;i<4;i++) e[i-1]=e[i];
-        e[3] = 0.0f;
-        for (l = 0; l < 4; l++)
+        for (i=1;i<N;i++) e[i-1]=e[i];
+        e[N - 1] = ((T)0);
+        for (l = 0; l < N; l++)
         {  
             iter=0;  
             do {
-                for (m = l; m < 3; m++)
-                {
+                for (m = l; m < N - 1; m++)
+                {  
                     dd=std::abs(d[m])+std::abs(d[m+1]);  
                     if (std::abs(e[m])+dd == dd) break;  
                 }  
                 if (m != l) {  
                     if (iter++ == MAX_ITERS) return; /* Too many iterations in TQLI */  
-                    g=(d[l+1]-d[l])/(2.0f*e[l]);  
-                    r=std::sqrt((g*g)+1.0f);  
+                    g=(d[l+1]-d[l])/(((T)2)*e[l]);  
+                    r=std::sqrt((g*g)+((T)1));  
                     g=d[m]-d[l]+e[l]/(g+SIGN(r,g));  
-                    s=c=1.0f;  
-                    p=0.0f;  
+                    s=c=((T)1);  
+                    p=((T)0);  
                     for (i=m-1;i>=l;i--) {  
                         f=s*e[i];  
                         b=c*e[i];  
                         if (std::abs(f) >= std::abs(g)) {  
                             c=g/f;  
-                            r=std::sqrt((c*c)+1.0f);  
+                            r=std::sqrt((c*c)+((T)1));  
                             e[i+1]=f*r;  
-                            c *= (s=1.0f/r);  
+                            c *= (s=((T)1)/r);  
                         } else {  
                             s=f/g;  
-                            r=std::sqrt((s*s)+1.0f);  
+                            r=std::sqrt((s*s)+((T)1));  
                             e[i+1]=g*r;  
-                            s *= (c=1.0f/r);  
+                            s *= (c=((T)1)/r);  
                         }  
                         g=d[i+1]-p;  
-                        r=(d[i]-g)*s+2.0f*c*b;  
+                        r=(d[i]-g)*s+((T)2)*c*b;  
                         p=s*r;  
                         d[i+1]=g+p;  
                         g=c*r-b;  
                         /* Next loop can be omitted if eigenvectors not wanted */
-                        for (k = 0; k < 4; k++)
+                        for (k = 0; k < N; k++)
                         {  
                             f=z(k,i+1);  
                             z(k,i+1)=s*z(k,i)+c*f;  
@@ -600,10 +1131,10 @@ void eigen( float4x4 const & m, float4 & outEigenValues, float4x4 & outEigenVect
                     }  
                     d[l]=d[l]-p;  
                     e[l]=g;  
-                    e[m]=0.0f;  
+                    e[m]=((T)0);  
                 }  
             } while (m != l);  
-        }
+        } 
 	};
 
 #pragma endregion
@@ -612,31 +1143,38 @@ void eigen( float4x4 const & m, float4 & outEigenValues, float4x4 & outEigenVect
 	tqli ( outEigenValues, tmp, outEigenVectors );
 }
 
-void invert_transform( float4x4 & tR )
+template< typename T >
+mat< T, 4, 4 > invert_transform( mat< T, 4, 4 > const & tR )
 {
-	float4 tInv = -tR.col3; tInv.w = 1.0f;
-	tR.col3 = float4( 0.0f, 0.0f, 0.0f, 1.0f );
+	// isolate and invert translation via negation
+	auto tInv = -tR.cols[ 3 ];
+	tInv.w() = 1.0f;
 	
-	std::swap( tR.col0.y, tR.col1.x );
-	std::swap( tR.col0.z, tR.col2.x );
-	std::swap( tR.col1.z, tR.col2.y );
+	// isolate rotation
+	mat< T, 4, 4 > R = tR;
+	R.cols[ 3 ] = vec< T, 4 >( 0.0f, 0.0f, 0.0f, 1.0f );
 
-	tR.col3 = tR * tInv;
+	// invert rotation via transposition
+	mat< T, 4, 4 > RInv = transpose( R );
+
+	// multiply the two
+	RInv.cols[ 3 ] = RInv * tInv;
+	return RInv;
 }
 
-void transpose( float4x4 & m )
+template< typename T, int R, int C >
+mat< T, C, R > transpose( mat< T, R, C > const & m )
 {
-	std::swap( m.col0.y, m.col1.x );
-	std::swap( m.col0.z, m.col2.x );
-	std::swap( m.col0.w, m.col3.x );
-			   
-	std::swap( m.col1.z, m.col2.y );
-	std::swap( m.col1.w, m.col3.y );
-			   
-	std::swap( m.col2.w, m.col3.z );
+	mat< T, C, R > result;
+
+	for( int col = 0; col < R; col++ )
+		for( int row = 0; row < C; row++ )
+			result( row, col ) = m( col, row );
+
+	return result;
 }
 
-
+// SSE
 
 int all( vector v )
 {
@@ -673,29 +1211,29 @@ vector homogenize( vector v )
 	return v / broadcast< 3 >( v );
 }
 
-vector len( vector v )
+vector length( vector v )
 {
-	return _mm_sqrt_ps( len2( v ) );
+	return _mm_sqrt_ps( length_squared( v ) );
 }
 
-vector len2( vector v )
+vector length_squared( vector v )
 {
 	return dot( v, v );
 }
 
-vector load( float4 src )
+vector load( float4 const & src )
 {
-	return loadu( reinterpret_cast< float * >( & src ) );
+	return loadu( reinterpret_cast< float const * >( & src ) );
 }
 
-matrix load( float4x4 src )
+matrix load( float4x4 const & src )
 {
 	matrix result;
 
-	result.col0 = load( src.col0 );
-	result.col1 = load( src.col1 );
-	result.col2 = load( src.col2 );
-	result.col3 = load( src.col3 );
+	result.col0 = load( src.cols[ 0 ] );
+	result.col1 = load( src.cols[ 1 ] );
+	result.col2 = load( src.cols[ 2 ] );
+	result.col3 = load( src.cols[ 3 ] );
 
 	return result;
 }
@@ -722,7 +1260,7 @@ int none( vector v )
 
 vector normalize( vector v )
 {
-	return v / len( v );
+	return v / length( v );
 }
 
 vector set( float s )
@@ -770,6 +1308,37 @@ float storess( vector src )
 vector zero()
 {
 	return _mm_setzero_ps();
+}
+
+// Other
+
+template< typename T >
+T clamp( T x, T a, T b )
+{
+	return std::max( a, std::min( x, b ) );
+}
+
+template< typename T >
+T lerp( T a, T b, T weightB )
+{
+	return a + (b-a) * weightB;
+}
+
+unsigned pack( unsigned x, unsigned y, unsigned z )
+{
+	return z << 20 | y << 10 | x;
+}
+
+bool powerOf2( int x )
+{
+	return x > 0 && ! (x & (x - 1));
+}
+
+void unpack( unsigned v, unsigned & outX, unsigned & outY, unsigned & outZ )
+{
+	outX = v & 0x3ff;
+	outY = v >> 10 & 0x3ff;
+	outZ = v >> 20;
 }
 
 #pragma endregion

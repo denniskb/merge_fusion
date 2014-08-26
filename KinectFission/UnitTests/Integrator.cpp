@@ -46,7 +46,7 @@ BOOST_AUTO_TEST_CASE( Integrate )
 		
 		util::float3 pos = v.VoxelCenter( x, y, z );
 		
-		debug << "v " << pos.x << " " << pos.y << " " << pos.z << "\n";
+		debug << "v " << pos.x() << " " << pos.y() << " " << pos.z() << "\n";
 	}
 	
 	BOOST_REQUIRE( true );

@@ -13,7 +13,7 @@ BOOST_AUTO_TEST_CASE( kahan_sum )
 {
 	{ // correctness
 		double ref = 0.0;
-		util::kahan_sum< float > sum;
+		util::kahan_sum< float > sum( 0.0f );
 
 		for( int i = 0; i < 100; ++i )
 		{
@@ -28,7 +28,7 @@ BOOST_AUTO_TEST_CASE( kahan_sum )
 
 	{ // accuracy
 		double ref = 0.0;
-		util::kahan_sum< float > sum;
+		util::kahan_sum< float > sum( 0.0f );
 
 		for( int i = 0; i < 100000; ++i )
 		{

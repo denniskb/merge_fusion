@@ -9,7 +9,7 @@ template< typename T >
 class kahan_sum
 {
 public:
-	kahan_sum( T initial = T() );
+	explicit kahan_sum( T initial );
 
 	kahan_sum & operator+=( T rhs );
 	operator T();

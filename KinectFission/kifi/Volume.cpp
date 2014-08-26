@@ -26,14 +26,14 @@ Volume::Volume
 	assert( util::powerOf2( resolution ) );
 
 	m_tmpVoxelLenf = sideLength / resolution;
-	m_tmpVoxelLenOver2PlusMinf = m_tmpVoxelLenf * 0.5f + Minimum().x;
+	m_tmpVoxelLenOver2PlusMinf = m_tmpVoxelLenf * 0.5f + Minimum().x();
 
 	m_tmpVoxelLen = util::set( m_tmpVoxelLenf, m_tmpVoxelLenf, m_tmpVoxelLenf, 1.0f );
 	m_tmpVoxelLenOver2PlusMin = util::set( m_tmpVoxelLenOver2PlusMinf, m_tmpVoxelLenOver2PlusMinf, m_tmpVoxelLenOver2PlusMinf, 0.0f );
 
 	float vlenInv = 1.0f / m_tmpVoxelLenf;
 	m_tmpVoxelLenInv = util::set( vlenInv, vlenInv, vlenInv, 1.0f );
-	m_tmpMinOverNegVoxelLen = m_tmpVoxelLenInv * util::set( -Minimum().x, -Minimum().x, -Minimum().x, 0.0f );
+	m_tmpMinOverNegVoxelLen = m_tmpVoxelLenInv * util::set( -Minimum().x(), -Minimum().x(), -Minimum().x(), 0.0f );
 }
 
 

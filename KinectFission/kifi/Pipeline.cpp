@@ -18,10 +18,13 @@ Pipeline::Pipeline
 	m_iFrame( 0 ),
 	m_eyeToWorld( util::float4x4::identity() )
 {
-	m_eyeToWorld.col3.z = 2.0f;
+	m_eyeToWorld.cols[ 3 ].z() = 2.0f;
 }
 
 
+
+#pragma warning( push )
+#pragma warning( disable : 4100 )
 
 void Pipeline::Integrate
 (
@@ -30,16 +33,14 @@ void Pipeline::Integrate
 )
 {
 #if 0
-	m_eyeToWorld = worldToEye;
-	util::invert_transform( m_eyeToWorld );
+	m_eyeToWorld = util::invert_transform( worldToEye );
 	m_integrator.Integrate( m_volume, rawDepthMap, m_camParams, worldToEye );
 #else
 	if( m_iFrame > 0 )
 	//	// TODO: Swap dst and src
 		m_eyeToWorld = m_icp.Align( rawDepthMap, m_eyeToWorld, m_tmpSynthPointBuffer, m_eyeToWorld, m_camParams );
 
-	util::float4x4 tmp = m_eyeToWorld;
-	util::invert_transform( tmp );
+	util::float4x4 tmp = util::invert_transform( m_eyeToWorld );
 
 	// TODO: Change interface of integrator to accept eyeToWorld
 	//if( m_iFrame == 0 )
@@ -54,6 +55,8 @@ void Pipeline::Integrate
 	++m_iFrame;
 #endif
 }
+
+#pragma warning( pop )
 
 
 

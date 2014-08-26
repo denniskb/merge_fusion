@@ -23,6 +23,7 @@ using namespace kifi::util;
 util::vector2d< int > backBuffer( 1024, 768 );
 
 DepthStream depthStreamHouse( "I:/tmp/imrod.depth" );
+//DepthStream depthStreamHouse( "I:/tmp/icp_test.depth" );
 vector2d< float > synthDepthFrame;
 //DepthSensorParams cameraParams( int2( 640, 480 ), float2( 585.0f ), float2( 320, 240 ), float2( 0.8f, 4.0f ) );
 DepthSensorParams cameraParams( DepthSensorParams::KinectParams( KinectDepthSensorResolution640x480, KinectDepthSensorModeFar ) );
@@ -46,8 +47,8 @@ void myIdleFunc( int button, int state, int x, int y )
 		{
 			pipeline.Integrate( synthDepthFrame, worldToEye );
 			chrono::stop_watch sw;
-			//pipeline.Mesh( vertices, indices );
-			pipeline.Mesh( vertices );
+			pipeline.Mesh( vertices, indices );
+			//pipeline.Mesh( vertices );
 			sw.take_time( "tmesh" );
 			//sw.print_times();
 
@@ -75,7 +76,7 @@ void myDisplayFunc()
         glTexCoord2d( 0.0, 1.0 ); glVertex2d( -1.0, -1.0 );
     glEnd();*/
 
-	auto tmp = pipeline.EyeToWorld(); invert_transform( tmp );
+	auto tmp = invert_transform( pipeline.EyeToWorld() );
 	auto m = cameraParams.EyeToClipRH() * tmp;
 
 	glPushMatrix();

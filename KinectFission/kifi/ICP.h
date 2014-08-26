@@ -7,6 +7,7 @@
 #include <kifi/util/vector2d.h>
 
 #include <kifi/DepthSensorParams.h>
+#include <kifi/Mesher.h>
 
 
 
@@ -20,7 +21,7 @@ public:
 		util::vector2d< float > const & rawDepthMap,
 		util::float4x4 const & rawDepthMapWorldToEyeGuess,
 		
-		util::vector2d< util::float3 > const & synthDepthBuffer,
+		util::vector2d< VertexPositionNormal > const & synthDepthBuffer,
 		util::float4x4 const & synthDepthBufferWorldToEye,
 
 		DepthSensorParams const & cameraParams
@@ -34,7 +35,7 @@ private:
 		util::vector2d< float > const & rawDepthMap,
 		util::float4x4 const & rawDepthMapWorldToEyeGuess,
 		
-		util::vector2d< util::float3 > const & synthDepthBuffer,
+		util::vector2d< VertexPositionNormal > const & synthDepthBuffer,
 		util::float4x4 const & synthDepthBufferWorldToEye,
 
 		DepthSensorParams const & cameraParams

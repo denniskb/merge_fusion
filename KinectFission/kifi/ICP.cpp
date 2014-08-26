@@ -11,7 +11,7 @@ util::float4x4 ICP::Align
 	util::vector2d< float > const & rawDepthMap,
 	util::float4x4 const & rawDepthMapEyeToWorldGuess,
 		
-	util::vector2d< util::float3 > const & synthDepthBuffer,
+	util::vector2d< VertexPositionNormal > const & synthDepthBuffer,
 	util::float4x4 const & synthDepthBufferEyeToWorld,
 
 	DepthSensorParams const & cameraParams
@@ -19,7 +19,7 @@ util::float4x4 ICP::Align
 {
 	util::float4x4 result = rawDepthMapEyeToWorldGuess;
 	
-	for( int i = 0; i < 4; i++ )
+	for( int i = 0; i < 7; i++ )
 		result = AlignStep
 		(
 			rawDepthMap, result,
@@ -37,7 +37,7 @@ util::float4x4 ICP::AlignStep
 	util::vector2d< float > const & rawDepthMap,
 	util::float4x4 const & rawDepthMapEyeToWorldGuess,
 		
-	util::vector2d< util::float3 > const & synthDepthBuffer,
+	util::vector2d< VertexPositionNormal > const & synthDepthBuffer,
 	util::float4x4 const & synthDepthBufferEyeToWorld,
 
 	DepthSensorParams const & cameraParams
@@ -45,27 +45,72 @@ util::float4x4 ICP::AlignStep
 {
 	using namespace util;
 
-	float4x4 dstWorldToEye = synthDepthBufferEyeToWorld; invert_transform( dstWorldToEye );
+	float4x4 dstWorldToEye = invert_transform( synthDepthBufferEyeToWorld );
+	float4x4 srcWorldToEye = invert_transform( rawDepthMapEyeToWorldGuess );
 
-	float4 flInv( 1.0f / cameraParams.FocalLengthPixels().x, 1.0f / cameraParams.FocalLengthPixels().y, 1.0f, 1.0f );
+	float4 flInv( 1.0f / cameraParams.FocalLengthPixels().x(), 1.0f / cameraParams.FocalLengthPixels().y(), 1.0f, 1.0f );
 	float4 ppOverFl = float4
 	(
-		(0.5f - cameraParams.PrincipalPointPixels().x),
-		(cameraParams.PrincipalPointPixels().y - 0.5f),
+		(0.5f - cameraParams.PrincipalPointPixels().x()),
+		(cameraParams.PrincipalPointPixels().y() - 0.5f),
 		0.0f, 
 		0.0f
 	) * flInv;
 
-	float halfWidth = synthDepthBuffer.width() * 0.5f;
-	float halfHeight = synthDepthBuffer.height() * 0.5f;
-
-	kahan_sum< float4 > srcMedianSum( 0.0f );
-	kahan_sum< float4 > dstMedianSum( 0.0f );
+	kahan_sum< float4 > srcMedianSum( float4( 0.0f ) );
+	kahan_sum< float4 > dstMedianSum( float4( 0.0f ) );
 	m_assocs.clear();
 	
 	for( std::size_t y = 0; y < rawDepthMap.height(); y++ )
-		for( std::size_t x = 0; x < rawDepthMap.width(); x += 4 )
+		for( std::size_t x = 0; x < rawDepthMap.width(); x++ )
 		{
+#if 1
+			auto dst = synthDepthBuffer( x, y );
+			if( 0.0f == dst.position.x() && 0.0f == dst.position.y() && 0.0f == dst.position.z() ) // invalid point
+				continue;
+
+			// project dst onto src
+			float4 uv = homogenize( cameraParams.EyeToClipRH() * srcWorldToEye * float4( dst.position, 1.0f ) );
+
+			// construct 3D point out of uv and raw depth (640x480)
+			int u = (int) ( uv.x() * 320.0f + 320.0f );
+			int v = 479 - (int) ( uv.y() * 240.0f + 240.0f );
+
+			if( u < 0 || u > 639 ||
+				v < 0 || v > 479 )
+				continue;
+
+			float depth = rawDepthMap( u, v );
+			if( 0.0f == depth ) // invalid depth
+				continue;
+
+			float4 src( (float) u, - (float) v, -1.0f, 0.0f );
+
+			src = ( src * flInv + ppOverFl ) * depth;
+			src.w() = 1.0f;
+
+			src = rawDepthMapEyeToWorldGuess * src;
+			// TODO: Make this work with 0 assocs (return identity)
+			// refine using compatibility and weighting, also stop on error threshold/count
+			// consider stealing FuSci impl (not as expensive as I thought because A can be computed on the fly)
+
+			// check compatibility
+			float dist = length( float4( dst.position, 1.0f ) - src );
+			if( dist > 0.1f ) // further than 10cm apart
+				continue;
+
+			// construct virtual point to reflect point-to-plane distance
+			float4 pdst( dst.position, 1.0f );
+			float4 n( dst.normal, 0.0f );
+			n = ( n - 0.5f ) * 2.0f;
+			n.w() = 0.0f;
+			n /= length( n );
+			float4 virt = src - dot( src - pdst, n ) * n;
+
+			m_assocs.push_back( std::make_pair( src.xyz(), virt.xyz() ) );
+			srcMedianSum += src;
+			dstMedianSum += virt;
+#else
 			float depth = rawDepthMap( x, y );
 
 			if( 0.0f == depth )
@@ -108,7 +153,7 @@ util::float4x4 ICP::AlignStep
 			for( int y1 = v; y1 < std::min( 480, v + 21 ); y1++ )
 			for( int x1 = u; x1 < std::min( 640, u + 21 ); x1++ )
 			{
-				float4 dst = float4( synthDepthBuffer( x1, y1 ), 1.0f );
+				float4 dst = float4( synthDepthBuffer( x1, y1 ).position, 1.0f );
 				if( dst.x == 0 && dst.y == 0 && dst.z == 0 ) // invalid point
 					continue;
 
@@ -129,6 +174,7 @@ util::float4x4 ICP::AlignStep
 				srcMedianSum += p1;
 				dstMedianSum += p2;
 			}
+#endif
 		}
 	std::printf( "nassocs: %d\n", m_assocs.size() );
 	// Simple test: Create small array of random points,
@@ -163,13 +209,13 @@ util::float4x4 ICP::AlignStep
 		m_assocs.push_back( std::make_pair( src.xyz(), dst.xyz() ) );
 	}*/
 
-	float4 srcMedian = srcMedianSum / float4( (float) m_assocs.size() );
-	float4 dstMedian = dstMedianSum / float4( (float) m_assocs.size() );
+	float4 srcMedian = (float4) srcMedianSum / (float) m_assocs.size();
+	float4 dstMedian = (float4) dstMedianSum / (float) m_assocs.size();
 
 	kahan_sum< float > 
-		Sxx, Sxy, Sxz,
-		Syx, Syy, Syz,
-		Szx, Szy, Szz;
+		Sxx( 0.0f ), Sxy( 0.0f ), Sxz( 0.0f ),
+		Syx( 0.0f ), Syy( 0.0f ), Syz( 0.0f ),
+		Szx( 0.0f ), Szy( 0.0f ), Szz( 0.0f );
 
 	// associations computed => Horn
 	for( std::size_t i = 0; i < m_assocs.size(); ++i )
@@ -183,17 +229,17 @@ util::float4x4 ICP::AlignStep
 		src -= srcMedian;
 		dst -= dstMedian;
 
-		Sxx += src.x * dst.x;
-        Sxy += src.x * dst.y;
-        Sxz += src.x * dst.z;
+		Sxx += src.x() * dst.x();
+        Sxy += src.x() * dst.y();
+        Sxz += src.x() * dst.z();
 
-        Syx += src.y * dst.x;
-        Syy += src.y * dst.y;
-        Syz += src.y * dst.z;
+        Syx += src.y() * dst.x();
+        Syy += src.y() * dst.y();
+        Syz += src.y() * dst.z();
 
-        Szx += src.z * dst.x;
-        Szy += src.z * dst.y;
-        Szz += src.z * dst.z;
+        Szx += src.z() * dst.x();
+        Szy += src.z() * dst.y();
+        Szz += src.z() * dst.z();
 	}
 
 	float4x4 N
@@ -223,23 +269,23 @@ util::float4x4 ICP::AlignStep
 	float4 q;
 	switch( imaxev )
 	{
-		case 0: q = N.col0; break;
-		case 1: q = N.col1; break;
-		case 2: q = N.col2; break;
-		case 3: q = N.col3; break;
+		case 0: q = N.cols[ 0 ]; break;
+		case 1: q = N.cols[ 1 ]; break;
+		case 2: q = N.cols[ 2 ]; break;
+		case 3: q = N.cols[ 3 ]; break;
 	}
 	q = normalize( q );
 
 	float4x4 R = float4x4::identity();
-    float xy = q.x * q.y;
-    float xz = q.x * q.z;
-    float xw = q.x * q.w;
-    float yy = q.y * q.y;
-    float yz = q.y * q.z;
-    float yw = q.y * q.w;
-    float zz = q.z * q.z;
-    float zw = q.z * q.w;
-    float ww = q.w * q.w;
+    float xy = q.x() * q.y();
+    float xz = q.x() * q.z();
+    float xw = q.x() * q.w();
+    float yy = q.y() * q.y();
+    float yz = q.y() * q.z();
+    float yw = q.y() * q.w();
+    float zz = q.z() * q.z();
+    float zw = q.z() * q.w();
+    float ww = q.w() * q.w();
 
     R(0, 0) = 1.0f - 2.0f * (zz + ww);
     R(0, 1) = 2.0f * (yz - xw);
@@ -257,8 +303,8 @@ util::float4x4 ICP::AlignStep
 
 	// translation matrix:
 	float4x4 T = float4x4::identity();
-	T.col3 = t;
-	T.col3.w = 1.0f;
+	T.cols[ 3 ] = t;
+	T.cols[ 3 ].w() = 1.0f;
 
 	float4x4 result = T * R;
 	return result;

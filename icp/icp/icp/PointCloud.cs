@@ -147,6 +147,13 @@ namespace icp
             double[] ev;
             Eigen.eigen(N, out ev);
 
+            N = new double[2, 2];
+            N[0, 0] = 2;
+            N[0, 1] = -4;
+            N[1, 0] = -1;
+            N[1, 1] = -1;
+            Eigen.eigen(N, out ev);
+
             int imaxev = 0;
             for (int ii = 1; ii < ev.Length; ii++)
                 if (ev[ii] > ev[imaxev])

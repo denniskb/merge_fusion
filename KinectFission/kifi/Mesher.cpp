@@ -70,7 +70,7 @@ void Mesher::Mesh2Obj
 	fopen_s( & file, outObjFileName, "w" );
 
 	for( VertexPositionNormal v : vertices )
-		std::fprintf( file, "v %f %f %f\n", v.position.x, v.position.y, v.position.z );
+		std::fprintf( file, "v %f %f %f\n", v.position.x(), v.position.y(), v.position.z() );
 	
 	for( int i = 0; i < indices.size(); i += 3 )
 		std::fprintf( file, "f %d %d %d\n", indices[ i ] + 1, indices[ i + 1 ] + 1, indices[ i + 2 ] + 1 );
@@ -115,6 +115,7 @@ void Mesher::Generate( Volume const & volume, std::vector< VertexPositionNormal 
 		util::pack( 1, 1, 1 )  // front-top-right
 	};
 	util::chrono::stop_watch sw;
+
 	// Iterate in reverse and skip the last voxel to avoid special cases in the loop body.
 	for( int i = (int) volume.Data().size() - 2; i >= 0; --i )
 	{
@@ -145,12 +146,12 @@ void Mesher::Generate( Volume const & volume, std::vector< VertexPositionNormal 
 			voxels[ 2 ].SafeDistance() - dself,
 			voxels[ 4 ].SafeDistance() - dself
 		);
-		float nlen = n.x * n.x + n.y * n.y + n.z * n.z;
+		float nlen = n.x() * n.x() + n.y() * n.y() + n.z() * n.z();
 		nlen = 1.0f / ( std::sqrt( nlen ) + 0.0001f );
 
-		n.x *= nlen;
-		n.y *= nlen;
-		n.z *= nlen;
+		n.x() *= nlen;
+		n.y() *= nlen;
+		n.z() *= nlen;
 
 		m_tmpNormals[ i ] = n;
 
@@ -158,12 +159,12 @@ void Mesher::Generate( Volume const & volume, std::vector< VertexPositionNormal 
 		{
 			util::float3 vert = vert000;
 			float weightB = abs( dself ) / ( abs( dself ) + abs( voxels[ 4 ].Distance() ) );
-			vert.z += weightB * volume.VoxelLength();
+			vert.z() += weightB * volume.VoxelLength();
 
 			auto m = m_tmpNormals[ iFront ];
-			m.x = util::lerp( n.x, m.x, weightB ) * 0.5f + 0.5f;
-			m.y = util::lerp( n.y, m.y, weightB ) * 0.5f + 0.5f;
-			m.z = util::lerp( n.z, m.z, weightB ) * 0.5f + 0.5f;
+			m.x() = util::lerp( n.x(), m.x(), weightB ) * 0.5f + 0.5f;
+			m.y() = util::lerp( n.y(), m.y(), weightB ) * 0.5f + 0.5f;
+			m.z() = util::lerp( n.z(), m.z(), weightB ) * 0.5f + 0.5f;
 
 			outVertices.push_back( VertexPositionNormal( vert, m ) );
 			if( GenerateTriangles )
@@ -174,12 +175,12 @@ void Mesher::Generate( Volume const & volume, std::vector< VertexPositionNormal 
 		{
 			util::float3 vert = vert000;
 			float weightB = abs( dself ) / ( abs( dself ) + abs( voxels[ 2 ].Distance() ) );
-			vert.y += weightB * volume.VoxelLength();
+			vert.y() += weightB * volume.VoxelLength();
 
 			auto m = m_tmpNormals[ iTop ];
-			m.x = util::lerp( n.x, m.x, weightB ) * 0.5f + 0.5f;
-			m.y = util::lerp( n.y, m.y, weightB ) * 0.5f + 0.5f;
-			m.z = util::lerp( n.z, m.z, weightB ) * 0.5f + 0.5f;
+			m.x() = util::lerp( n.x(), m.x(), weightB ) * 0.5f + 0.5f;
+			m.y() = util::lerp( n.y(), m.y(), weightB ) * 0.5f + 0.5f;
+			m.z() = util::lerp( n.z(), m.z(), weightB ) * 0.5f + 0.5f;
 
 			outVertices.push_back( VertexPositionNormal( vert, m ) );
 			if( GenerateTriangles )
@@ -190,12 +191,12 @@ void Mesher::Generate( Volume const & volume, std::vector< VertexPositionNormal 
 		{
 			util::float3 vert = vert000;
 			float weightB = abs( dself ) / ( abs( dself ) + abs( voxels[ 1 ].Distance() ) );
-			vert.x += weightB * volume.VoxelLength();
+			vert.x() += weightB * volume.VoxelLength();
 
 			auto m = m_tmpNormals[ i + 1 ];
-			m.x = util::lerp( n.x, m.x, weightB ) * 0.5f + 0.5f;
-			m.y = util::lerp( n.y, m.y, weightB ) * 0.5f + 0.5f;
-			m.z = util::lerp( n.z, m.z, weightB ) * 0.5f + 0.5f;
+			m.x() = util::lerp( n.x(), m.x(), weightB ) * 0.5f + 0.5f;
+			m.y() = util::lerp( n.y(), m.y(), weightB ) * 0.5f + 0.5f;
+			m.z() = util::lerp( n.z(), m.z(), weightB ) * 0.5f + 0.5f;
 
 			outVertices.push_back( VertexPositionNormal( vert, m ) );
 			if( GenerateTriangles )

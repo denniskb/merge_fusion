@@ -46,16 +46,16 @@ util::float2 DepthSensorParams::SensibleRangeMeters() const
 
 util::float4x4 DepthSensorParams::EyeToClipRH() const
 {
-	util::float4x4 result;
+	util::float4x4 result( 0.0f );
 
-	result( 0, 0 ) = 2.0f * m_fl.x / m_res.x;
-	result( 0, 2 ) = m_res.x - 2.0f * m_pp.x;
+	result( 0, 0 ) = 2.0f * m_fl.x() / m_res.x();
+	result( 0, 2 ) = m_res.x() - 2.0f * m_pp.x();
 
-	result( 1, 1 ) = 2.0f * m_fl.y / m_res.y;
-	result( 1, 2 ) = m_res.y - 2.0f * m_pp.y;
+	result( 1, 1 ) = 2.0f * m_fl.y() / m_res.y();
+	result( 1, 2 ) = m_res.y() - 2.0f * m_pp.y();
 
-	result( 2, 2 ) = -(m_range.y + m_range.x) / (m_range.y - m_range.x);
-	result( 2, 3 ) = -2.0f * m_range.y * m_range.x / (m_range.y - m_range.x);
+	result( 2, 2 ) = -(m_range.y() + m_range.x()) / (m_range.y() - m_range.x());
+	result( 2, 3 ) = -2.0f * m_range.y() * m_range.x() / (m_range.y() - m_range.x());
 	
 	result( 3, 2 ) = -1.0f;
 
@@ -76,8 +76,8 @@ DepthSensorParams DepthSensorParams::KinectParams( KinectDepthSensorResolution r
 	return DepthSensorParams
 	(
 		res,
-		fl,
-		util::float2( res.x * 0.5f, res.y * 0.5f ),
+		util::float2( fl ),
+		util::float2( res.x() * 0.5f, res.y() * 0.5f ),
 		range
 	);
 }

@@ -19,8 +19,8 @@ BOOST_AUTO_TEST_CASE( ctor )
 	BOOST_REQUIRE( v.TruncationMargin() == 0.02f );
 	BOOST_REQUIRE( v.VoxelLength() == 2.0f / 128.0f );
 
-	BOOST_REQUIRE( v.Minimum().x == -1.0f );
-	BOOST_REQUIRE( v.Maximum().y == 1.0f );
+	BOOST_REQUIRE( v.Minimum().x() == -1.0f );
+	BOOST_REQUIRE( v.Maximum().y() == 1.0f );
 }
 
 BOOST_AUTO_TEST_CASE( VoxelCenter_VoxelIndex )

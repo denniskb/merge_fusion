@@ -24,10 +24,10 @@ public:
 
 	void Bin
 	(
-		std::vector< util::float3 > const & pointCloud,
+		std::vector< VertexPositionNormal > const & pointCloud,
 		util::float4x4 const & worldToClip,
 
-		util::vector2d< util::float3 > & outPointBuffer
+		util::vector2d< VertexPositionNormal > & outPointBuffer
 	);
 
 private:

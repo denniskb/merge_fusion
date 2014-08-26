@@ -32,14 +32,14 @@ void Integrator::Integrate
 	util::float4x4 const & worldToEye
 )
 {
-	assert( frame.width() == cameraParams.ResolutionPixels().x );
-	assert( frame.height() == cameraParams.ResolutionPixels().y );
+	assert( frame.width() == cameraParams.ResolutionPixels().x() );
+	assert( frame.height() == cameraParams.ResolutionPixels().y() );
 
 	m_tmpPointCloud.resize ( frame.size() );
 	m_tmpScratchPad.reserve( frame.size() );
 
 	util::float4x4 worldToClip = cameraParams.EyeToClipRH() * worldToEye;
-	util::float4x4 eyeToWorld  = worldToEye; util::invert_transform( eyeToWorld );
+	util::float4x4 eyeToWorld  = util::invert_transform( worldToEye );
 
 
 	util::chrono::stop_watch sw;
@@ -54,6 +54,7 @@ void Integrator::Integrate
 			std::unique( m_tmpPointCloud.begin(), m_tmpPointCloud.begin() + nSplats ) 
 		)
 	);
+	sw.take_time( "tunique" );
 
 	ExpandChunks( m_tmpPointCloud, m_tmpScratchPad );
 	// HACK
@@ -93,11 +94,11 @@ std::size_t Integrator::DepthMap2PointCloud
 
 	matrix _eyeToWorld = load( eyeToWorld );
 
-	vector flInv = set( 1.0f / cameraParams.FocalLengthPixels().x, 1.0f / cameraParams.FocalLengthPixels().y, 1.0f, 1.0f );
+	vector flInv = set( 1.0f / cameraParams.FocalLengthPixels().x(), 1.0f / cameraParams.FocalLengthPixels().y(), 1.0f, 1.0f );
 	vector ppOverFl = set
 	(
-		(0.5f - cameraParams.PrincipalPointPixels().x),
-		(cameraParams.PrincipalPointPixels().y - 0.5f),
+		(0.5f - cameraParams.PrincipalPointPixels().x()),
+		(cameraParams.PrincipalPointPixels().y() - 0.5f),
 		0.0f, 
 		0.0f
 	) * flInv;
@@ -158,25 +159,25 @@ std::size_t Integrator::DepthMap2PointCloud
 			if( point0Valid )
 			{
 				float4 p = store( point0 );
-				outPointCloud[ nSplats++ ] = pack( (unsigned) p.x, (unsigned) p.y, (unsigned) p.z );
+				outPointCloud[ nSplats++ ] = pack( (unsigned) p.x(), (unsigned) p.y(), (unsigned) p.z() );
 			}
 
 			if( point1Valid )
 			{
 				float4 p = store( point1 );
-				outPointCloud[ nSplats++ ] = pack( (unsigned) p.x, (unsigned) p.y, (unsigned) p.z );
+				outPointCloud[ nSplats++ ] = pack( (unsigned) p.x(), (unsigned) p.y(), (unsigned) p.z() );
 			}
 
 			if( point2Valid )
 			{
 				float4 p = store( point2 );
-				outPointCloud[ nSplats++ ] = pack( (unsigned) p.x, (unsigned) p.y, (unsigned) p.z );
+				outPointCloud[ nSplats++ ] = pack( (unsigned) p.x(), (unsigned) p.y(), (unsigned) p.z() );
 			}
 
 			if( point3Valid )
 			{
 				float4 p = store( point3 );
-				outPointCloud[ nSplats++ ] = pack( (unsigned) p.x, (unsigned) p.y, (unsigned) p.z );
+				outPointCloud[ nSplats++ ] = pack( (unsigned) p.x(), (unsigned) p.y(), (unsigned) p.z() );
 			}
 		}
 	}
@@ -318,7 +319,7 @@ void Integrator::UpdateVoxels
 		{
 			float4 uv = store( k0 );
 
-			float depth = frame( (unsigned) uv.x, frame.height() - (unsigned) uv.y - 1 );
+			float depth = frame( (unsigned) uv.x(), frame.height() - (unsigned) uv.y() - 1 );
 			float signedDist = depth - dist0f;
 				
 			if( depth > 0.0f && signedDist >= -volume.TruncationMargin() )
@@ -329,7 +330,7 @@ void Integrator::UpdateVoxels
 		{
 			float4 uv = store( k1 );
 
-			float depth = frame( (unsigned) uv.x, frame.height() - (unsigned) uv.y - 1 );
+			float depth = frame( (unsigned) uv.x(), frame.height() - (unsigned) uv.y() - 1 );
 			float signedDist = depth - dist1f;
 				
 			if( depth > 0.0f && signedDist >= -volume.TruncationMargin() )
@@ -340,7 +341,7 @@ void Integrator::UpdateVoxels
 		{
 			float4 uv = store( k2 );
 
-			float depth = frame( (unsigned) uv.x, frame.height() - (unsigned) uv.y - 1 );
+			float depth = frame( (unsigned) uv.x(), frame.height() - (unsigned) uv.y() - 1 );
 			float signedDist = depth - dist2f;
 				
 			if( depth > 0.0f && signedDist >= -volume.TruncationMargin() )
@@ -351,7 +352,7 @@ void Integrator::UpdateVoxels
 		{
 			float4 uv = store( k3 );
 
-			float depth = frame( (unsigned) uv.x, frame.height() - (unsigned) uv.y - 1 );
+			float depth = frame( (unsigned) uv.x(), frame.height() - (unsigned) uv.y() - 1 );
 			float signedDist = depth - dist3f;
 				
 			if( depth > 0.0f && signedDist >= -volume.TruncationMargin() )
