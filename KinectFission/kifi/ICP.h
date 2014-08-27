@@ -19,10 +19,9 @@ public:
 	util::float4x4 Align
 	(
 		util::vector2d< float > const & rawDepthMap,
-		util::float4x4 const & rawDepthMapWorldToEyeGuess,
+		util::float4x4 const & rawEyeToWorldGuess,
 		
-		util::vector2d< VertexPositionNormal > const & synthDepthBuffer,
-		util::float4x4 const & synthDepthBufferWorldToEye,
+		std::vector< VertexPositionNormal > const & synthPointCloud,
 
 		DepthSensorParams const & cameraParams
 	);
@@ -33,10 +32,9 @@ private:
 	util::float4x4 AlignStep
 	(
 		util::vector2d< float > const & rawDepthMap,
-		util::float4x4 const & rawDepthMapWorldToEyeGuess,
+		util::float4x4 const & rawEyeToWorldGuess,
 		
-		util::vector2d< VertexPositionNormal > const & synthDepthBuffer,
-		util::float4x4 const & synthDepthBufferWorldToEye,
+		std::vector< VertexPositionNormal > const & synthPointCloud,
 
 		DepthSensorParams const & cameraParams
 	);

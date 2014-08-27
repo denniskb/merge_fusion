@@ -49,10 +49,9 @@ public:
 	Renderer m_renderer;
 
 	int m_iFrame;
-	util::float4x4 m_eyeToWorld; // or eyeToWorld???
+	util::float4x4 m_eyeToWorld;
 
 	std::vector< VertexPositionNormal > m_tmpSynthPointCloud;
-	util::vector2d< VertexPositionNormal > m_tmpSynthPointBuffer;
 };
 
 } // namespace

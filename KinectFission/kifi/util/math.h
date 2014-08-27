@@ -62,10 +62,17 @@ struct vec : public std::array< T, N >
 	static_assert( N > 0, "a vector must have 1 or more components." );
 };
 
+typedef vec< int, 2 > int2;
+typedef vec< int, 3 > int3;
+typedef vec< int, 4 > int4;
+
 typedef vec< float, 2 > float2;
 typedef vec< float, 3 > float3;
 typedef vec< float, 4 > float4;
-typedef vec< int  , 2 > int2;
+
+typedef vec< double, 2 > double2;
+typedef vec< double, 3 > double3;
+typedef vec< double, 4 > double4;
 
 #pragma endregion
 
@@ -247,8 +254,8 @@ inline vector zero          ();
 
 template< typename T >
 T               clamp   ( T x, T a, T b );
-template< typename T >
-T               lerp    ( T a, T b, T weightB );
+template< typename T, typename U >
+T               lerp    ( T a, T b, U weightB );
 inline unsigned	pack    ( unsigned x, unsigned y, unsigned z );
 inline bool     powerOf2( int x );
 inline void     unpack  ( unsigned v, unsigned & outX, unsigned & outY, unsigned & outZ );
@@ -1318,8 +1325,8 @@ T clamp( T x, T a, T b )
 	return std::max( a, std::min( x, b ) );
 }
 
-template< typename T >
-T lerp( T a, T b, T weightB )
+template< typename T, typename U >
+T lerp( T a, T b, U weightB )
 {
 	return a + (b-a) * weightB;
 }

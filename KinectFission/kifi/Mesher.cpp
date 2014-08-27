@@ -146,59 +146,53 @@ void Mesher::Generate( Volume const & volume, std::vector< VertexPositionNormal 
 			voxels[ 2 ].SafeDistance() - dself,
 			voxels[ 4 ].SafeDistance() - dself
 		);
-		float nlen = n.x() * n.x() + n.y() * n.y() + n.z() * n.z();
-		nlen = 1.0f / ( std::sqrt( nlen ) + 0.0001f );
-
-		n.x() *= nlen;
-		n.y() *= nlen;
-		n.z() *= nlen;
-
+		n /= util::length( n ) + std::numeric_limits< float >::min();
+		
 		m_tmpNormals[ i ] = n;
+
+		// TODO: Experiment with packed normals and normalize after lerp
 
 		if( voxels[ 4 ].Weight() > 0.0f && dself * voxels[ 4 ].Distance() <= 0.0f )
 		{
-			util::float3 vert = vert000;
 			float weightB = abs( dself ) / ( abs( dself ) + abs( voxels[ 4 ].Distance() ) );
+			
+			util::float3 vert = vert000;
 			vert.z() += weightB * volume.VoxelLength();
 
-			auto m = m_tmpNormals[ iFront ];
-			m.x() = util::lerp( n.x(), m.x(), weightB ) * 0.5f + 0.5f;
-			m.y() = util::lerp( n.y(), m.y(), weightB ) * 0.5f + 0.5f;
-			m.z() = util::lerp( n.z(), m.z(), weightB ) * 0.5f + 0.5f;
+			util::float3 m = util::normalize( util::lerp( n, m_tmpNormals[ iFront ], weightB ) );
 
 			outVertices.push_back( VertexPositionNormal( vert, m ) );
+
 			if( GenerateTriangles )
 				m_vertexIDs.push_back( 3 * keys[ i ] + 2 );
 		}
 						
 		if( voxels[ 2 ].Weight() > 0.0f && dself * voxels[ 2 ].Distance() <= 0.0f )
 		{
-			util::float3 vert = vert000;
 			float weightB = abs( dself ) / ( abs( dself ) + abs( voxels[ 2 ].Distance() ) );
+
+			util::float3 vert = vert000;
 			vert.y() += weightB * volume.VoxelLength();
 
-			auto m = m_tmpNormals[ iTop ];
-			m.x() = util::lerp( n.x(), m.x(), weightB ) * 0.5f + 0.5f;
-			m.y() = util::lerp( n.y(), m.y(), weightB ) * 0.5f + 0.5f;
-			m.z() = util::lerp( n.z(), m.z(), weightB ) * 0.5f + 0.5f;
+			auto m = util::normalize( util::lerp( n, m_tmpNormals[ iTop ], weightB ) );
 
 			outVertices.push_back( VertexPositionNormal( vert, m ) );
+
 			if( GenerateTriangles )
 				m_vertexIDs.push_back( 3 * keys[ i ] + 1 );
 		}
 
 		if( voxels[ 1 ].Weight() > 0.0f && dself * voxels[ 1 ].Distance() <= 0.0f )
 		{
-			util::float3 vert = vert000;
 			float weightB = abs( dself ) / ( abs( dself ) + abs( voxels[ 1 ].Distance() ) );
+
+			util::float3 vert = vert000;
 			vert.x() += weightB * volume.VoxelLength();
 
-			auto m = m_tmpNormals[ i + 1 ];
-			m.x() = util::lerp( n.x(), m.x(), weightB ) * 0.5f + 0.5f;
-			m.y() = util::lerp( n.y(), m.y(), weightB ) * 0.5f + 0.5f;
-			m.z() = util::lerp( n.z(), m.z(), weightB ) * 0.5f + 0.5f;
+			auto m = util::normalize( util::lerp( n, m_tmpNormals[ i + 1 ], weightB ) );
 
 			outVertices.push_back( VertexPositionNormal( vert, m ) );
+
 			if( GenerateTriangles )
 				m_vertexIDs.push_back( 3 * keys[ i ] );
 		}

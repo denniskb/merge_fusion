@@ -14,14 +14,6 @@ namespace kifi {
 class Renderer
 {
 public:
-	void Render
-	(
-		std::vector< VertexPositionNormal > const & pointCloud,
-		util::float4x4 const & worldToClip,
-
-		util::vector2d< int > & outRgba 
-	);
-
 	void Bin
 	(
 		std::vector< VertexPositionNormal > const & pointCloud,

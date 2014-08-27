@@ -52,7 +52,7 @@ namespace util {
 template< typename T >
 kahan_sum< T >::kahan_sum( T initial ) :
 	m_sum( initial ),
-	m_c  ( T() )
+	m_c  ( (T) 0 )
 {
 }
 
