@@ -28,7 +28,12 @@ VertexPositionNormal::VertexPositionNormal( util::float3 position, util::float3 
 
 void Mesher::Mesh( Volume const & volume, std::vector< VertexPositionNormal > & outVertices )
 {
+	util::chrono::stop_watch sw;
+
 	Generate< false >( volume, outVertices );
+
+	sw.take_time( "Surface Extraction" );
+	sw.print_times();
 }
 
 void Mesher::Mesh( Volume const & volume, std::vector< VertexPositionNormal > & outVertices, std::vector< unsigned > & outIndices )
@@ -114,7 +119,6 @@ void Mesher::Generate( Volume const & volume, std::vector< VertexPositionNormal 
 		util::pack( 0, 1, 1 ), // front-top
 		util::pack( 1, 1, 1 )  // front-top-right
 	};
-	util::chrono::stop_watch sw;
 
 	// Iterate in reverse and skip the last voxel to avoid special cases in the loop body.
 	for( int i = (int) volume.Data().size() - 2; i >= 0; --i )
@@ -256,8 +260,6 @@ void Mesher::Generate( Volume const & volume, std::vector< VertexPositionNormal 
 				m_indexIDs.push_back(  localToGlobal[ TriTable()[ i ] ] );
 		}
 	}
-	sw.take_time( "tmesh" );
-	sw.print_times();
 }
 
 template void Mesher::Generate< true > ( Volume const &, std::vector< VertexPositionNormal > & );

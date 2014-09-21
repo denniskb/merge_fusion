@@ -6,7 +6,6 @@
 #include <kifi/ICP.h>
 #include <kifi/Integrator.h>
 #include <kifi/Mesher.h>
-#include <kifi/Renderer.h>
 #include <kifi/Volume.h>
 
 
@@ -25,30 +24,22 @@ public:
 		float truncationMargin = 0.02f
 	);
 
-	// TODO: Compute worldToEye via ICP instead of asking for it.
-	// TODO: Overload for vector2d< short >
-	// TODO: output synth depth as by-product
-	void Integrate
-	(
-		util::vector2d< float > rawDepthMap,
-		util::float4x4 const & worldToEye
-	);
+	void Integrate( util::vector2d< float > const & rawDepthMap );
+	void Integrate( util::vector2d< float > const & rawDepthMap, util::float4x4 const & eyeToWorld );
 
 	void Mesh( std::vector< VertexPositionNormal > & outVertices );
 	void Mesh( std::vector< VertexPositionNormal > & outVertices, std::vector< unsigned > & outIndices );
 
-	Volume const & Volume() const;
 	util::float4x4 const & EyeToWorld() const;
+	std::vector< VertexPositionNormal > const & SynthPointCloud();
 
-//private:
-	DepthSensorParams m_camParams;
+private:
 	kifi::Volume m_volume;
-	ICP m_icp;
 	Integrator m_integrator;
 	Mesher m_mesher;
-	Renderer m_renderer;
+	ICP m_icp;
 
-	int m_iFrame;
+	DepthSensorParams m_camParams;
 	util::float4x4 m_eyeToWorld;
 
 	std::vector< VertexPositionNormal > m_tmpSynthPointCloud;

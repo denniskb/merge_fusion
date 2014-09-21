@@ -29,24 +29,23 @@ void Integrator::Integrate
 	util::vector2d< float > const & frame,
 
 	DepthSensorParams const & cameraParams,
-	util::float4x4 const & worldToEye
+	util::float4x4 const & eyeToWorld
 )
 {
 	assert( frame.width() == cameraParams.ResolutionPixels().x() );
 	assert( frame.height() == cameraParams.ResolutionPixels().y() );
 
+	util::chrono::stop_watch sw;
+
 	m_tmpPointCloud.resize ( frame.size() );
 	m_tmpScratchPad.reserve( frame.size() );
 
-	util::float4x4 worldToClip = cameraParams.EyeToClipRH() * worldToEye;
-	util::float4x4 eyeToWorld  = util::invert_transform( worldToEye );
+	util::float4x4 worldToClip = cameraParams.EyeToClipRH() * util::invert_transform( eyeToWorld );
 
 
-	util::chrono::stop_watch sw;
 	std::size_t nSplats = DepthMap2PointCloud( volume, frame, cameraParams, eyeToWorld, m_tmpPointCloud );
-	sw.take_time( "tsplat" );
+	
 	util::radix_sort( m_tmpPointCloud.data(), m_tmpPointCloud.data() + nSplats, m_tmpScratchPad.data() );
-	sw.take_time( "tsort" );
 
 	m_tmpPointCloud.resize(
 		std::distance( 
@@ -54,22 +53,19 @@ void Integrator::Integrate
 			std::unique( m_tmpPointCloud.begin(), m_tmpPointCloud.begin() + nSplats ) 
 		)
 	);
-	sw.take_time( "tunique" );
 
 	ExpandChunks( m_tmpPointCloud, m_tmpScratchPad );
 	// HACK
 	ExpandChunks( m_tmpPointCloud, m_tmpScratchPad );
-	sw.take_time( "texp" );
 
 	volume.Data().insert(
 		m_tmpPointCloud.cbegin(), m_tmpPointCloud.cend(),
 		util::make_const_iterator( Voxel() )
 	);
-	sw.take_time( "tmerge" );
 
 	UpdateVoxels( volume, frame, worldToClip );
 	
-	sw.take_time( "tupd" );
+	sw.take_time( "Integration" );
 	sw.print_times();
 }
 

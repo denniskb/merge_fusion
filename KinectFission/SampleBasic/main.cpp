@@ -1,3 +1,4 @@
+#include <memory>
 #include <vector>
 
 #include <GL/glew.h>
@@ -9,23 +10,23 @@
 
 #include <kifi/DepthStream.h>
 #include <kifi/Pipeline.h>
-#include <kifi/Renderer.h>
 
 using namespace kifi;
 using namespace kifi::util;
 
 
 
-DepthStream depthStreamHouse( "I:/tmp/imrod.depth" );
+std::unique_ptr< DepthStream > depthStream;
 vector2d< float > synthDepthFrame;
 DepthSensorParams cameraParams( DepthSensorParams::KinectParams( KinectDepthSensorResolution640x480, KinectDepthSensorModeFar ) );
 
-Pipeline pipeline( cameraParams, 512, 2.0f, 0.01f );
+std::unique_ptr< Pipeline > pipeline;
 
 std::vector< VertexPositionNormal > vertices;
 std::vector< unsigned > indices;
 
 bool triangles = false;
+int iFrame = 0;
 
 
 
@@ -34,19 +35,22 @@ void myIdleFunc( int button, int state, int x, int y )
 	float4x4 worldToEye;
 
 	if( GLUT_MIDDLE_BUTTON == state )
-		if( depthStreamHouse.NextFrame( synthDepthFrame, worldToEye ) )
+		if( depthStream->NextFrame( synthDepthFrame, worldToEye ) )
 		{
-			pipeline.Integrate( synthDepthFrame, worldToEye );
+			std::printf( "- Frame %d -\n", iFrame++ );
+
+			pipeline->Integrate( synthDepthFrame );
+			//pipeline->Integrate( synthDepthFrame, invert_transform( worldToEye ) );
 			
 			if( triangles )
-				pipeline.Mesh( vertices, indices );
-			else
-				pipeline.Mesh( vertices );
+				pipeline->Mesh( vertices, indices );
+
+			std::printf( "\n" );
 
 			glutPostRedisplay();
 		}
-		else
-			Mesher::Mesh2Obj( vertices, indices, "I:/tmp/imrod.obj" );
+		//else
+		//	Mesher::Mesh2Obj( vertices, indices, "I:/tmp/imrod.obj" );
 }
 
 void myDisplayFunc()
@@ -54,21 +58,24 @@ void myDisplayFunc()
 	glClear( GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT );
 	glEnable( GL_DEPTH_TEST );
 
-	auto m = cameraParams.EyeToClipRH() * invert_transform( pipeline.EyeToWorld() );
+	auto m = cameraParams.EyeToClipRH() * invert_transform( pipeline->EyeToWorld() );
 
 	glPushMatrix();
 	glLoadMatrixf( reinterpret_cast< float * >( & m ) );
 	
 	glEnableClientState( GL_VERTEX_ARRAY );
-	glVertexPointer( 3, GL_FLOAT, 24, vertices.data() );
+	glVertexPointer( 3, GL_FLOAT, 24, pipeline->SynthPointCloud().data() );
+	//glVertexPointer( 3, GL_FLOAT, 24, vertices.data() );
 
 	glEnableClientState( GL_COLOR_ARRAY );
-	glColorPointer( 3, GL_FLOAT, 24, reinterpret_cast< float * >( vertices.data() ) + 3 );
+	glColorPointer( 3, GL_FLOAT, 24, reinterpret_cast< float const * >( pipeline->SynthPointCloud().data() ) + 3 );
+	//glColorPointer( 3, GL_FLOAT, 24, reinterpret_cast< float const * >( vertices.data() ) + 3 );
 
 	if( triangles )
 		glDrawElements( GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, indices.data() );
 	else
-		glDrawArrays( GL_POINTS, 0, vertices.size() );
+		glDrawArrays( GL_POINTS, 0, pipeline->SynthPointCloud().size() );
+		//glDrawArrays( GL_POINTS, 0, vertices.size() );
 
 	glDisableClientState( GL_COLOR_ARRAY );
 	glDisableClientState( GL_VERTEX_ARRAY );
@@ -78,10 +85,21 @@ void myDisplayFunc()
     glutSwapBuffers();
 }
 
-
+#include <direct.h>
 
 int main( int argc, char ** argv )
 {
+	if( 3 != argc )
+	{
+		std::printf
+		(
+			"Usage:   SampleBasic.exe input resolution\n"
+			"Example: SampleBasic.exe imrod.depth 512\n"
+		);
+		
+		return 1;
+	}
+
 	glutInit( & argc, argv );
 
 	glutInitDisplayMode( GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH );
@@ -93,6 +111,19 @@ int main( int argc, char ** argv )
 
 	glutDisplayFunc( myDisplayFunc );
 	glutMouseFunc( myIdleFunc );
+
+	char workingDirectory[ 256 ];
+	_getcwd( workingDirectory, sizeof( workingDirectory ) );
+
+	char depthStreamPath[ 256 ];
+
+	if( ':' == argv[ 1 ][ 1 ] ) // absolute path
+		std::sprintf( depthStreamPath, "%s", argv[ 1 ] );
+	else
+		std::sprintf( depthStreamPath, "%s\\%s", workingDirectory, argv[ 1 ] );
+
+	depthStream.reset( new DepthStream( depthStreamPath ) );
+	pipeline.reset( new Pipeline( cameraParams, atoi( argv[ 2 ] ), 2.0f, 0.02f ) );
 
 	glutMainLoop();
 

@@ -110,8 +110,9 @@ namespace icp
 
             for (int ii = 0; ii < src.points.Length; ii++)
             {
-                Vector3 vsrc = Vector3.Transform(src.points[ii], srcWorld) - centerSrc;
-                Vector3 vdst = Vector3.Transform(dst.points[ii], dstWorld) - centerDst;
+                // interesting
+                Vector3 vsrc = Vector3.Transform(src.points[ii], srcWorld);// -centerSrc;
+                Vector3 vdst = Vector3.Transform(dst.points[ii], dstWorld);// -centerDst;
 
                 Sxx += vsrc.X * vdst.X;
                 Sxy += vsrc.X * vdst.Y;
@@ -145,13 +146,6 @@ namespace icp
                     N2[row, col] = N[row, col];
 
             double[] ev;
-            Eigen.eigen(N, out ev);
-
-            N = new double[2, 2];
-            N[0, 0] = 2;
-            N[0, 1] = -4;
-            N[1, 0] = -1;
-            N[1, 1] = -1;
             Eigen.eigen(N, out ev);
 
             int imaxev = 0;

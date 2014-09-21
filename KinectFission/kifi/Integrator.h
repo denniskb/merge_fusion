@@ -22,7 +22,7 @@ public:
 		util::vector2d< float > const & frame,
 
 		DepthSensorParams const & cameraParams,
-		util::float4x4 const & worldToEye
+		util::float4x4 const & eyeToWorld
 	);
 
 private:

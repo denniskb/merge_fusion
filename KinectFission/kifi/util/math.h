@@ -54,7 +54,8 @@ struct vec : public std::array< T, N >
 	template< typename U >
 	inline explicit operator vec< U, N >() const;
 
-	// only implemented for N == 4
+	// only implemented for N > 2/3 respectively.
+	inline vec< T, 2 > xy() const;
 	inline vec< T, 3 > xyz() const;
 	inline vec< T, 3 > rgb() const;
 
@@ -503,9 +504,17 @@ vec< T, N >::operator vec< U, N >() const
 }
 
 template< typename T, int N >
+vec< T, 2 > vec< T, N >::xy() const
+{
+	static_assert( N > 2, "this method is only implemented for (3+)-component vectors" );
+
+	return vec< T, 2 >( x(), y() );
+}
+
+template< typename T, int N >
 vec< T, 3 > vec< T, N >::xyz() const
 {
-	static_assert( 4 == N, "this method is only implemented for 4-component vectors" );
+	static_assert( N > 3, "this method is only implemented for (4+)-component vectors" );
 
 	return vec< T, 3 >( x(), y(), z() );
 }

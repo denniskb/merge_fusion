@@ -92,7 +92,6 @@
     <ClInclude Include="Integrator.h" />
     <ClInclude Include="Mesher.h" />
     <ClInclude Include="Pipeline.h" />
-    <ClInclude Include="Renderer.h" />
     <ClInclude Include="util\algorithm.h" />
     <ClInclude Include="util\barrier.h" />
     <ClInclude Include="util\chrono.h" />
@@ -120,7 +119,6 @@
     <ClCompile Include="Mesher.cpp" />
     <ClCompile Include="invariants.cpp" />
     <ClCompile Include="Pipeline.cpp" />
-    <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="util\barrier.cpp" />
     <ClCompile Include="util\fstream.cpp" />
     <ClCompile Include="util\semaphore.cpp" />
