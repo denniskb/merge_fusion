@@ -61,7 +61,7 @@ kahan_sum< T > & kahan_sum< T >::operator+=( T rhs )
 {
 	T y   = rhs - m_c;
 	T t   = m_sum + y;
-	m_c   = t - m_sum - y;
+	m_c   = (t - m_sum) - y;
 	m_sum = t;
 
 	return * this;

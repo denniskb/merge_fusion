@@ -45,14 +45,15 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <AdditionalIncludeDirectories>$(ProjectDir)..;$(FREEGLUT_ROOT)\include;$(GLEW_ROOT)\include</AdditionalIncludeDirectories>
-      <FloatingPointExceptions>true</FloatingPointExceptions>
+      <FloatingPointExceptions>false</FloatingPointExceptions>
       <TreatWarningAsError>false</TreatWarningAsError>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <FloatingPointModel>Fast</FloatingPointModel>
     </ClCompile>
     <Link />
     <Link>
       <AdditionalDependencies>freeglut.lib;glew32.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(FREEGLUT_ROOT)\lib\x64;$(GLEW_ROOT)\lib\Release\x64</AdditionalLibraryDirectories>
-      <SubSystem>Windows</SubSystem>
       <AdditionalOptions>/ENTRY:mainCRTStartup %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>

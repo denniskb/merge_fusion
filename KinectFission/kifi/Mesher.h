@@ -25,6 +25,7 @@ struct VertexPositionNormal
 class Mesher
 {
 public:
+    // Potentially generate NaN-Normals !
 	void Mesh( Volume const & volume, std::vector< VertexPositionNormal > & outVertices );
 	void Mesh( Volume const & volume, std::vector< VertexPositionNormal > & outVertices, std::vector< unsigned > & outIndices );
 

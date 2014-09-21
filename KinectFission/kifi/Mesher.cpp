@@ -144,21 +144,19 @@ void Mesher::Generate( Volume const & volume, std::vector< VertexPositionNormal 
 
 		float dself = voxels[ 0 ].Distance();
 
-		util::float3 n
+		util::float3 n = util::normalize( util::float3
 		(
-			voxels[ 1 ].SafeDistance() - dself,
-			voxels[ 2 ].SafeDistance() - dself,
-			voxels[ 4 ].SafeDistance() - dself
-		);
-		n /= util::length( n ) + std::numeric_limits< float >::min();
-		
+			voxels[ 1 ].Distance() - dself,
+			voxels[ 2 ].Distance() - dself,
+			voxels[ 4 ].Distance() - dself
+		));
 		m_tmpNormals[ i ] = n;
 
 		// TODO: Experiment with packed normals and normalize after lerp
 
 		if( voxels[ 4 ].Weight() > 0.0f && dself * voxels[ 4 ].Distance() <= 0.0f )
 		{
-			float weightB = abs( dself ) / ( abs( dself ) + abs( voxels[ 4 ].Distance() ) );
+			float weightB = abs( dself ) / ( abs( dself ) + abs( voxels[ 4 ].Distance() ) + std::numeric_limits< float >::min() );
 			
 			util::float3 vert = vert000;
 			vert.z() += weightB * volume.VoxelLength();
@@ -173,12 +171,12 @@ void Mesher::Generate( Volume const & volume, std::vector< VertexPositionNormal 
 						
 		if( voxels[ 2 ].Weight() > 0.0f && dself * voxels[ 2 ].Distance() <= 0.0f )
 		{
-			float weightB = abs( dself ) / ( abs( dself ) + abs( voxels[ 2 ].Distance() ) );
+			float weightB = abs( dself ) / ( abs( dself ) + abs( voxels[ 2 ].Distance() ) + std::numeric_limits< float >::min() );
 
 			util::float3 vert = vert000;
 			vert.y() += weightB * volume.VoxelLength();
 
-			auto m = util::normalize( util::lerp( n, m_tmpNormals[ iTop ], weightB ) );
+			util::float3 m = util::normalize( util::lerp( n, m_tmpNormals[ iTop ], weightB ) );
 
 			outVertices.push_back( VertexPositionNormal( vert, m ) );
 
@@ -188,12 +186,12 @@ void Mesher::Generate( Volume const & volume, std::vector< VertexPositionNormal 
 
 		if( voxels[ 1 ].Weight() > 0.0f && dself * voxels[ 1 ].Distance() <= 0.0f )
 		{
-			float weightB = abs( dself ) / ( abs( dself ) + abs( voxels[ 1 ].Distance() ) );
+			float weightB = abs( dself ) / ( abs( dself ) + abs( voxels[ 1 ].Distance() ) + std::numeric_limits< float >::min() );
 
 			util::float3 vert = vert000;
 			vert.x() += weightB * volume.VoxelLength();
 
-			auto m = util::normalize( util::lerp( n, m_tmpNormals[ i + 1 ], weightB ) );
+			util::float3 m = util::normalize( util::lerp( n, m_tmpNormals[ i + 1 ], weightB ) );
 
 			outVertices.push_back( VertexPositionNormal( vert, m ) );
 

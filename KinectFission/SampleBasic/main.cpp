@@ -30,7 +30,8 @@ int iFrame = 0;
 
 
 
-void myIdleFunc( int button, int state, int x, int y )
+void myMouseFunc( int button, int state, int x, int y )
+//void myIdleFunc()
 {
 	float4x4 worldToEye;
 
@@ -49,6 +50,8 @@ void myIdleFunc( int button, int state, int x, int y )
 
 			glutPostRedisplay();
 		}
+		else
+			glutExit();
 		//else
 		//	Mesher::Mesh2Obj( vertices, indices, "I:/tmp/imrod.obj" );
 }
@@ -110,7 +113,8 @@ int main( int argc, char ** argv )
 	glewInit();
 
 	glutDisplayFunc( myDisplayFunc );
-	glutMouseFunc( myIdleFunc );
+	glutMouseFunc( myMouseFunc );
+	//glutIdleFunc( myIdleFunc );
 
 	char workingDirectory[ 256 ];
 	_getcwd( workingDirectory, sizeof( workingDirectory ) );

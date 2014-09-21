@@ -75,6 +75,11 @@ util::float4x4 ICP::AlignStep
 	{
 		VertexPositionNormal synth = synthPointCloud[ i ];
 
+		if( std::isnan( synth.normal.x() ) ||
+			std::isnan( synth.normal.y() ) ||
+			std::isnan( synth.normal.z() ) )
+			continue;
+
 		float2 uv = homogenize( srcWorldToClip * float4( synth.position, 1.0f ) ).xy();
 
 		int u = (int) ( uv.x() * halfWidth + halfWidth );
@@ -102,6 +107,7 @@ util::float4x4 ICP::AlignStep
 		// refine using compatibility and weighting, also stop on error threshold/count
 		// consider stealing FuSci impl (not as expensive as I thought because A can be computed on the fly) // double check that
 
+		// TODO: double check direction (src->dst/dst->src) and change sub order accordingly
 		float3 diff = src - synth.position;
 		if( length_squared( diff ) > 0.01f )
 			continue;
@@ -119,13 +125,13 @@ util::float4x4 ICP::AlignStep
 	if( 0 == nAssocs )
 		return float4x4::identity();
 	
-	float3 srcMedian = srcMedianSum / (float) nAssocs;
-	float3 dstMedian = dstMedianSum / (float) nAssocs;
+	float3 srcMedian = (float3) srcMedianSum / (float) nAssocs;
+	float3 dstMedian = (float3) dstMedianSum / (float) nAssocs;
 
 	float
-		Sxx = 0.0f, Sxy = 0.0f, Sxz = 0.0f,
-		Syx = 0.0f, Syy = 0.0f, Syz = 0.0f,
-		Szx = 0.0f, Szy = 0.0f, Szz = 0.0f;
+		Sxx( 0.0f ), Sxy( 0.0f ), Sxz( 0.0f ),
+		Syx( 0.0f ), Syy( 0.0f ), Syz( 0.0f ),
+		Szx( 0.0f ), Szy( 0.0f ), Szz( 0.0f );
 
 	for( std::size_t i = 0; i < nAssocs; ++i )
 	{
