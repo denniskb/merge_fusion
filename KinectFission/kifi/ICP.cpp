@@ -75,9 +75,7 @@ util::float4x4 ICP::AlignStep
 	{
 		VertexPositionNormal synth = synthPointCloud[ i ];
 
-		if( std::isnan( synth.normal.x() ) ||
-			std::isnan( synth.normal.y() ) ||
-			std::isnan( synth.normal.z() ) )
+		if( isnan( synth.normal ) )
 			continue;
 
 		float2 uv = homogenize( srcWorldToClip * float4( synth.position, 1.0f ) ).xy();

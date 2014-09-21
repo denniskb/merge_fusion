@@ -199,6 +199,8 @@ inline T                     dot           ( vec< T, N > const & a, vec< T, N > 
 template< typename T >
 inline vec< T, 4 >           homogenize    ( vec< T, 4 > const & a );
 template< typename T, int N >
+inline bool                  is_nan        ( vec< T, N > const & a );
+template< typename T, int N >
 inline double                length        ( vec< T, N > const & a );
 template< int N >
 inline float                 length        ( vec< float, N > const & a );
@@ -958,6 +960,17 @@ template< typename T >
 inline vec< T, 4 > homogenize( vec< T, 4 > const & a )
 {
 	return a / a.w();
+}
+
+template< typename T, int N >
+bool isnan( vec< T, N > const & a )
+{
+    bool result = false;
+
+    kifi_for( N )
+        result |= std::isnan( a[ i ] );
+
+    return result;
 }
 
 template< typename T, int N >
