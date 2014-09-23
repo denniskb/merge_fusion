@@ -16,7 +16,8 @@ util::float4x4 ICP::Align
 		
 	std::vector< VertexPositionNormal > const & synthPointCloud,
 
-	DepthSensorParams const & cameraParams
+	DepthSensorParams const & cameraParams,
+	std::size_t nPoints
 )
 {
 	util::chrono::stop_watch sw;
@@ -28,7 +29,8 @@ util::float4x4 ICP::Align
 		(
 			rawDepthMap, result,
 			synthPointCloud,
-			cameraParams
+			cameraParams,
+			nPoints
 		) * result;
 
 	sw.take_time( "ICP (6 iterations)" );
@@ -46,10 +48,14 @@ util::float4x4 ICP::AlignStep
 		
 	std::vector< VertexPositionNormal > const & synthPointCloud,
 
-	DepthSensorParams const & cameraParams
+	DepthSensorParams const & cameraParams,
+	std::size_t nPoints
 )
 {
 	using namespace util;
+
+	m_assocs.clear();
+	m_assocs.resize( std::min( synthPointCloud.size(), nPoints ) );
 
 	float4x4 srcWorldToClip = cameraParams.EyeToClipRH() * invert_transform( rawEyeToWorldGuess );
 
@@ -64,14 +70,12 @@ util::float4x4 ICP::AlignStep
 	float halfWidth  = 0.5f * rawDepthMap.width();
 	float halfHeight = 0.5f * rawDepthMap.height();
 
-	m_assocs.clear();
-	m_assocs.resize( synthPointCloud.size() );
-	unsigned nAssocs = 0;
-
 	float3 srcMedianSum( 0.0f );
 	float3 dstMedianSum( 0.0f );
 
-	for( std::size_t i = 0; i < synthPointCloud.size(); i++ )
+	std::size_t step_size = synthPointCloud.size() / nPoints + 1;
+	nPoints = 0;
+	for( std::size_t i = 0; i < synthPointCloud.size(); i += step_size )
 	{
 		VertexPositionNormal synth = synthPointCloud[ i ];
 
@@ -105,33 +109,33 @@ util::float4x4 ICP::AlignStep
 		// refine using compatibility and weighting, also stop on error threshold/count
 		// consider stealing FuSci impl (not as expensive as I thought because A can be computed on the fly) // double check that
 
-		// TODO: double check direction (src->dst/dst->src) and change sub order accordingly
 		float3 diff = src - synth.position;
 		if( length_squared( diff ) > 0.01f )
 			continue;
 
 		float3 dst = src - dot( diff, synth.normal ) * synth.normal;
 
-		m_assocs[ nAssocs ].first  = src;
-		m_assocs[ nAssocs ].second = dst;
-		++nAssocs;
+		m_assocs[ nPoints ].first  = src;
+		m_assocs[ nPoints ].second = dst;
+		++nPoints;
 
 		srcMedianSum += src;
 		dstMedianSum += dst;
 	}
 
-	if( 0 == nAssocs )
+	if( 0 == nPoints )
 		return float4x4::identity();
 	
-	float3 srcMedian = (float3) srcMedianSum / (float) nAssocs;
-	float3 dstMedian = (float3) dstMedianSum / (float) nAssocs;
+	float3 srcMedian = (float3) srcMedianSum / (float) nPoints;
+	float3 dstMedian = (float3) dstMedianSum / (float) nPoints;
 
 	float
+	//kahan_sum< float >
 		Sxx( 0.0f ), Sxy( 0.0f ), Sxz( 0.0f ),
 		Syx( 0.0f ), Syy( 0.0f ), Syz( 0.0f ),
 		Szx( 0.0f ), Szy( 0.0f ), Szz( 0.0f );
 
-	for( std::size_t i = 0; i < nAssocs; ++i )
+	for( std::size_t i = 0; i < nPoints; ++i )
 	{
 		float3 src = m_assocs[ i ].first;
 		float3 dst = m_assocs[ i ].second;

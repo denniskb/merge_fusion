@@ -23,7 +23,8 @@ public:
 		
 		std::vector< VertexPositionNormal > const & synthPointCloud,
 
-		DepthSensorParams const & cameraParams
+		DepthSensorParams const & cameraParams,
+		std::size_t nPoints
 	);
 
 private:
@@ -36,7 +37,8 @@ private:
 		
 		std::vector< VertexPositionNormal > const & synthPointCloud,
 
-		DepthSensorParams const & cameraParams
+		DepthSensorParams const & cameraParams,
+		std::size_t nPoints
 	);
 };
 

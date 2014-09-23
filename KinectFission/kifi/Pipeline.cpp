@@ -22,10 +22,10 @@ Pipeline::Pipeline
 
 
 
-void Pipeline::Integrate( util::vector2d< float > const & rawDepthMap )
+void Pipeline::Integrate( util::vector2d< float > const & rawDepthMap, std::size_t nPoints )
 {
 	if( ! m_tmpSynthPointCloud.empty() )
-		m_eyeToWorld = m_icp.Align( rawDepthMap, m_eyeToWorld, m_tmpSynthPointCloud, m_camParams );
+		m_eyeToWorld = m_icp.Align( rawDepthMap, m_eyeToWorld, m_tmpSynthPointCloud, m_camParams, nPoints );
 
 	Integrate( rawDepthMap, m_eyeToWorld );
 	Mesh( m_tmpSynthPointCloud );

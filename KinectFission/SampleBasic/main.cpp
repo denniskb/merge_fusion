@@ -25,23 +25,21 @@ std::unique_ptr< Pipeline > pipeline;
 std::vector< VertexPositionNormal > vertices;
 std::vector< unsigned > indices;
 
-bool triangles = false;
-int iFrame = 0;
+bool triangles = true;
 
 
 
 void myMouseFunc( int button, int state, int x, int y )
-//void myIdleFunc()
 {
 	float4x4 worldToEye;
 
 	if( GLUT_MIDDLE_BUTTON == state )
 		if( depthStream->NextFrame( synthDepthFrame, worldToEye ) )
 		{
+			static int iFrame = 0;
 			std::printf( "- Frame %d -\n", iFrame++ );
 
 			pipeline->Integrate( synthDepthFrame );
-			//pipeline->Integrate( synthDepthFrame, invert_transform( worldToEye ) );
 			
 			if( triangles )
 				pipeline->Mesh( vertices, indices );
@@ -50,10 +48,13 @@ void myMouseFunc( int button, int state, int x, int y )
 
 			glutPostRedisplay();
 		}
+#if 1
 		else
 			glutExit();
-		//else
-		//	Mesher::Mesh2Obj( vertices, indices, "I:/tmp/imrod.obj" );
+#else
+		else
+			Mesher::Mesh2Obj( vertices, indices, "I:/tmp/imrod.obj" );
+#endif
 }
 
 void myDisplayFunc()
@@ -68,17 +69,14 @@ void myDisplayFunc()
 	
 	glEnableClientState( GL_VERTEX_ARRAY );
 	glVertexPointer( 3, GL_FLOAT, 24, pipeline->SynthPointCloud().data() );
-	//glVertexPointer( 3, GL_FLOAT, 24, vertices.data() );
 
 	glEnableClientState( GL_COLOR_ARRAY );
 	glColorPointer( 3, GL_FLOAT, 24, reinterpret_cast< float const * >( pipeline->SynthPointCloud().data() ) + 3 );
-	//glColorPointer( 3, GL_FLOAT, 24, reinterpret_cast< float const * >( vertices.data() ) + 3 );
 
 	if( triangles )
 		glDrawElements( GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, indices.data() );
 	else
 		glDrawArrays( GL_POINTS, 0, pipeline->SynthPointCloud().size() );
-		//glDrawArrays( GL_POINTS, 0, vertices.size() );
 
 	glDisableClientState( GL_COLOR_ARRAY );
 	glDisableClientState( GL_VERTEX_ARRAY );
@@ -114,7 +112,6 @@ int main( int argc, char ** argv )
 
 	glutDisplayFunc( myDisplayFunc );
 	glutMouseFunc( myMouseFunc );
-	//glutIdleFunc( myIdleFunc );
 
 	char workingDirectory[ 256 ];
 	_getcwd( workingDirectory, sizeof( workingDirectory ) );
@@ -123,7 +120,7 @@ int main( int argc, char ** argv )
 
 	if( ':' == argv[ 1 ][ 1 ] ) // absolute path
 		std::sprintf( depthStreamPath, "%s", argv[ 1 ] );
-	else
+	else // relative path
 		std::sprintf( depthStreamPath, "%s\\%s", workingDirectory, argv[ 1 ] );
 
 	depthStream.reset( new DepthStream( depthStreamPath ) );

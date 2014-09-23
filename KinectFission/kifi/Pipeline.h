@@ -24,7 +24,7 @@ public:
 		float truncationMargin = 0.02f
 	);
 
-	void Integrate( util::vector2d< float > const & rawDepthMap );
+	void Integrate( util::vector2d< float > const & rawDepthMap, std::size_t nPoints = 10000 );
 	void Integrate( util::vector2d< float > const & rawDepthMap, util::float4x4 const & eyeToWorld );
 
 	void Mesh( std::vector< VertexPositionNormal > & outVertices );
