@@ -67,6 +67,32 @@ void Integrator::Integrate
 	
 	sw.take_time( "Integration" );
 	sw.print_times();
+
+	/*util::chrono::stop_watch sw;
+
+	static bool first = true;
+
+	if( first )
+	{
+		m_tmpPointCloud.resize( volume.Resolution() * volume.Resolution() * volume.Resolution() );
+		for( int z = 0; z < volume.Resolution(); z++ )
+			for( int y = 0; y < volume.Resolution(); y++ )
+				for( int x = 0; x < volume.Resolution(); x++ )
+				{
+					int idx = x + y * volume.Resolution() + z * volume.Resolution() * volume.Resolution();
+					m_tmpPointCloud[ idx] = util::pack( x, y, z );
+				}
+
+		volume.Data().insert( m_tmpPointCloud.cbegin(), m_tmpPointCloud.cend(), util::make_const_iterator( Voxel() ) );
+		m_tmpPointCloud.clear();
+		first = false;
+	}
+
+	util::float4x4 worldToClip = cameraParams.EyeToClipRH() * util::invert_transform( eyeToWorld );
+	UpdateVoxels( volume, frame, worldToClip );
+
+	sw.take_time( "Integration" );
+	sw.print_times();*/
 }
 
 

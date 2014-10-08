@@ -10,8 +10,8 @@ std::vector< unsigned short > read_pgm( char const * file )
 	std::vector< unsigned short > result( KINECT_RES );
 
 	FILE * src = fopen( file, "rb" );
-	fseek( src, 16, SEEK_SET );
-	fread( & result[ 0 ], 2, KINECT_RES, src );
+	fseek( src, 17, SEEK_SET );
+	fread( result.data(), 2, KINECT_RES, src );
 	fclose( src );
 
 	return result;
@@ -118,76 +118,61 @@ void error
 	fclose( report );
 }
 
+double linearize( double x )
+{
+	double x2 = x * x;
+	double x3 = x * x2;
+
+	return -3.69889 + 7.96903 * x - 0.0217415 * x2 + 0.0000170182 * x3;
+	// (7.15958*10^6 + 568086. x - 408.449 x^2)/(636764. - 594.599 x)
+}
+
 int main()
 {
-#if 1
-	error
-	(
-		"C:/Users/admin/Downloads/cafe/cafe_0001a/depth/imrod%03d.ppm",
-		"C:/Users/admin/Downloads/cafe/cafe_0001a/depth/imrod1_%03d.ppm",
-		"C:/Users/admin/Downloads/cafe/cafe_0001a/depth/imrod1.csv",
-		1, 61
-	);
-#else
-	convert
-	(
-		"C:/Users/admin/Downloads/cafe/cafe_0001a/depth/image%03d.pgm",
-		"C:/Users/admin/Downloads/cafe/cafe_0001a/depth/close%03d.ppm",
-		1, 100,
-		[] ( std::vector< unsigned short > const & src, std::vector< unsigned char > & dst )
+	//FILE * shahram = std::fopen( "I:/tmp/rawDepth", "rb" );
+
+	std::vector< float > buffer( 640 * 480 );
+
+	FILE * stream = std::fopen( "I:/tmp/bedroom.depth", "wb" );
+	std::fprintf( stream, "KPPL raw depth\n" );
+
+	int version = 2;
+	int frameWidth = 640;
+	int frameHeight = 480;
+	int texelType = 1;
+	int nFrames = 100;
+
+	std::fwrite( & version, 4, 1, stream );
+	std::fwrite( & frameWidth, 4, 1, stream );
+	std::fwrite( & frameHeight, 4, 1, stream );
+	std::fwrite( & texelType, 4, 1, stream );
+	std::fwrite( & nFrames, 4, 1, stream );
+
+	float matrix[ 16 ];
+
+	for( int i = 1; i <= nFrames; i++ )
+	{
+		//std::fread( buffer.data(), 4, KINECT_RES, shahram );
+		char fileName[ 64 ];
+		std::sprintf( fileName, "I:/tmp/bedroom/depth%04d.pgm", i );
+		auto depth = read_pgm( fileName );
+
+		for( int i = 0; i < KINECT_RES; i++ )
 		{
-			unsigned min = 8000;
-			for( int i = 0; i < KINECT_RES; i++ )
-			{
-				unsigned depth = src[ i ];
-				if( depth != 0 && depth < min )
-					min = depth;
-			}
+			unsigned lsb = depth[ i ] & 0xff;
+			unsigned msb = depth[ i ] >> 8;
 
-			for( int i = 0; i < KINECT_RES; i++ )
-			{
-				unsigned depth = src[ i ];
-				if( depth != 0 && depth < min + 2000 )
-					depth = ( depth - min ) / ( 2000 / 255.0f ) + 0.5f;
-				else
-					depth = 0;
-
-				dst[ 3 * i ] = dst[ 3 * i + 1 ] = dst[ 3 * i + 2 ] = depth;
-			}
+			unsigned raw = ((lsb << 8) | msb) >> 5;
+			buffer[ i ] = (float) (100/(-0.00307 * raw + 3.33)) * 0.01f;
+			//buffer[ i ] = raw * 0.001f;
 		}
-	);
 
-	convert
-	(
-		"C:/Users/admin/Downloads/cafe/cafe_0001a/depth/image%03d.pgm",
-		"C:/Users/admin/Downloads/cafe/cafe_0001a/depth/far%03d.ppm",
-		1, 100,
-		[] ( std::vector< unsigned short > const & src, std::vector< unsigned char > & dst )
-		{
-			unsigned min = 8000;
-			for( int i = 0; i < KINECT_RES; i++ )
-			{
-				unsigned depth = src[ i ];
-				if( depth != 0 && depth < min )
-					min = depth;
-			}
+		std::fwrite( matrix, 4, 16, stream );
+		std::fwrite( buffer.data(), 4, KINECT_RES, stream );
+	}
 
-			for( int i = 0; i < KINECT_RES; i++ )
-			{
-				unsigned depth = src[ i ];
-				if( depth > min + 6000 )
-					depth = min + 6000;
-
-				if( depth != 0 && depth >= min + 2000 )
-					depth = ( depth - min - 2000 ) / ( 4000 / 255.0f ) + 0.5f;
-				else
-					depth = 0;
-
-				dst[ 3 * i ] = dst[ 3 * i + 1 ] = dst[ 3 * i + 2 ] = depth;
-			}
-		}
-	);
-#endif
+	//std::fclose( shahram );
+	std::fclose( stream );
 
 	return 0;
 }

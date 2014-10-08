@@ -18,14 +18,17 @@ using namespace kifi::util;
 
 std::unique_ptr< DepthStream > depthStream;
 vector2d< float > synthDepthFrame;
-DepthSensorParams cameraParams( DepthSensorParams::KinectParams( KinectDepthSensorResolution640x480, KinectDepthSensorModeFar ) );
+DepthSensorParams cameraParams( DepthSensorParams::KinectParams( KinectDepthSensorResolution640x480, KinectDepthSensorModeNear ) );
 
 std::unique_ptr< Pipeline > pipeline;
 
 std::vector< VertexPositionNormal > vertices;
 std::vector< unsigned > indices;
 
-bool triangles = true;
+void const * VB;
+
+bool icp = true;
+bool triangles = false;
 
 
 
@@ -39,10 +42,26 @@ void myMouseFunc( int button, int state, int x, int y )
 			static int iFrame = 0;
 			std::printf( "- Frame %d -\n", iFrame++ );
 
-			pipeline->Integrate( synthDepthFrame );
+			if( icp )
+				pipeline->Integrate( synthDepthFrame, 10000 );
+			else
+				pipeline->Integrate( synthDepthFrame, invert_transform( worldToEye ) );
 			
 			if( triangles )
+			{
 				pipeline->Mesh( vertices, indices );
+				VB = vertices.data();
+			}
+			else
+			{
+				if( icp )
+					VB = pipeline->SynthPointCloud().data();
+				else
+				{
+					pipeline->Mesh( vertices );
+					VB = vertices.data();
+				}
+			}
 
 			std::printf( "\n" );
 
@@ -68,15 +87,15 @@ void myDisplayFunc()
 	glLoadMatrixf( reinterpret_cast< float * >( & m ) );
 	
 	glEnableClientState( GL_VERTEX_ARRAY );
-	glVertexPointer( 3, GL_FLOAT, 24, pipeline->SynthPointCloud().data() );
+	glVertexPointer( 3, GL_FLOAT, 24, VB );
 
 	glEnableClientState( GL_COLOR_ARRAY );
-	glColorPointer( 3, GL_FLOAT, 24, reinterpret_cast< float const * >( pipeline->SynthPointCloud().data() ) + 3 );
+	glColorPointer( 3, GL_FLOAT, 24, reinterpret_cast< float const * >( VB ) + 3 );
 
 	if( triangles )
 		glDrawElements( GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, indices.data() );
 	else
-		glDrawArrays( GL_POINTS, 0, pipeline->SynthPointCloud().size() );
+		glDrawArrays( GL_POINTS, 0, icp ? pipeline->SynthPointCloud().size() : vertices.size() );
 
 	glDisableClientState( GL_COLOR_ARRAY );
 	glDisableClientState( GL_VERTEX_ARRAY );
@@ -124,7 +143,7 @@ int main( int argc, char ** argv )
 		std::sprintf( depthStreamPath, "%s\\%s", workingDirectory, argv[ 1 ] );
 
 	depthStream.reset( new DepthStream( depthStreamPath ) );
-	pipeline.reset( new Pipeline( cameraParams, atoi( argv[ 2 ] ), 2.0f, 0.02f ) );
+	pipeline.reset( new Pipeline( cameraParams, atoi( argv[ 2 ] ), 4.0f, 0.04f ) );
 
 	glutMainLoop();
 

@@ -24,7 +24,7 @@ util::float4x4 ICP::Align
 
 	util::float4x4 result = rawEyeToWorldGuess;
 	
-	for( int i = 0; i < 6; i++ )
+	for( int i = 0; i < 7; i++ )
 		result = AlignStep
 		(
 			rawDepthMap, result,
@@ -33,7 +33,7 @@ util::float4x4 ICP::Align
 			nPoints
 		) * result;
 
-	sw.take_time( "ICP (6 iterations)" );
+	sw.take_time( "ICP (7 iterations)" );
 	sw.print_times();
 
 	return result;
@@ -53,6 +53,9 @@ util::float4x4 ICP::AlignStep
 )
 {
 	using namespace util;
+
+	if( 0 == synthPointCloud.size() || 0 == nPoints )
+		return float4x4::identity();
 
 	m_assocs.clear();
 	m_assocs.resize( std::min( synthPointCloud.size(), nPoints ) );
@@ -122,7 +125,7 @@ util::float4x4 ICP::AlignStep
 		srcMedianSum += src;
 		dstMedianSum += dst;
 	}
-
+	
 	if( 0 == nPoints )
 		return float4x4::identity();
 	

@@ -87,7 +87,7 @@ namespace poly2depth
                 Matrix.CreateScale(0.1f)
             );
 
-            //*
+            /*
             vizEffect = skinnedViz;
             depthEffect = skinnedDepth;
             model = imrod;
