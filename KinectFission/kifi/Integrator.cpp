@@ -54,8 +54,8 @@ void Integrator::Integrate
 		)
 	);
 
+	// Turn each index in tmpPointCloud into 27 indices -- without duplicates -- to have enough margin for normal computation.
 	ExpandChunks( m_tmpPointCloud, m_tmpScratchPad );
-	// HACK
 	ExpandChunks( m_tmpPointCloud, m_tmpScratchPad );
 
 	volume.Data().insert(
