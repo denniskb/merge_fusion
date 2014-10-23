@@ -26,14 +26,14 @@ public:
 	DepthSensorParams
 	(
 		util::int2   resolutionPixels,
-		util::float2 focalLengthPixels,
+		util::float2 focalLengthNorm,
 		util::float2 principalPointPixels,
 		util::float2 sensibleDistanceRangeMeters
 	);
 
 	util::int2   ResolutionPixels() const;
-	util::float2 FocalLengthPixels() const;
-	util::float2 PrincipalPointPixels() const;
+	util::float2 FocalLengthNorm() const;
+	util::float2 PrincipalPointNorm() const;
 	util::float2 SensibleRangeMeters() const;
 
 	/*
@@ -42,7 +42,8 @@ public:
 	*/
 	util::float4x4 EyeToClipRH() const;
 
-	static DepthSensorParams KinectParams( KinectDepthSensorResolution resolution, KinectDepthSensorMode mode );
+	static DepthSensorParams KinectV1Params( KinectDepthSensorResolution resolution, KinectDepthSensorMode mode );
+	static DepthSensorParams KinectV2Params();
 
 private:
 	util::int2   m_res;

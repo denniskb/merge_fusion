@@ -33,7 +33,7 @@ BOOST_AUTO_TEST_CASE( Integrate )
 	util::float4x4 view;
 
 	ds.NextFrame( depth, view );
-	i.Integrate( v, depth, DepthSensorParams::KinectParams( KinectDepthSensorResolution640x480, KinectDepthSensorModeFar ), view );
+	i.Integrate( v, depth, DepthSensorParams::KinectV1Params( KinectDepthSensorResolution640x480, KinectDepthSensorModeFar ), view );
 
 	std::ofstream debug( TMP_DIR "/volume_integrate.obj" );
 	if( ! debug )

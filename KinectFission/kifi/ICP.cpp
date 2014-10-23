@@ -62,11 +62,16 @@ util::float4x4 ICP::AlignStep
 
 	float4x4 srcWorldToClip = cameraParams.EyeToClipRH() * invert_transform( rawEyeToWorldGuess );
 
-	float2 flInv( 1.0f / cameraParams.FocalLengthPixels().x(), 1.0f / cameraParams.FocalLengthPixels().y() );
+	float2 flInv
+	(
+		1.0f / cameraParams.FocalLengthNorm().x() / cameraParams.ResolutionPixels().x(),
+		1.0f / cameraParams.FocalLengthNorm().y() / cameraParams.ResolutionPixels().y()
+	);
+
 	float2 ppOverFl = float2
 	(
-		(0.5f - cameraParams.PrincipalPointPixels().x()),
-		(cameraParams.PrincipalPointPixels().y() - 0.5f)
+		(0.5f - cameraParams.PrincipalPointNorm().x() * cameraParams.ResolutionPixels().x()),
+		(cameraParams.PrincipalPointNorm().y() * cameraParams.ResolutionPixels().y() - 0.5f)
 	) * flInv;
 	flInv.y() = -flInv.y();
 

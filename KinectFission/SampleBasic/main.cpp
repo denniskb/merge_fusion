@@ -18,7 +18,8 @@ using namespace kifi::util;
 
 std::unique_ptr< DepthStream > depthStream;
 vector2d< float > synthDepthFrame;
-DepthSensorParams cameraParams( DepthSensorParams::KinectParams( KinectDepthSensorResolution640x480, KinectDepthSensorModeNear ) );
+//DepthSensorParams cameraParams( DepthSensorParams::KinectV1Params( KinectDepthSensorResolution640x480, KinectDepthSensorModeNear ) );
+DepthSensorParams cameraParams( DepthSensorParams::KinectV2Params() );
 
 std::unique_ptr< Pipeline > pipeline;
 

@@ -1,0 +1,8 @@
+*.cachefile
+*.opensdf
+*.sdf
+*.suo
+*.user
+desktop.ini
+
+/x64
