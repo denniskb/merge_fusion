@@ -18,8 +18,8 @@ using namespace kifi::util;
 
 std::unique_ptr< DepthStream > depthStream;
 vector2d< float > synthDepthFrame;
-//DepthSensorParams cameraParams( DepthSensorParams::KinectV1Params( KinectDepthSensorResolution640x480, KinectDepthSensorModeNear ) );
-DepthSensorParams cameraParams( DepthSensorParams::KinectV2Params() );
+DepthSensorParams cameraParams( DepthSensorParams::KinectV1Params( KinectDepthSensorResolution640x480, KinectDepthSensorModeNear ) );
+//DepthSensorParams cameraParams( DepthSensorParams::KinectV2Params() );
 
 std::unique_ptr< Pipeline > pipeline;
 
@@ -144,7 +144,7 @@ int main( int argc, char ** argv )
 		std::sprintf( depthStreamPath, "%s\\%s", workingDirectory, argv[ 1 ] );
 
 	depthStream.reset( new DepthStream( depthStreamPath ) );
-	pipeline.reset( new Pipeline( cameraParams, atoi( argv[ 2 ] ), 4.0f, 0.04f ) );
+	pipeline.reset( new Pipeline( cameraParams, atoi( argv[ 2 ] ), 4.0f, 0.03f ) );
 
 	glutMainLoop();
 

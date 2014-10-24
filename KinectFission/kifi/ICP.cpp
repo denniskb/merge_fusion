@@ -22,15 +22,23 @@ util::float4x4 ICP::Align
 {
 	util::chrono::stop_watch sw;
 
+	m_validSynthPoints.clear();
+	for( std::size_t i = 0, step_size = synthPointCloud.size() / nPoints + 1; i < synthPointCloud.size(); i += step_size )
+		if( ! isnan( synthPointCloud[ i ].normal ) )
+			m_validSynthPoints.push_back( synthPointCloud[ i ] );
+
+	if( m_validSynthPoints.empty() )
+		return rawEyeToWorldGuess;
+
+
 	util::float4x4 result = rawEyeToWorldGuess;
 	
 	for( int i = 0; i < 7; i++ )
 		result = AlignStep
 		(
 			rawDepthMap, result,
-			synthPointCloud,
-			cameraParams,
-			nPoints
+			m_validSynthPoints, m_assocs,
+			cameraParams
 		) * result;
 
 	sw.take_time( "ICP (7 iterations)" );
@@ -41,24 +49,22 @@ util::float4x4 ICP::Align
 
 
 
+// TODO: Split into multiple functions: 1. Find associations, 2. Compute transformation
+// static
 util::float4x4 ICP::AlignStep
 (
 	util::vector2d< float > const & rawDepthMap,
 	util::float4x4 const & rawEyeToWorldGuess,
 		
 	std::vector< VertexPositionNormal > const & synthPointCloud,
+	std::vector< std::pair< util::float3, util::float3 > > tmpAssocs,
 
-	DepthSensorParams const & cameraParams,
-	std::size_t nPoints
+	DepthSensorParams const & cameraParams
 )
 {
 	using namespace util;
 
-	if( 0 == synthPointCloud.size() || 0 == nPoints )
-		return float4x4::identity();
-
-	m_assocs.clear();
-	m_assocs.resize( std::min( synthPointCloud.size(), nPoints ) );
+	tmpAssocs.resize( synthPointCloud.size() );
 
 	float4x4 srcWorldToClip = cameraParams.EyeToClipRH() * invert_transform( rawEyeToWorldGuess );
 
@@ -81,15 +87,9 @@ util::float4x4 ICP::AlignStep
 	float3 srcMedianSum( 0.0f );
 	float3 dstMedianSum( 0.0f );
 
-	std::size_t step_size = synthPointCloud.size() / nPoints + 1;
-	nPoints = 0;
-	for( std::size_t i = 0; i < synthPointCloud.size(); i += step_size )
+	std::size_t nAssocs = 0;
+	for( VertexPositionNormal synth : synthPointCloud )
 	{
-		VertexPositionNormal synth = synthPointCloud[ i ];
-
-		if( isnan( synth.normal ) )
-			continue;
-
 		float2 uv = homogenize( srcWorldToClip * float4( synth.position, 1.0f ) ).xy();
 
 		int u = (int) ( uv.x() * halfWidth + halfWidth );
@@ -123,30 +123,29 @@ util::float4x4 ICP::AlignStep
 
 		float3 dst = src - dot( diff, synth.normal ) * synth.normal;
 
-		m_assocs[ nPoints ].first  = src;
-		m_assocs[ nPoints ].second = dst;
-		++nPoints;
+		tmpAssocs[ nAssocs ].first  = src;
+		tmpAssocs[ nAssocs ].second = dst;
+		++nAssocs;
 
 		srcMedianSum += src;
 		dstMedianSum += dst;
 	}
 	
-	if( 0 == nPoints )
+	if( 0 == nAssocs )
 		return float4x4::identity();
 	
-	float3 srcMedian = (float3) srcMedianSum / (float) nPoints;
-	float3 dstMedian = (float3) dstMedianSum / (float) nPoints;
+	float3 srcMedian = (float3) srcMedianSum / (float) nAssocs;
+	float3 dstMedian = (float3) dstMedianSum / (float) nAssocs;
 
 	float
-	//kahan_sum< float >
 		Sxx( 0.0f ), Sxy( 0.0f ), Sxz( 0.0f ),
 		Syx( 0.0f ), Syy( 0.0f ), Syz( 0.0f ),
 		Szx( 0.0f ), Szy( 0.0f ), Szz( 0.0f );
 
-	for( std::size_t i = 0; i < nPoints; ++i )
+	for( std::size_t i = 0; i < nAssocs; ++i )
 	{
-		float3 src = m_assocs[ i ].first;
-		float3 dst = m_assocs[ i ].second;
+		float3 src = tmpAssocs[ i ].first;
+		float3 dst = tmpAssocs[ i ].second;
 
 		src -= srcMedian;
 		dst -= dstMedian;

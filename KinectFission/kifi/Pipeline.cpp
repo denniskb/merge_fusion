@@ -17,6 +17,8 @@ Pipeline::Pipeline
 	m_camParams( cameraParams ),
 	m_eyeToWorld( util::float4x4::identity() )
 {
+	// HACK
+	m_eyeToWorld.cols[ 3 ].z() += 2.0f;
 }
 
 
