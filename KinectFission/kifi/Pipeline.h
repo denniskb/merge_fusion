@@ -43,7 +43,6 @@ private:
 	util::float4x4 m_eyeToWorld;
 
 	std::vector< VertexPositionNormal > m_tmpSynthPointCloud;
-	util::vector2d< util::float4 > m_rawPCL;
 };
 
 } // namespace

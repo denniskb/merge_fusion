@@ -74,7 +74,7 @@ util::float4x4 ICP::AlignStep
 		1.0f / cameraParams.FocalLengthNorm().y()
 	);
 
-	float2 ppOverFl = -cameraParams.PrincipalPointNorm() * flInv;
+	float2 ppOverFlNeg = -cameraParams.PrincipalPointNorm() * flInv;
 
 	float3 srcMedianSum( 0.0f );
 	float3 dstMedianSum( 0.0f );
@@ -84,25 +84,19 @@ util::float4x4 ICP::AlignStep
 	{
 		float2 uv = homogenize( srcWorldToClip * float4( synth.position, 1.0f ) ).xy();
 
-		if( uv.x() < -1.0f || uv.x() >= 1.0f ||
-			uv.y() < -1.0f || uv.y() >= 1.0f )
+		if( clipped( uv ) )
 			continue;
 
-		uv = uv * 0.5f + 0.5f;
+		uv = clip2norm( uv );
+		int2 xy = clipNorm2Screen( uv, cameraParams.ResolutionPixels() );
 
-		float depth = rawDepthMap( (int) (uv.x() * rawDepthMap.width()), (int) (rawDepthMap.height() - 1 - uv.y() * rawDepthMap.height()) );
+		float depth = rawDepthMap( xy.x(), xy.y() );
 		if( 0.0f == depth )
 			continue;
 
 		float3 src = ( 
 			rawEyeToWorldGuess *
-			float4
-			(
-				(uv.x() * flInv.x() + ppOverFl.x()) * depth,
-				(uv.y() * flInv.y() + ppOverFl.y()) * depth,
-				-depth, 
-				1.0f
-			)
+			float4( clipNorm2Eye( uv, flInv, ppOverFlNeg, depth ), 1.0f )
 		).xyz();
 
 		// refine using compatibility and weighting, also stop on error threshold/count

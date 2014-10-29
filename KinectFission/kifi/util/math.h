@@ -189,31 +189,39 @@ inline vector operator* ( matrix m, vector v );
 
 // vector
 
+template< typename T >					    
+inline vec< T, 2 >           clip2norm      ( vec< T, 2 > const & uv );
 template< typename T >
-inline vec< T, 3 >           cross         ( vec< T, 3 > const & a, vec< T, 3 > const & b );
-// returns ( cross( a.xyz(), b.xyz() ), 0 )
+inline vec< T, 3 >           clipNorm2Eye   ( vec< T, 2 > const & uv, vec< T, 2 > const & flInv, vec< T, 2 > const & ppOverFl, T depth );
 template< typename T >
-inline vec< T, 4 >           cross         ( vec< T, 4 > const & a, vec< T, 4 > const & b );
-template< typename T, int N >
-inline T                     dot           ( vec< T, N > const & a, vec< T, N > const & b );
+inline vec< int, 2 >         clipNorm2Screen( vec< T, 2 > const & uv, vec< int, 2 > resolution );
 template< typename T >
-inline vec< T, 4 >           homogenize    ( vec< T, 4 > const & a );
-template< typename T, int N >
-inline bool                  is_nan        ( vec< T, N > const & a );
-template< typename T, int N >
-inline double                length        ( vec< T, N > const & a );
-template< int N >
-inline float                 length        ( vec< float, N > const & a );
-template< int N >
-inline long double           length        ( vec< long double, N > const & a );
-template< typename T, int N >
-inline T                     length_squared( vec< T, N > const & a );
-template< typename T, int N >
-inline vec< double, N >      normalize     ( vec< T, N > const & a );
-template< int N >
-inline vec< float, N >       normalize     ( vec< float, N > const & a );
-template< int N >
-inline vec< long double, N > normalize     ( vec< long double, N > const & a );
+inline bool                  clipped        ( vec< T, 2 > const & uv );
+template< typename T >
+inline vec< T, 3 >           cross          ( vec< T, 3 > const & a, vec< T, 3 > const & b );
+// returns ( cross( a.xyz(), b.xyz() ), 0 ) 
+template< typename T >					    
+inline vec< T, 4 >           cross          ( vec< T, 4 > const & a, vec< T, 4 > const & b );
+template< typename T, int N >			    
+inline T                     dot            ( vec< T, N > const & a, vec< T, N > const & b );
+template< typename T >					    
+inline vec< T, 4 >           homogenize     ( vec< T, 4 > const & a );
+template< typename T, int N >			    
+inline bool                  is_nan         ( vec< T, N > const & a );
+template< typename T, int N >			    
+inline double                length         ( vec< T, N > const & a );
+template< int N >						    
+inline float                 length         ( vec< float, N > const & a );
+template< int N >						    
+inline long double           length         ( vec< long double, N > const & a );
+template< typename T, int N >			    
+inline T                     length_squared ( vec< T, N > const & a );
+template< typename T, int N >			    
+inline vec< double, N >      normalize      ( vec< T, N > const & a );
+template< int N >						    
+inline vec< float, N >       normalize      ( vec< float, N > const & a );
+template< int N >						    
+inline vec< long double, N > normalize      ( vec< long double, N > const & a );
 
 // matrix
 
@@ -827,13 +835,13 @@ vec< long double, N > & operator/=( vec< long double, N > & a, long double b )
 // scalar op vector
 
 template< typename T, int N >
-inline vec< T, N > operator+( T a, vec< T, N > const & b )
+vec< T, N > operator+( T a, vec< T, N > const & b )
 {
 	return b + a;
 }
 
 template< typename T, int N >
-inline vec< T, N > operator-( T a, vec< T, N > const & b )
+vec< T, N > operator-( T a, vec< T, N > const & b )
 {
 	vec< T, N > result;
 
@@ -844,13 +852,13 @@ inline vec< T, N > operator-( T a, vec< T, N > const & b )
 }
 
 template< typename T, int N >
-inline vec< T, N > operator*( T a, vec< T, N > const & b )
+vec< T, N > operator*( T a, vec< T, N > const & b )
 {
 	return b * a;
 }
 
 template< typename T, int N >
-inline vec< T, N > operator/( T a, vec< T, N > const & b )
+vec< T, N > operator/( T a, vec< T, N > const & b )
 {
 	vec< T, N > result;
 
@@ -917,7 +925,44 @@ vector operator*( matrix m, vector v )
 // vector
 
 template< typename T >
-inline vec< T, 3 > cross( vec< T, 3 > const & a, vec< T, 3 > const & b )
+vec< T, 2 > clip2norm( vec< T, 2 > const & uv )
+{
+	return uv * (T) 0.5 + (T) 0.5;
+}
+
+template< typename T >
+vec< T, 3 > clipNorm2Eye( vec< T, 2 > const & uv, vec< T, 2 > const & flInv, vec< T, 2 > const & ppOverFlNeg, T depth )
+{
+	vec< T, 2 > tmp = (uv * flInv + ppOverFlNeg) * depth;
+
+	return vec< T, 3 >
+	(
+		tmp.x(),
+		tmp.y(),
+		-depth
+	);
+}
+
+template< typename T >
+vec< int, 2 > clipNorm2Screen( vec< T, 2 > const & uv, vec< int, 2 > resolution )
+{
+	return int2
+	(
+		(int) ( uv.x() * resolution.x() ), 
+		(int) ( resolution.y() - 1 - uv.y() * resolution.y() )
+	);
+}
+
+template< typename T >
+bool clipped( vec< T, 2 > const & uv )
+{
+	return
+		uv.x() < (T) -1.0 || uv.x() >= (T) 1.0 ||
+		uv.y() < (T) -1.0 || uv.y() >= (T) 1.0;
+}
+
+template< typename T >
+vec< T, 3 > cross( vec< T, 3 > const & a, vec< T, 3 > const & b )
 {
 	return vec< T, 3 >
 	(
@@ -928,7 +973,7 @@ inline vec< T, 3 > cross( vec< T, 3 > const & a, vec< T, 3 > const & b )
 }
 
 template< typename T >
-inline vec< T, 4 > cross( vec< T, 4 > const & a, vec< T, 4 > const & b )
+vec< T, 4 > cross( vec< T, 4 > const & a, vec< T, 4 > const & b )
 {
 	return vec< T, 4 >
 	(
@@ -940,7 +985,7 @@ inline vec< T, 4 > cross( vec< T, 4 > const & a, vec< T, 4 > const & b )
 }
 
 template< typename T, int N >
-inline T dot( vec< T, N > const & a, vec< T, N > const & b )
+T dot( vec< T, N > const & a, vec< T, N > const & b )
 {
 	T result = T();
 
@@ -951,13 +996,13 @@ inline T dot( vec< T, N > const & a, vec< T, N > const & b )
 }
 
 template< typename T >
-inline T dot( vec< T, 4 > const & a, vec< T, 4 > const & b )
+T dot( vec< T, 4 > const & a, vec< T, 4 > const & b )
 {
 	return ( a.x() * b.x() + a.y() * b.y() ) + ( a.z() * b.z() + a.w() * b.w() );
 }
 
 template< typename T >
-inline vec< T, 4 > homogenize( vec< T, 4 > const & a )
+vec< T, 4 > homogenize( vec< T, 4 > const & a )
 {
 	return a / a.w();
 }
@@ -974,43 +1019,43 @@ bool isnan( vec< T, N > const & a )
 }
 
 template< typename T, int N >
-inline double length( vec< T, N > const & a )
+double length( vec< T, N > const & a )
 {
 	return std::sqrt( length_squared( a ) );
 }
 
 template< int N >
-inline float length( vec< float, N > const & a )
+float length( vec< float, N > const & a )
 {
 	return std::sqrt( length_squared( a ) );
 }
 
 template< int N >
-inline long double length( vec< long double, N > const & a )
+long double length( vec< long double, N > const & a )
 {
 	return std::sqrt( length_squared( a ) );
 }
 
 template< typename T, int N >
-inline T length_squared( vec< T, N > const & a )
+T length_squared( vec< T, N > const & a )
 {
 	return dot( a, a );
 }
 
 template< typename T, int N >
-inline vec< double, N > normalize( vec< T, N > const & a )
+vec< double, N > normalize( vec< T, N > const & a )
 {
 	return (vec< double, N >) a / length( a );
 }
 
 template< int N >
-inline vec< float, N > normalize( vec< float, N > const & a )
+vec< float, N > normalize( vec< float, N > const & a )
 {
 	return a / length( a );
 }
 
 template< int N >
-inline vec< long double, N > normalize( vec< long double, N > const & a )
+vec< long double, N > normalize( vec< long double, N > const & a )
 {
 	return a / length( a );
 }

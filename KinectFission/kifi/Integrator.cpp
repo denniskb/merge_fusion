@@ -104,7 +104,7 @@ std::size_t Integrator::DepthMap2PointCloud
 		0.0f, 
 		0.0f
 	) * flInv;
-	vector maxIndex = set( (float) (volume.Resolution() - 1 ) );
+	vector maxIndex = set( (float) (volume.Resolution() - 2 ) );
 
 	vector mask0001 = set( 0.0f, 0.0f, 0.0f, 1.0f );
 	vector half = set( 0.5f );

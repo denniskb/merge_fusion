@@ -17,14 +17,6 @@ public:
 		util::vector2d< unsigned short > const & inMillimeters,
 		util::vector2d< float > & outMeters
 	);
-
-	static void DepthToPCL
-	( 
-		util::vector2d< float > const & depthMap,
-		DepthSensorParams const & cameraParams,
-
-		util::vector2d< util::float4 > & outPCL
-	);
 };
 
 } // namespace
