@@ -70,19 +70,11 @@ util::float4x4 ICP::AlignStep
 
 	float2 flInv
 	(
-		1.0f / cameraParams.FocalLengthNorm().x() / cameraParams.ResolutionPixels().x(),
-		1.0f / cameraParams.FocalLengthNorm().y() / cameraParams.ResolutionPixels().y()
+		1.0f / cameraParams.FocalLengthNorm().x(),
+		1.0f / cameraParams.FocalLengthNorm().y()
 	);
 
-	float2 ppOverFl = float2
-	(
-		(0.5f - cameraParams.PrincipalPointNorm().x() * cameraParams.ResolutionPixels().x()),
-		(cameraParams.PrincipalPointNorm().y() * cameraParams.ResolutionPixels().y() - 0.5f)
-	) * flInv;
-	flInv.y() = -flInv.y();
-
-	float halfWidth  = 0.5f * rawDepthMap.width();
-	float halfHeight = 0.5f * rawDepthMap.height();
+	float2 ppOverFl = -cameraParams.PrincipalPointNorm() * flInv;
 
 	float3 srcMedianSum( 0.0f );
 	float3 dstMedianSum( 0.0f );
@@ -92,14 +84,13 @@ util::float4x4 ICP::AlignStep
 	{
 		float2 uv = homogenize( srcWorldToClip * float4( synth.position, 1.0f ) ).xy();
 
-		int u = (int) ( uv.x() * halfWidth + halfWidth );
-		int v = (int) rawDepthMap.height() - 1 - (int) ( uv.y() * halfHeight + halfHeight );
-
-		if( u < 0 || u >= rawDepthMap.width() ||
-			v < 0 || v >= rawDepthMap.height() )
+		if( uv.x() < -1.0f || uv.x() >= 1.0f ||
+			uv.y() < -1.0f || uv.y() >= 1.0f )
 			continue;
 
-		float depth = rawDepthMap( u, v );
+		uv = uv * 0.5f + 0.5f;
+
+		float depth = rawDepthMap( (int) (uv.x() * rawDepthMap.width()), (int) (rawDepthMap.height() - 1 - uv.y() * rawDepthMap.height()) );
 		if( 0.0f == depth )
 			continue;
 
@@ -107,8 +98,8 @@ util::float4x4 ICP::AlignStep
 			rawEyeToWorldGuess *
 			float4
 			(
-				( u * flInv.x() + ppOverFl.x() ) * depth,
-				( v * flInv.y() + ppOverFl.y() ) * depth,
+				(uv.x() * flInv.x() + ppOverFl.x()) * depth,
+				(uv.y() * flInv.y() + ppOverFl.y()) * depth,
 				-depth, 
 				1.0f
 			)

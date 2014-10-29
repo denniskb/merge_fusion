@@ -17,5 +17,6 @@
     <ClCompile Include="util\functional.cpp" />
     <ClCompile Include="util\iterator.cpp" />
     <ClCompile Include="Mesher.cpp" />
+    <ClCompile Include="DepthSensorParams.cpp" />
   </ItemGroup>
 </Project>

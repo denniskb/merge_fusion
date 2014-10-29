@@ -25,6 +25,7 @@
     <ClInclude Include="DepthSensorParams.h" />
     <ClInclude Include="Pipeline.h" />
     <ClInclude Include="ICP.h" />
+    <ClInclude Include="DepthMapUtils.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="util\barrier.cpp" />
@@ -40,5 +41,6 @@
     <ClCompile Include="DepthSensorParams.cpp" />
     <ClCompile Include="Pipeline.cpp" />
     <ClCompile Include="ICP.cpp" />
+    <ClCompile Include="DepthMapUtils.cpp" />
   </ItemGroup>
 </Project>

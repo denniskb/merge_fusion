@@ -1857,8 +1857,16 @@ static void intensity_to_rgb( unsigned mm, unsigned minmm, unsigned maxmm, unsig
 	b = (unsigned char) (z * 255.0f);
 }
 
+float fastexp( float x )
+{
+  x = 1.0f + x / 256.0f;
+
+  return ( (x * x) * (x * x) ) * ( (x * x) * (x * x) );
+}
+
 static unsigned short s_buffer[ 512 * 424 ];
 static unsigned short s_buffer2[ 512 * 424 ];
+static float3 s_pcl[ 512 * 424 ];
 
 /// <summary>
 /// Handle new depth data
@@ -1897,20 +1905,31 @@ void CDepthBasics::ProcessDepth(INT64 nTime, UINT16* pBuffer, int nWidth, int nH
 			fwrite( s_buffer, 2, nWidth * nHeight, m_pDepthStream );
 		}
 
-		// Bilateral filter
-		int const kernel = 2;
-		float euclidean[ (2 * kernel + 1) * (2 * kernel + 1) ];
-
-		for( int j = -kernel; j <= kernel; j++ )
-			for( int i = -kernel; i <= kernel; i++ )
+		// depth to pcl
+		for( int y = 0; y < nHeight - 1; y++ )
+			for( int x = 0; x < nWidth - 1; x++ )
 			{
-				int idx = i + kernel + (j + kernel) * (2 * kernel + 1);
-				euclidean[ idx ] = 1.0f / exp( sqrtf( i*i + j*j ) );
+				int idx = x + y * nWidth;
+
+				int self  = s_buffer[ idx ];
+
+				s_pcl[ idx ] = float3
+				(
+					(x - 255.5f) / 369.21f * self,
+					(211.5f - y) / 369.21f * self,
+					self
+				);
+
 			}
 
+		// Bilateral filter
+		int   const kernel = 2;
+		float const dfmm   = 0.4f;
 		for( int y = 0; y < nHeight; y++ )
 			for( int x = 0; x < nWidth; x++ )
 			{
+				int idx = x + y * nWidth;
+
 				int xmin = maximum( 0, x - kernel );
 				int xmax = minimum( nWidth - 1, x + kernel );
 
@@ -1920,22 +1939,23 @@ void CDepthBasics::ProcessDepth(INT64 nTime, UINT16* pBuffer, int nWidth, int nH
 				float intensity  = 0.0f;
 				float sumWeights = 0.0f;
 
-				if( s_buffer[ x + y * nWidth ] )
+				float3 self = s_pcl[ idx ];
+				if( self.z() > 0.0f )
 				for( int j = ymin; j <= ymax; j++ )
 					for( int i = xmin; i <= xmax; i++ )
 					{
-						float tmp = s_buffer[ i + j * nWidth ];
+						int index = i + j * nWidth;
 
-						float weight = euclidean[ i - x + kernel + (j - y + kernel) * (2 * kernel + 1) ];
+						float weight = 1.0f / fastexp( length( self - s_pcl[ index ] ) * dfmm );
 
-						intensity += weight * tmp;
-						sumWeights += weight * (tmp != 0.0f);
+						intensity += weight * s_buffer[ index ];
+						sumWeights += weight * (s_buffer[ index ] != 0.0f);
 					}
 
 				sumWeights += sumWeights == 0.0f;
 				intensity /= sumWeights;
 
-				s_buffer2[ x + y * nWidth ] = (unsigned short) intensity;
+				s_buffer2[ idx ] = (unsigned short) intensity;
 			}
 
 		// Visualize

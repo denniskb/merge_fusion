@@ -73,6 +73,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="DepthSensorParams.cpp" />
     <ClCompile Include="DepthStream.cpp" />
     <ClCompile Include="Integrator.cpp" />
     <ClCompile Include="main.cpp" />

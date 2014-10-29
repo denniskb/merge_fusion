@@ -87,6 +87,7 @@
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="DepthMapUtils.h" />
     <ClInclude Include="DepthSensorParams.h" />
     <ClInclude Include="DepthStream.h" />
     <ClInclude Include="ICP.h" />
@@ -113,6 +114,7 @@
     <ClInclude Include="Voxel.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="DepthMapUtils.cpp" />
     <ClCompile Include="DepthSensorParams.cpp" />
     <ClCompile Include="DepthStream.cpp" />
     <ClCompile Include="ICP.cpp" />

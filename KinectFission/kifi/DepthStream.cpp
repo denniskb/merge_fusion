@@ -6,6 +6,7 @@
 #include <kifi/util/fstream.h>
 #include <kifi/util/vector2d.h>
 
+#include <kifi/DepthMapUtils.h>
 #include <kifi/DepthStream.h>
 
 
@@ -39,6 +40,11 @@ DepthStream::DepthStream( std::string const & fileName ) :
 		m_file.read( reinterpret_cast< char * >( & m_frameWidth ), 4 );
 		m_file.read( reinterpret_cast< char * >( & m_frameHeight ), 4 );
 		m_file.read( reinterpret_cast< char * >( & m_texelType ), 4 );
+
+		assert( m_frameWidth  > 0 );
+		assert( m_frameHeight > 0 );
+		assert( SHORT == m_texelType || FLOAT == m_texelType );
+
 		break;
 
 	default:
@@ -78,22 +84,9 @@ bool DepthStream::NextFrame
 		break;
 
 	case SHORT:
-		{
-			m_file.read( reinterpret_cast< char * >( m_bufferedDepth.data() ), m_bufferedDepth.size() * 2 );
-			unsigned * in = reinterpret_cast< unsigned * >( m_bufferedDepth.data() );
-
-			for( std::size_t i = 0, size = m_bufferedDepth.size() / 2; i < size; ++i )
-			{
-				// little endian
-				outFrame[ 2 * i ] = ( in[ i ] & 0xffff ) * 0.001f;
-				outFrame[ 2 * i + 1 ] = ( in[ i ] >> 16 ) * 0.001f;
-			}
-		}
+		m_file.read( reinterpret_cast< char * >( m_bufferedDepth.data() ), m_bufferedDepth.size() * 2 );
+		DepthMapUtils::MillimetersToMeters( m_bufferedDepth, outFrame );
 		break;
-
-	default:
-		assert( false );
-		return false;
 	}
 
 	++m_iFrame;

@@ -36,7 +36,7 @@ private:
 	int m_nFrames;
 	int m_iFrame;
 
-	util::vector2d< short > m_bufferedDepth;
+	util::vector2d< unsigned short > m_bufferedDepth;
 
 	DepthStream( DepthStream const & copy );
 	DepthStream & operator=( DepthStream rhs );

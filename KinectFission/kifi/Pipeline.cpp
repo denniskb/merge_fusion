@@ -1,3 +1,6 @@
+#include <kifi/util/stop_watch.h>
+
+#include <kifi/DepthMapUtils.h>
 #include <kifi/Pipeline.h>
 
 
@@ -25,6 +28,13 @@ Pipeline::Pipeline
 
 void Pipeline::Integrate( util::vector2d< float > const & rawDepthMap, std::size_t nPoints )
 {
+	util::chrono::stop_watch sw;
+	
+	DepthMapUtils::DepthToPCL( rawDepthMap, m_camParams, m_rawPCL );
+	
+	sw.take_time( "tDepthMapProcessing" );
+	sw.print_times();
+
 	if( ! m_tmpSynthPointCloud.empty() )
 		m_eyeToWorld = m_icp.Align( rawDepthMap, m_eyeToWorld, m_tmpSynthPointCloud, m_camParams, nPoints );
 
