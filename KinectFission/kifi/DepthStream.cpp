@@ -85,7 +85,7 @@ bool DepthStream::NextFrame
 
 	case SHORT:
 		m_file.read( reinterpret_cast< char * >( m_bufferedDepth.data() ), m_bufferedDepth.size() * 2 );
-		DepthMapUtils::MillimetersToMeters( m_bufferedDepth, outFrame );
+		DepthMapUtils::Millimeters2Meters( m_bufferedDepth, outFrame );
 		break;
 	}
 

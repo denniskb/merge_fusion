@@ -33,7 +33,7 @@ Volume::Volume
 
 	float vlenInv = 1.0f / m_tmpVoxelLenf;
 	m_tmpVoxelLenInv = util::set( vlenInv, vlenInv, vlenInv, 1.0f );
-	m_tmpMinOverNegVoxelLen = m_tmpVoxelLenInv * util::set( -Minimum().x(), -Minimum().x(), -Minimum().x(), 0.0f );
+	m_tmpMinOverNegVoxelLen = m_tmpVoxelLenInv * util::load( util::float4( -Minimum().xyz(), 0.0f ) );
 }
 
 

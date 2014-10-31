@@ -190,56 +190,56 @@ inline vector operator* ( matrix m, vector v );
 // vector
 
 template< typename T >					    
-inline vec< T, 2 >           clip2norm      ( vec< T, 2 > const & uv );
+vec< T, 2 >           clip2norm      ( vec< T, 2 > const & uv );
 template< typename T >
-inline vec< T, 3 >           clipNorm2Eye   ( vec< T, 2 > const & uv, vec< T, 2 > const & flInv, vec< T, 2 > const & ppOverFl, T depth );
+vec< T, 3 >           clipNorm2Eye   ( vec< T, 2 > const & uv, vec< T, 2 > const & flInv, vec< T, 2 > const & ppOverFl, T depth );
 template< typename T >
-inline vec< int, 2 >         clipNorm2Screen( vec< T, 2 > const & uv, vec< int, 2 > resolution );
+vec< int, 2 >         clipNorm2Screen( vec< T, 2 > const & uv, vec< int, 2 > resolution );
 template< typename T >
-inline bool                  clipped        ( vec< T, 2 > const & uv );
+bool                  clipped        ( vec< T, 2 > const & uv );
 template< typename T >
-inline vec< T, 3 >           cross          ( vec< T, 3 > const & a, vec< T, 3 > const & b );
+vec< T, 3 >           cross          ( vec< T, 3 > const & a, vec< T, 3 > const & b );
 // returns ( cross( a.xyz(), b.xyz() ), 0 ) 
 template< typename T >					    
-inline vec< T, 4 >           cross          ( vec< T, 4 > const & a, vec< T, 4 > const & b );
+vec< T, 4 >           cross          ( vec< T, 4 > const & a, vec< T, 4 > const & b );
 template< typename T, int N >			    
-inline T                     dot            ( vec< T, N > const & a, vec< T, N > const & b );
+T                     dot            ( vec< T, N > const & a, vec< T, N > const & b );
 template< typename T >					    
-inline vec< T, 4 >           homogenize     ( vec< T, 4 > const & a );
+vec< T, 4 >           homogenize     ( vec< T, 4 > const & a );
 template< typename T, int N >			    
-inline bool                  is_nan         ( vec< T, N > const & a );
+bool                  is_nan         ( vec< T, N > const & a );
 template< typename T, int N >			    
-inline double                length         ( vec< T, N > const & a );
+double                length         ( vec< T, N > const & a );
 template< int N >						    
-inline float                 length         ( vec< float, N > const & a );
+float                 length         ( vec< float, N > const & a );
 template< int N >						    
-inline long double           length         ( vec< long double, N > const & a );
+long double           length         ( vec< long double, N > const & a );
 template< typename T, int N >			    
-inline T                     length_squared ( vec< T, N > const & a );
+T                     length_squared ( vec< T, N > const & a );
 template< typename T, int N >			    
-inline vec< double, N >      normalize      ( vec< T, N > const & a );
+vec< double, N >      normalize      ( vec< T, N > const & a );
 template< int N >						    
-inline vec< float, N >       normalize      ( vec< float, N > const & a );
+vec< float, N >       normalize      ( vec< float, N > const & a );
 template< int N >						    
-inline vec< long double, N > normalize      ( vec< long double, N > const & a );
+vec< long double, N > normalize      ( vec< long double, N > const & a );
 
 // matrix
 
 // Computes Eigenvectors of a symmetric matrix m.
 // Eigenvectors are stored in the columns of 'outEigenVectors'. 'm' and 'outEigenVectors' are allowed to be identical.
 template< typename T, int N >
-inline void           eigen           ( mat< T, N, N > const & m, vec< T, N > & outEigenValues, mat< T, N, N > & outEigenVectors );
+void           eigen           ( mat< T, N, N > const & m, vec< T, N > & outEigenValues, mat< T, N, N > & outEigenVectors );
 template< typename T >
-inline mat< T, 4, 4 > invert_transform( mat< T, 4, 4 > const & tR );
+mat< T, 4, 4 > invert_transform( mat< T, 4, 4 > const & tR );
 template< typename T, int R, int C >
-inline mat< T, C, R > transpose       ( mat< T, R, C > const & m );
+mat< T, C, R > transpose       ( mat< T, R, C > const & m );
 
 // SSE
 
 inline int    all           ( vector v );
 inline int    any           ( vector v );
 template< int index >	      
-inline vector broadcast     ( vector v );
+vector        broadcast     ( vector v );
 inline vector dot           ( vector u, vector v );
 inline vector homogenize    ( vector v );
 inline vector length        ( vector v );
@@ -254,7 +254,7 @@ inline vector normalize     ( vector v );
 inline vector set           ( float s );
 inline vector set           ( float x, float y, float z, float w );
 template< int a0, int a1, int b0, int b1 >
-inline vector shuffle       ( vector a, vector b );
+vector        shuffle       ( vector a, vector b );
 inline float4 store         ( vector src );
 inline void   store         ( float * dst, vector src );
 inline void   storeu        ( float * dst, vector src );
@@ -265,6 +265,8 @@ inline vector zero          ();
 
 template< typename T >
 T               clamp   ( T x, T a, T b );
+template< typename T >
+T               exp256  ( T x );
 template< typename T, typename U >
 T               lerp    ( T a, T b, U weightB );
 inline unsigned	pack    ( unsigned x, unsigned y, unsigned z );
@@ -933,6 +935,8 @@ vec< T, 2 > clip2norm( vec< T, 2 > const & uv )
 template< typename T >
 vec< T, 3 > clipNorm2Eye( vec< T, 2 > const & uv, vec< T, 2 > const & flInv, vec< T, 2 > const & ppOverFlNeg, T depth )
 {
+	assert( depth >= (T) 0 );
+
 	vec< T, 2 > tmp = (uv * flInv + ppOverFlNeg) * depth;
 
 	return vec< T, 3 >
@@ -1390,6 +1394,14 @@ template< typename T >
 T clamp( T x, T a, T b )
 {
 	return std::max( a, std::min( x, b ) );
+}
+
+template< typename T >
+T exp256( T x )
+{
+	x = (T) 1 + x / (T) 256;
+
+	return ( (x * x) * (x * x) ) * ( (x * x) * (x * x) );
 }
 
 template< typename T, typename U >

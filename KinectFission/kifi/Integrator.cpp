@@ -92,8 +92,8 @@ std::size_t Integrator::DepthMap2PointCloud
 
 	vector flInv = set
 	(
-		1.0f / cameraParams.FocalLengthNorm().x() / cameraParams.ResolutionPixels().x(),
-		1.0f / cameraParams.FocalLengthNorm().y() / cameraParams.ResolutionPixels().y(),
+		1.0f / ( cameraParams.FocalLengthNorm().x() * cameraParams.ResolutionPixels().x() ),
+		1.0f / ( cameraParams.FocalLengthNorm().y() * cameraParams.ResolutionPixels().y() ),
 		1.0f, 1.0f 
 	);
 

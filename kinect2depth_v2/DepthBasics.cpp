@@ -1905,26 +1905,9 @@ void CDepthBasics::ProcessDepth(INT64 nTime, UINT16* pBuffer, int nWidth, int nH
 			fwrite( s_buffer, 2, nWidth * nHeight, m_pDepthStream );
 		}
 
-		// depth to pcl
-		for( int y = 0; y < nHeight - 1; y++ )
-			for( int x = 0; x < nWidth - 1; x++ )
-			{
-				int idx = x + y * nWidth;
-
-				int self  = s_buffer[ idx ];
-
-				s_pcl[ idx ] = float3
-				(
-					(x - 255.5f) / 369.21f * self,
-					(211.5f - y) / 369.21f * self,
-					self
-				);
-
-			}
-
 		// Bilateral filter
 		int   const kernel = 2;
-		float const dfmm   = 0.4f;
+		float const dfmm   = 0.8f;
 		for( int y = 0; y < nHeight; y++ )
 			for( int x = 0; x < nWidth; x++ )
 			{
@@ -1939,14 +1922,21 @@ void CDepthBasics::ProcessDepth(INT64 nTime, UINT16* pBuffer, int nWidth, int nH
 				float intensity  = 0.0f;
 				float sumWeights = 0.0f;
 
-				float3 self = s_pcl[ idx ];
-				if( self.z() > 0.0f )
+				//float3 self = s_pcl[ idx ];
+				int self = s_buffer[ idx ];
+				float pxSize = self * (1.0f / 369.21f);
+				pxSize *= pxSize;
+				if( self )
 				for( int j = ymin; j <= ymax; j++ )
 					for( int i = xmin; i <= xmax; i++ )
 					{
 						int index = i + j * nWidth;
 
-						float weight = 1.0f / fastexp( length( self - s_pcl[ index ] ) * dfmm );
+						int dx = i - x;
+						int dy = j - y;
+						int dz = self - s_buffer[ index ];
+
+						float weight = 1.0f / fastexp( sqrtf( (dx*dx + dy*dy) * pxSize + dz*dz ) * dfmm );
 
 						intensity += weight * s_buffer[ index ];
 						sumWeights += weight * (s_buffer[ index ] != 0.0f);
@@ -1989,25 +1979,24 @@ void CDepthBasics::ProcessDepth(INT64 nTime, UINT16* pBuffer, int nWidth, int nH
 				(
 					(x - 255.5f) / 369.21f * self,
 					(211.5f - y) / 369.21f * self,
-					self
+					-self
 				);
 
 				float3 pright
 				(
 					(x - 254.5f) / 369.21f * right,
 					(211.5f - y) / 369.21f * right,
-					right
+					-right
 				);
 
 				float3 pdown
 				(
 					(x - 255.5f) / 369.21f * down,
 					(210.5f - y) / 369.21f * down,
-					down
+					-down
 				);
 
-				float3 n = normalize( cross( pright - pself, pdown - pself ) );
-				n.z() = -n.z();
+				float3 n = normalize( cross( pdown - pself, pright - pself ) );
 				n = n * 0.5f + 0.5f;
 
 				color.rgbRed   = n.x() * 255;
