@@ -146,9 +146,9 @@ void Mesher::Generate( Volume const & volume, std::vector< VertexPositionNormal 
 
 		util::float3 n = util::normalize( util::float3
 		(
-			voxels[ 1 ].Distance() - dself,
-			voxels[ 2 ].Distance() - dself,
-			voxels[ 4 ].Distance() - dself
+			voxels[ 1 ].SafeDistance() - dself,
+			voxels[ 2 ].SafeDistance() - dself,
+			voxels[ 4 ].SafeDistance() - dself
 		));
 		m_tmpNormals[ i ] = n;
 

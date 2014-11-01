@@ -197,6 +197,7 @@ template< typename T >
 vec< int, 2 >         clipNorm2Screen( vec< T, 2 > const & uv, vec< int, 2 > resolution );
 template< typename T >
 bool                  clipped        ( vec< T, 2 > const & uv );
+inline bool           clipped        ( vec< int, 2 > const & xy, vec< int, 2 > const & resolution );
 template< typename T >
 vec< T, 3 >           cross          ( vec< T, 3 > const & a, vec< T, 3 > const & b );
 // returns ( cross( a.xyz(), b.xyz() ), 0 ) 
@@ -963,6 +964,13 @@ bool clipped( vec< T, 2 > const & uv )
 	return
 		uv.x() < (T) -1.0 || uv.x() >= (T) 1.0 ||
 		uv.y() < (T) -1.0 || uv.y() >= (T) 1.0;
+}
+
+bool clipped( vec< int, 2 > const & xy, vec< int, 2 > const & resolution )
+{
+	return 
+		xy.x() < 0 || xy.x() >= resolution.x() ||
+		xy.y() < 0 || xy.y() >= resolution.y();
 }
 
 template< typename T >

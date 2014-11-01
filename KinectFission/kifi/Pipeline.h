@@ -42,6 +42,8 @@ private:
 	DepthSensorParams m_camParams;
 	util::float4x4 m_eyeToWorld;
 
+	util::vector2d< float > m_smoothDepth;
+	util::vector2d< util::float3 > m_normals;
 	std::vector< VertexPositionNormal > m_tmpSynthPointCloud;
 };
 

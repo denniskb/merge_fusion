@@ -11,6 +11,7 @@ struct Voxel
 	inline Voxel();
 
 	inline float Distance() const;
+	inline float SafeDistance() const;
 	inline float Weight() const;
 
 	inline void Update( float newDistance );
@@ -41,6 +42,11 @@ float Voxel::Distance() const
 	assert( m_weight > 0.0f );
 
 	return m_distance / m_weight;
+}
+
+float Voxel::SafeDistance() const
+{
+	return m_distance / (m_weight + std::numeric_limits< float >::min());
 }
 
 float Voxel::Weight() const

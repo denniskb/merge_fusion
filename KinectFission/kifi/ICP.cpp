@@ -12,6 +12,7 @@ namespace kifi {
 util::float4x4 ICP::Align
 (
 	util::vector2d< float > const & rawDepthMap,
+	util::vector2d< util::float3 > const & rawNormals,
 	util::float4x4 const & rawEyeToWorldGuess,
 		
 	std::vector< VertexPositionNormal > const & synthPointCloud,
@@ -36,7 +37,7 @@ util::float4x4 ICP::Align
 	for( int i = 0; i < 7; i++ )
 		result = AlignStep
 		(
-			rawDepthMap, result,
+			rawDepthMap, rawNormals, result,
 			m_validSynthPoints, m_assocs,
 			cameraParams
 		) * result;
@@ -54,6 +55,7 @@ util::float4x4 ICP::Align
 util::float4x4 ICP::AlignStep
 (
 	util::vector2d< float > const & rawDepthMap,
+	util::vector2d< util::float3 > const & rawNormals,
 	util::float4x4 const & rawEyeToWorldGuess,
 		
 	std::vector< VertexPositionNormal > const & synthPointCloud,
@@ -83,24 +85,31 @@ util::float4x4 ICP::AlignStep
 	for( VertexPositionNormal synth : synthPointCloud )
 	{
 		float2 uv = homogenize( srcWorldToClip * float4( synth.position, 1.0f ) ).xy();
-
-		if( clipped( uv ) )
-			continue;
-
 		uv = clip2norm( uv );
 		int2 xy = clipNorm2Screen( uv, cameraParams.ResolutionPixels() );
+
+		if( clipped( xy, cameraParams.ResolutionPixels() ) )
+			continue;
 
 		float depth = rawDepthMap( xy.x(), xy.y() );
 		if( 0.0f == depth )
 			continue;
+
+		float3 normal = rawNormals( xy.x(), xy.y() );
+		
+		// TODO: Abort if normal invalid!
+		// TODO: Parameterize distance and angle compatibility
+		// TODO: Use weighting and don't integrate ICP outliers!
 
 		float3 src = ( 
 			rawEyeToWorldGuess *
 			float4( clipNorm2Eye( uv, flInv, ppOverFlNeg, depth ), 1.0f )
 		).xyz();
 
-		// refine using compatibility and weighting, also stop on error threshold/count
-		// consider stealing FuSci impl (not as expensive as I thought because A can be computed on the fly) // double check that
+		normal = ( rawEyeToWorldGuess * float4( normal, 0.0f ) ).xyz();
+
+		if( dot( normal, synth.normal ) < 0.7f )
+			continue;
 
 		float3 diff = src - synth.position;
 		if( length_squared( diff ) > 0.01f )
@@ -115,6 +124,8 @@ util::float4x4 ICP::AlignStep
 		srcMedianSum += src;
 		dstMedianSum += dst;
 	}
+
+	std::printf( "%d\n", nAssocs );
 	
 	if( 0 == nAssocs )
 		return float4x4::identity();

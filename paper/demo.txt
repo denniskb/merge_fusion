@@ -1,0 +1,20 @@
+Demo-Prioritaet:
+
+-3D Modell + Foto(s) vom original 
+-Diagramm
+-Video
+
+Questions from Xie:
+
+1. System Requirements 
+- (1) The current experiment PC specification (CPU, memory, Graphics board, etc.)
+- (2) Supported sensor type: RGB? RGB-D? (Kinect 1, Kinect v2, Prime Sensor, etc.)
+- (3) Multiple sensors supported?
+
+2. 3D Reconstruction
+- (1) How the data is acquired? (What kind of movement of sensor while taking image data? It is helpful, if the 3D trajectory of sensor is provided.)
+- (2) How much time to take the image data?
+- (3) How much time to compute the 3D reconstruction?
+
+3. Post processing
+- (1) As the result, is there a closed form 3D model, which is ready for 3D printing, available?

@@ -18,8 +18,8 @@ using namespace kifi::util;
 
 std::unique_ptr< DepthStream > depthStream;
 vector2d< float > synthDepthFrame;
-DepthSensorParams cameraParams( DepthSensorParams::KinectV1Params( KinectDepthSensorResolution640x480, KinectDepthSensorModeNear ) );
-//DepthSensorParams cameraParams( DepthSensorParams::KinectV2Params() );
+//DepthSensorParams cameraParams( DepthSensorParams::KinectV1Params( KinectDepthSensorResolution640x480, KinectDepthSensorModeNear ) );
+DepthSensorParams cameraParams( DepthSensorParams::KinectV2Params() );
 
 std::unique_ptr< Pipeline > pipeline;
 
@@ -42,6 +42,9 @@ void myMouseFunc( int button, int state, int x, int y )
 		{
 			static int iFrame = 0;
 			std::printf( "- Frame %d -\n", iFrame++ );
+
+			if( 540 == iFrame )
+				int debug = 5;
 
 			if( icp )
 				pipeline->Integrate( synthDepthFrame, 10000 );
@@ -144,7 +147,7 @@ int main( int argc, char ** argv )
 		std::sprintf( depthStreamPath, "%s\\%s", workingDirectory, argv[ 1 ] );
 
 	depthStream.reset( new DepthStream( depthStreamPath ) );
-	pipeline.reset( new Pipeline( cameraParams, atoi( argv[ 2 ] ), 4.0f, 0.03f ) );
+	pipeline.reset( new Pipeline( cameraParams, atoi( argv[ 2 ] ), 2.0f, 0.02f ) );
 
 	glutMainLoop();
 

@@ -108,11 +108,11 @@ void DepthMapUtils::BilateralFilter
 }
 
 // static 
-void Depth2Normals
+void DepthMapUtils::Depth2Normals
 (
 	util::vector2d< float > const & depthMeters,
 	DepthSensorParams const & params,
-
+	
 	util::vector2d< util::float3 > & normals
 )
 {
@@ -134,9 +134,9 @@ void Depth2Normals
 	for( int y = 0, yend = (int) depthMeters.height() - 1; y < yend; y++ )
 		for( int x = 0, xend = (int) depthMeters.width() - 1; x < xend; x++ )
 		{
-			float self  = depthMeters( x, y );
-			float right = depthMeters( x + 1, y );
-			float down  = depthMeters( x, y + 1 );
+			float self  = depthMeters( x    , y     );
+			float right = depthMeters( x + 1, y     );
+			float down  = depthMeters( x    , y + 1 );
 
 			if( 0.0f == self || 0.0f == right || 0.0f == down )
 			{

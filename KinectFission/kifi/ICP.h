@@ -19,6 +19,7 @@ public:
 	util::float4x4 Align
 	(
 		util::vector2d< float > const & rawDepthMap,
+		util::vector2d< util::float3 > const & rawNormals,
 		util::float4x4 const & rawEyeToWorldGuess,
 		
 		std::vector< VertexPositionNormal > const & synthPointCloud,
@@ -34,6 +35,7 @@ private:
 	static util::float4x4 AlignStep
 	(
 		util::vector2d< float > const & rawDepthMap,
+		util::vector2d< util::float3 > const & rawNormals,
 		util::float4x4 const & rawEyeToWorldGuess,
 		
 		std::vector< VertexPositionNormal > const & synthPointCloud,

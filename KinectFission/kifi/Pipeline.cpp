@@ -1,3 +1,5 @@
+#include <kifi/util/stop_watch.h>
+
 #include <kifi/DepthMapUtils.h>
 #include <kifi/Pipeline.h>
 
@@ -26,8 +28,16 @@ Pipeline::Pipeline
 
 void Pipeline::Integrate( util::vector2d< float > const & rawDepthMap, std::size_t nPoints )
 {
+	util::chrono::stop_watch sw;
+
+	DepthMapUtils::BilateralFilter( rawDepthMap, 2, 400.0f, m_camParams, m_smoothDepth );
+	DepthMapUtils::Depth2Normals( m_smoothDepth, m_camParams, m_normals );
+
+	sw.take_time( "tDepthMapProcessing" );
+	sw.print_times();
+
 	if( ! m_tmpSynthPointCloud.empty() )
-		m_eyeToWorld = m_icp.Align( rawDepthMap, m_eyeToWorld, m_tmpSynthPointCloud, m_camParams, nPoints );
+		m_eyeToWorld = m_icp.Align( rawDepthMap, m_normals, m_eyeToWorld, m_tmpSynthPointCloud, m_camParams, nPoints );
 
 	Integrate( rawDepthMap, m_eyeToWorld );
 	Mesh( m_tmpSynthPointCloud );
