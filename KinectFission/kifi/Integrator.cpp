@@ -325,7 +325,7 @@ void Integrator::UpdateVoxels
 			float signedDist = depth - dist0f;
 				
 			if( depth > 0.0f && signedDist >= -volume.TruncationMargin() )
-				volume.Data().values_begin()[ i ].Update( std::min( signedDist, volume.TruncationMargin() ) );
+				volume.Data().values_begin()[ i + 0 ].Update( std::min( signedDist, volume.TruncationMargin() ) );
 		}
 
 		if( all( k1 >= minUV & k1 < maxUV ) )

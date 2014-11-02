@@ -53,6 +53,8 @@ DepthStream::DepthStream( std::string const & fileName ) :
 	}
 
 	m_file.read( reinterpret_cast< char * >( & m_nFrames ), 4 );
+	// HACK
+	m_nFrames = 1200;
 
 	m_bufferedDepth.resize( m_frameWidth, m_frameHeight );
 }

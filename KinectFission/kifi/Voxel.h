@@ -14,7 +14,7 @@ struct Voxel
 	inline float SafeDistance() const;
 	inline float Weight() const;
 
-	inline void Update( float newDistance );
+	inline void Update( float newDistance, float weight = 1.0f );
 
 private:
 	float m_distance;
@@ -56,10 +56,10 @@ float Voxel::Weight() const
 
 
 
-void Voxel::Update( float distance )
+void Voxel::Update( float distance, float weight )
 {
-	m_distance += distance;
-	m_weight++;
+	m_distance += weight * distance;
+	m_weight   += weight;
 }
 
 } // namespace

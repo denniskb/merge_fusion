@@ -34,7 +34,7 @@ util::float4x4 ICP::Align
 
 	util::float4x4 result = rawEyeToWorldGuess;
 	
-	for( int i = 0; i < 7; i++ )
+	for( int i = 0; i < 10; i++ )
 		result = AlignStep
 		(
 			rawDepthMap, rawNormals, result,
@@ -97,6 +97,7 @@ util::float4x4 ICP::AlignStep
 
 		float3 normal = rawNormals( xy.x(), xy.y() );
 		
+		// TODO: Use FuSci impl which avoids 2 iterations
 		// TODO: Abort if normal invalid!
 		// TODO: Parameterize distance and angle compatibility
 		// TODO: Use weighting and don't integrate ICP outliers!
@@ -125,8 +126,6 @@ util::float4x4 ICP::AlignStep
 		dstMedianSum += dst;
 	}
 
-	std::printf( "%d\n", nAssocs );
-	
 	if( 0 == nAssocs )
 		return float4x4::identity();
 	

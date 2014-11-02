@@ -33,7 +33,7 @@ void Pipeline::Integrate( util::vector2d< float > const & rawDepthMap, std::size
 	DepthMapUtils::BilateralFilter( rawDepthMap, 2, 400.0f, m_camParams, m_smoothDepth );
 	DepthMapUtils::Depth2Normals( m_smoothDepth, m_camParams, m_normals );
 
-	sw.take_time( "tDepthMapProcessing" );
+	sw.take_time( "Depth map processing" );
 	sw.print_times();
 
 	if( ! m_tmpSynthPointCloud.empty() )

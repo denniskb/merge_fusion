@@ -1,3 +1,4 @@
+#include <direct.h>
 #include <memory>
 #include <vector>
 
@@ -34,6 +35,7 @@ bool triangles = false;
 
 
 void myMouseFunc( int button, int state, int x, int y )
+//void myIdleFunc()
 {
 	float4x4 worldToEye;
 
@@ -47,7 +49,7 @@ void myMouseFunc( int button, int state, int x, int y )
 				int debug = 5;
 
 			if( icp )
-				pipeline->Integrate( synthDepthFrame, 10000 );
+				pipeline->Integrate( synthDepthFrame, 20000 );
 			else
 				pipeline->Integrate( synthDepthFrame, invert_transform( worldToEye ) );
 			
@@ -71,12 +73,16 @@ void myMouseFunc( int button, int state, int x, int y )
 
 			glutPostRedisplay();
 		}
-#if 1
+#if 0
 		else
 			glutExit();
 #else
 		else
-			Mesher::Mesh2Obj( vertices, indices, "I:/tmp/imrod.obj" );
+		{
+			pipeline->Mesh( vertices, indices );
+			Mesher::Mesh2Obj( vertices, indices, "I:/tmp/test.obj" );
+			glutExit();
+		}
 #endif
 }
 
@@ -95,7 +101,7 @@ void myDisplayFunc()
 
 	glEnableClientState( GL_COLOR_ARRAY );
 	glColorPointer( 3, GL_FLOAT, 24, reinterpret_cast< float const * >( VB ) + 3 );
-
+	
 	if( triangles )
 		glDrawElements( GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, indices.data() );
 	else
@@ -108,8 +114,6 @@ void myDisplayFunc()
 
     glutSwapBuffers();
 }
-
-#include <direct.h>
 
 int main( int argc, char ** argv )
 {
@@ -135,6 +139,7 @@ int main( int argc, char ** argv )
 
 	glutDisplayFunc( myDisplayFunc );
 	glutMouseFunc( myMouseFunc );
+	//glutIdleFunc( myIdleFunc );
 
 	char workingDirectory[ 256 ];
 	_getcwd( workingDirectory, sizeof( workingDirectory ) );
@@ -147,7 +152,7 @@ int main( int argc, char ** argv )
 		std::sprintf( depthStreamPath, "%s\\%s", workingDirectory, argv[ 1 ] );
 
 	depthStream.reset( new DepthStream( depthStreamPath ) );
-	pipeline.reset( new Pipeline( cameraParams, atoi( argv[ 2 ] ), 2.0f, 0.02f ) );
+	pipeline.reset( new Pipeline( cameraParams, atoi( argv[ 2 ] ), 4.0f, 0.02f ) );
 
 	glutMainLoop();
 

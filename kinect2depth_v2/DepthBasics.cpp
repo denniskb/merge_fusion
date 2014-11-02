@@ -1866,7 +1866,6 @@ float fastexp( float x )
 
 static unsigned short s_buffer[ 512 * 424 ];
 static unsigned short s_buffer2[ 512 * 424 ];
-static float3 s_pcl[ 512 * 424 ];
 
 /// <summary>
 /// Handle new depth data
@@ -1905,9 +1904,10 @@ void CDepthBasics::ProcessDepth(INT64 nTime, UINT16* pBuffer, int nWidth, int nH
 			fwrite( s_buffer, 2, nWidth * nHeight, m_pDepthStream );
 		}
 
+#if 0
 		// Bilateral filter
 		int   const kernel = 2;
-		float const dfmm   = 0.8f;
+		float const dfmm   = 0.4f;
 		for( int y = 0; y < nHeight; y++ )
 			for( int x = 0; x < nWidth; x++ )
 			{
@@ -1947,9 +1947,12 @@ void CDepthBasics::ProcessDepth(INT64 nTime, UINT16* pBuffer, int nWidth, int nH
 
 				s_buffer2[ idx ] = (unsigned short) intensity;
 			}
+#else
+		std::memcpy( s_buffer2, s_buffer, 512 * 424 * 2 );
+#endif
 
 		// Visualize
-#if 0 // depth map
+#if 1 // depth map
 		for( int i = 0, res = nWidth * nHeight; i < res; i++ )
 		{
 			RGBQUAD color;
