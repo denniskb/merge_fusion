@@ -48,6 +48,20 @@ namespace poly2depth
         {
             // first translate, then rotate
 
+            var input = GamePad.GetState(PlayerIndex.One);
+
+            float triggerR = input.Triggers.Right;
+            float triggerL = input.Triggers.Left;
+            float thumbLX = input.ThumbSticks.Left.X;
+            float thumbLY = input.ThumbSticks.Left.Y;
+            float thumbRX = input.ThumbSticks.Right.X;
+            float thumbRY = input.ThumbSticks.Right.Y;
+
+            if (Keyboard.GetState().IsKeyDown(Keys.Up))
+                thumbLY = 1f;
+            if (Keyboard.GetState().IsKeyDown(Keys.Down))
+                thumbLY = -1f;
+
             float maxMoveDelta = 1.0f / 60.0f;
             float maxRotDelta = 0.5f * MathHelper.Pi / 60.0f;
 
@@ -55,14 +69,14 @@ namespace poly2depth
             Vector3 right = Vector3.Normalize(Vector3.Cross(GetForward(), up));
             Vector3 forwardXY = Vector3.Cross(up, right);
 
-            eye += new Vector3(0.0f, GamePad.GetState(PlayerIndex.One).Triggers.Right * maxMoveDelta, 0.0f);
-            eye -= new Vector3(0.0f, GamePad.GetState(PlayerIndex.One).Triggers.Left * maxMoveDelta, 0.0f);
+            eye += new Vector3(0.0f, triggerR * maxMoveDelta, 0.0f);
+            eye -= new Vector3(0.0f, triggerL * maxMoveDelta, 0.0f);
 
-            eye += forwardXY * GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.Y * maxMoveDelta;
-            eye += right * GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.X * maxMoveDelta;
+            eye += forwardXY * thumbLY * maxMoveDelta;
+            eye += right * thumbLX * maxMoveDelta;
 
-            forward = Vector3.TransformNormal(forward, Matrix.CreateFromAxisAngle(right, GamePad.GetState(PlayerIndex.One).ThumbSticks.Right.Y * maxRotDelta));
-            forward = Vector3.TransformNormal(forward, Matrix.CreateRotationY(GamePad.GetState(PlayerIndex.One).ThumbSticks.Right.X * -maxRotDelta));
+            forward = Vector3.TransformNormal(forward, Matrix.CreateFromAxisAngle(right, thumbRY * maxRotDelta));
+            forward = Vector3.TransformNormal(forward, Matrix.CreateRotationY(thumbRX * -maxRotDelta));
             forward.Normalize();
         }
     }
