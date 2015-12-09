@@ -15,18 +15,14 @@ namespace poly2depth
     {
         private GraphicsDeviceManager graphics;
         private KinectCamera cam;
-        private RenderTarget2D rt;
+        private RenderTarget2D depthOut;
+        private RenderTarget2D noiseOut;
 
-        private Effect vizEffect;
         private Effect depthEffect;
-        private Effect viz;
-        private Effect depth;
-        private Effect skinnedViz;
-        private Effect skinnedDepth;
+        private Effect billboardEffect;
 
-        private AnimatedFBX model;
-        private AnimatedFBX imrod;
         private AnimatedFBX temple;
+        private AnimatedFBX billboard;
 
         private Recorder recorder;
 
@@ -57,7 +53,8 @@ namespace poly2depth
         {
             base.Initialize();
 
-            rt = new RenderTarget2D(graphics.GraphicsDevice, 640, 480, false, SurfaceFormat.Vector4, DepthFormat.Depth24);
+            depthOut = new RenderTarget2D(graphics.GraphicsDevice, 640, 480, false, SurfaceFormat.Vector4, DepthFormat.Depth24);
+            noiseOut = new RenderTarget2D(graphics.GraphicsDevice, 640, 480, false, SurfaceFormat.Vector4, DepthFormat.Depth24);
         }
 
         /// <summary>
@@ -66,36 +63,20 @@ namespace poly2depth
         /// </summary>
         protected override void LoadContent()
         {
-            viz = Content.Load<Effect>("Viz");
-            depth = Content.Load<Effect>("Depth");
-            skinnedViz = Content.Load<Effect>("SkinnedViz");
-            skinnedDepth = Content.Load<Effect>("SkinnedDepth");
-
-            imrod = new AnimatedFBX
-            (
-                Content,
-                "imrod",
-                Matrix.CreateTranslation(0.0f, 0.0f, 42.7585f),
-                Matrix.CreateScale(0.023f) * Matrix.CreateRotationX(MathHelper.PiOver2)
-            );
-
+            depthEffect = Content.Load<Effect>("Depth");
+            billboardEffect = Content.Load<Effect>("billboardViz");
+            
             temple = new AnimatedFBX
             (
                 Content,
-                "house",
-                Matrix.CreateTranslation(0.0f, -10.0f, 20.0f),
-                Matrix.CreateScale(0.1f)
+                "house"
             );
 
-            /*
-            vizEffect = skinnedViz;
-            depthEffect = skinnedDepth;
-            model = imrod;
-            /*/
-            vizEffect = viz;
-            depthEffect = depth;
-            model = temple;
-            //*/
+            billboard = new AnimatedFBX
+            (
+                Content,
+                "billboard"
+            );
         }
 
         /// <summary>
@@ -118,7 +99,6 @@ namespace poly2depth
                 this.Exit();
 
             cam.Update();
-            imrod.Update(gameTime);
             recorder.Update();
 
             base.Update(gameTime);
@@ -130,18 +110,31 @@ namespace poly2depth
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            if (recorder.IsRecording() && frame % 3 == 0)
-            {
-                graphics.GraphicsDevice.SetRenderTarget(rt);
-                GraphicsDevice.Clear(Color.Black);
-                model.Draw(depthEffect, cam.GetViewProjection(), cam.GetEye(), cam.GetForward());
-                graphics.GraphicsDevice.SetRenderTarget(null);
+            GraphicsDevice.SetRenderTarget(depthOut);
 
-                recorder.RecordFrame(rt, cam.GetView());
-            }
+            GraphicsDevice.Clear(Color.Black);
+            depthEffect.Parameters["modelToWorld"].SetValue(Matrix.CreateTranslation(0.0f, -10.0f, 20.0f) * Matrix.CreateScale(0.1f));
+            depthEffect.Parameters["eyeToClip"].SetValue(cam.GetViewProjection());
+            depthEffect.Parameters["eye"].SetValue(cam.GetEye());
+            depthEffect.Parameters["forward"].SetValue(cam.GetForward());
+            temple.Draw(depthEffect);
+
+            if (recorder.IsRecording() && frame % 3 == 0)
+                recorder.RecordFrame(depthOut, cam.GetView());
+
+            GraphicsDevice.SetRenderTarget(noiseOut);
+            
+            GraphicsDevice.Clear(Color.CornflowerBlue);
+            billboardEffect.CurrentTechnique = billboardEffect.Techniques["AddNoise"];
+            billboardEffect.Parameters["depth"].SetValue(depthOut);
+            billboard.Draw(billboardEffect);
+
+            GraphicsDevice.SetRenderTarget(null);
 
             GraphicsDevice.Clear(Color.CornflowerBlue);
-            model.Draw(vizEffect, cam.GetViewProjection(), cam.GetEye(), cam.GetForward());
+            billboardEffect.CurrentTechnique = billboardEffect.Techniques["Depth2Color"];
+            billboardEffect.Parameters["depth"].SetValue(noiseOut);
+            billboard.Draw(billboardEffect);
             
             base.Draw(gameTime);
 

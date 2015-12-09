@@ -9,16 +9,12 @@ namespace poly2depth
     class AnimatedFBX
     {
         private Model model;
-        private Matrix local;
-        private Matrix world;
 
         private AnimationPlayer player;
 
-        public AnimatedFBX(ContentManager cm, string name, Matrix local, Matrix world)
+        public AnimatedFBX(ContentManager cm, string name)
         {
             model = cm.Load<Model>(name);
-            this.local = local;
-            this.world = world;
 
             player = null;
 
@@ -42,7 +38,7 @@ namespace poly2depth
             player.Update(gt.ElapsedGameTime, true, Matrix.Identity);
         }
 
-        public void Draw(Effect effect, Matrix viewProjection, Vector3 eye, Vector3 forward)
+        public void Draw(Effect effect)
         {
             Matrix[] bones = null;
 
@@ -58,15 +54,6 @@ namespace poly2depth
                 
                 foreach (Effect meshEffect in mesh.Effects)
                 {
-                    if (bones != null)
-                        meshEffect.Parameters["joints"].SetValue(bones);
-
-                    meshEffect.Parameters["local"].SetValue(local);
-                    meshEffect.Parameters["world"].SetValue(world);
-                    meshEffect.Parameters["viewProjection"].SetValue(viewProjection);
-                    meshEffect.Parameters["eye"].SetValue(eye);
-                    meshEffect.Parameters["forward"].SetValue(forward);
-
                     mesh.Draw();
                 }
             }
