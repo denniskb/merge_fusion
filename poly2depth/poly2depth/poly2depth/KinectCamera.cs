@@ -48,19 +48,33 @@ namespace poly2depth
         {
             // first translate, then rotate
 
-            var input = GamePad.GetState(PlayerIndex.One);
+            var gamepad = GamePad.GetState(PlayerIndex.One);
+            var keyboard = Keyboard.GetState();
 
-            float triggerR = input.Triggers.Right;
-            float triggerL = input.Triggers.Left;
-            float thumbLX = input.ThumbSticks.Left.X;
-            float thumbLY = input.ThumbSticks.Left.Y;
-            float thumbRX = input.ThumbSticks.Right.X;
-            float thumbRY = input.ThumbSticks.Right.Y;
+            float triggerR = gamepad.Triggers.Right;
+            float triggerL = gamepad.Triggers.Left;
+            float thumbLX = gamepad.ThumbSticks.Left.X;
+            float thumbLY = gamepad.ThumbSticks.Left.Y;
+            float thumbRX = gamepad.ThumbSticks.Right.X;
+            float thumbRY = gamepad.ThumbSticks.Right.Y;
 
+            if (keyboard.IsKeyDown(Keys.Left))
+                thumbLX = -1f;
+            if (keyboard.IsKeyDown(Keys.Right))
+                thumbLX = 1f;
             if (Keyboard.GetState().IsKeyDown(Keys.Up))
                 thumbLY = 1f;
             if (Keyboard.GetState().IsKeyDown(Keys.Down))
                 thumbLY = -1f;
+
+            if (keyboard.IsKeyDown(Keys.A))
+                thumbRX = -1f;
+            if (keyboard.IsKeyDown(Keys.D))
+                thumbRX = 1f;
+            if (keyboard.IsKeyDown(Keys.W))
+                thumbRY = 1f;
+            if (keyboard.IsKeyDown(Keys.S))
+                thumbRY = -1f;
 
             float maxMoveDelta = 1.0f / 60.0f;
             float maxRotDelta = 0.5f * MathHelper.Pi / 60.0f;
