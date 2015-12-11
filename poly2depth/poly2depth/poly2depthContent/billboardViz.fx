@@ -1,4 +1,59 @@
+void sort25(float arr[25])
+{
+	#define CMP_SWAP(i, j) if(arr[i] > arr[j]) { float tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp; }
+
+	CMP_SWAP(1,2) CMP_SWAP(4,5) CMP_SWAP(7,8) CMP_SWAP(10,11) CMP_SWAP(13,14) CMP_SWAP(16,17) CMP_SWAP(19,20) CMP_SWAP(21,22) CMP_SWAP(23,24)
+	CMP_SWAP(0,2) CMP_SWAP(3,5) CMP_SWAP(6,8) CMP_SWAP(9,11) CMP_SWAP(12,14) CMP_SWAP(15,17) CMP_SWAP(18,20) CMP_SWAP(21,23) CMP_SWAP(22,24)
+	CMP_SWAP(0,1) CMP_SWAP(3,4) CMP_SWAP(2,5) CMP_SWAP(6,7) CMP_SWAP(9,10) CMP_SWAP(8,11) CMP_SWAP(12,13) CMP_SWAP(15,16) CMP_SWAP(14,17) CMP_SWAP(18,19) CMP_SWAP(22,23) CMP_SWAP(20,24)
+	CMP_SWAP(0,3) CMP_SWAP(1,4) CMP_SWAP(6,9) CMP_SWAP(7,10) CMP_SWAP(5,11) CMP_SWAP(12,15) CMP_SWAP(13,16) CMP_SWAP(18,22) CMP_SWAP(19,23) CMP_SWAP(17,24)
+	CMP_SWAP(2,4) CMP_SWAP(1,3) CMP_SWAP(8,10) CMP_SWAP(7,9) CMP_SWAP(0,6) CMP_SWAP(14,16) CMP_SWAP(13,15) CMP_SWAP(18,21) CMP_SWAP(20,23) CMP_SWAP(11,24)
+	CMP_SWAP(2,3) CMP_SWAP(8,9) CMP_SWAP(1,7) CMP_SWAP(4,10) CMP_SWAP(14,15) CMP_SWAP(19,21) CMP_SWAP(20,22) CMP_SWAP(16,23)
+	CMP_SWAP(2,8) CMP_SWAP(1,6) CMP_SWAP(3,9) CMP_SWAP(5,10) CMP_SWAP(20,21) CMP_SWAP(12,19) CMP_SWAP(15,22) CMP_SWAP(17,23)
+	CMP_SWAP(2,7) CMP_SWAP(4,9) CMP_SWAP(12,18) CMP_SWAP(13,20) CMP_SWAP(14,21) CMP_SWAP(16,22) CMP_SWAP(10,23)
+	CMP_SWAP(2,6) CMP_SWAP(5,9) CMP_SWAP(4,7) CMP_SWAP(14,20) CMP_SWAP(13,18) CMP_SWAP(17,22) CMP_SWAP(11,23)
+	CMP_SWAP(3,6) CMP_SWAP(5,8) CMP_SWAP(14,19) CMP_SWAP(16,20) CMP_SWAP(17,21) CMP_SWAP(0,13) CMP_SWAP(9,22)
+	CMP_SWAP(5,7) CMP_SWAP(4,6) CMP_SWAP(14,18) CMP_SWAP(15,19) CMP_SWAP(17,20) CMP_SWAP(0,12) CMP_SWAP(8,21) CMP_SWAP(10,22)
+	CMP_SWAP(5,6) CMP_SWAP(15,18) CMP_SWAP(17,19) CMP_SWAP(1,14) CMP_SWAP(7,20) CMP_SWAP(11,22)
+	CMP_SWAP(16,18) CMP_SWAP(2,15) CMP_SWAP(1,12) CMP_SWAP(6,19) CMP_SWAP(8,20) CMP_SWAP(11,21)
+	CMP_SWAP(17,18) CMP_SWAP(2,14) CMP_SWAP(3,16) CMP_SWAP(7,19) CMP_SWAP(10,20)
+	CMP_SWAP(2,13) CMP_SWAP(4,17) CMP_SWAP(5,18) CMP_SWAP(8,19) CMP_SWAP(11,20)
+	CMP_SWAP(2,12) CMP_SWAP(5,17) CMP_SWAP(4,16) CMP_SWAP(3,13) CMP_SWAP(9,19)
+	CMP_SWAP(5,16) CMP_SWAP(3,12) CMP_SWAP(4,14) CMP_SWAP(10,19)
+	CMP_SWAP(5,15) CMP_SWAP(4,12) CMP_SWAP(11,19) CMP_SWAP(9,16) CMP_SWAP(10,17)
+	CMP_SWAP(5,14) CMP_SWAP(8,15) CMP_SWAP(11,18) CMP_SWAP(10,16)
+	CMP_SWAP(5,13) CMP_SWAP(7,14) CMP_SWAP(11,17)
+	CMP_SWAP(5,12) CMP_SWAP(6,13) CMP_SWAP(8,14) CMP_SWAP(11,16)
+	CMP_SWAP(6,12) CMP_SWAP(8,13) CMP_SWAP(10,14) CMP_SWAP(11,15)
+	CMP_SWAP(7,12) CMP_SWAP(9,13) CMP_SWAP(11,14)
+	CMP_SWAP(8,12) CMP_SWAP(11,13)
+	CMP_SWAP(9,12)
+	CMP_SWAP(10,12)
+	CMP_SWAP(11,12)
+}
+
+// returns uniformly distributed random number \in [0, 1]
+float rnd(float2 texcoord)
+{
+	const float M_PI = 3.14f;
+
+	const float4 a = float4(M_PI * M_PI * M_PI * M_PI, exp(4.0f), pow(13.0f, M_PI / 2.0f), sqrt(1997.0f));
+	float4 result = float4(texcoord, texcoord);
+	
+	for(int i = 0; i < 2; i++) 
+	{
+		result.x = frac(dot(result, a));
+		result.y = frac(dot(result, a));
+		result.z = frac(dot(result, a));
+		result.w = frac(dot(result, a));
+	}
+
+	return result.w;
+}
+
+
+
 Texture2D depth;
+int iFrame;
 
 SamplerState depthSampler
 {
@@ -10,6 +65,8 @@ struct VSOut
     float4 position : POSITION0;
 	float2 texcoord : TEXCOORD0;
 };
+
+
 
 VSOut VS(float4 position : POSITION0)
 {
@@ -33,50 +90,29 @@ float4 PSColor(VSOut input) : COLOR0
 	
 	float depthRGB = (depthInMeters - 0.8f) / 3.2f; // mapped to [0.8m, 4m]
 	
-	return float4
-	(
-		depthRGB,
-		depthRGB,
-		depthRGB,
-		1
-	);
+	return depthRGB;
 }
 
 float4 PSNoise(VSOut input) : COLOR0
 {
-	float4 depthInMeters = depth.Sample(depthSampler, input.texcoord);
+	float median[25];
 
-	// median
-	int kernelSize = 2;
-	float2 px = 1.0f / float2(640, 480); // TODO: Generalize
-	float avg = 0;
-	int i = 0;
-	for (int y = -kernelSize; y <=kernelSize; y++)
 	{
-		for (int x = -kernelSize; x <=kernelSize; x++)
+		int kernelSize = 2;
+		float2 px = float2(1.0f / 640, 1.0f / 480); // TODO: Generalize
+		int i = 0;
+		for (int y = -kernelSize; y <=kernelSize; y++)
 		{
-			float d = depth.Sample(depthSampler, input.texcoord + float2(x, y) * px);
-			avg += d;
-		}
-	}
-	avg /= (2 * kernelSize + 1) * (2 * kernelSize + 1);
-
-	float err = 10;
-	float median;
-	for (int y = -kernelSize; y <=kernelSize; y++)
-	{
-		for (int x = -kernelSize; x <=kernelSize; x++)
-		{
-			float d = depth.Sample(depthSampler, input.texcoord + float2(x, y) * px);
-			if (abs(d - avg) < err)
+			for (int x = -kernelSize; x <=kernelSize; x++)
 			{
-				median = d;
-				err = abs(d - avg);
+				median[i++] = depth.Sample(depthSampler, input.texcoord + float2(x, y) * px).x;
 			}
 		}
 	}
 
-	return median;
+	sort25(median);
+
+	return median[12];
 }
 
 

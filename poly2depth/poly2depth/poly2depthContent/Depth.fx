@@ -34,13 +34,7 @@ float4 PS(VSOut input) : COLOR0
 	float depthInMeters = dot(input.worldPosition - eye, forward);
 	float3 normal = normalize(input.normal.xyz);
 
-    return float4
-	(
-		depthInMeters,
-		normal.x,
-		normal.y,
-		normal.z
-	);
+	return float4(depthInMeters, normal.xyz);
 }
 
 technique Technique1

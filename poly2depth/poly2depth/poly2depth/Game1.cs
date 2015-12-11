@@ -26,7 +26,7 @@ namespace poly2depth
 
         private Recorder recorder;
 
-        private int frame;
+        private int iFrame;
 
         public Game1()
         {
@@ -40,7 +40,7 @@ namespace poly2depth
 
             recorder = new Recorder();
 
-            frame = 0;
+            iFrame = 0;
         }
 
         /// <summary>
@@ -121,12 +121,13 @@ namespace poly2depth
 
             GraphicsDevice.SetRenderTarget(noiseOut);
 
-            if (recorder.IsRecording() && frame % 3 == 0)
+            if (recorder.IsRecording() && iFrame % 3 == 0)
                 recorder.RecordFrame(depthOut, cam.GetView());
             
             GraphicsDevice.Clear(Color.CornflowerBlue);
             billboardEffect.CurrentTechnique = billboardEffect.Techniques["AddNoise"];
             billboardEffect.Parameters["depth"].SetValue(depthOut);
+            billboardEffect.Parameters["iFrame"].SetValue(iFrame);
             billboard.Draw(billboardEffect);
 
             GraphicsDevice.SetRenderTarget(null);
@@ -138,7 +139,7 @@ namespace poly2depth
             
             base.Draw(gameTime);
 
-            frame++;
+            iFrame++;
         }
     }
 }
