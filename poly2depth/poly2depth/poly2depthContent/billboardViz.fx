@@ -48,7 +48,7 @@ float4 PSNoise(VSOut input) : COLOR0
 
 	// median
 	int kernelSize = 2;
-	float2 px = 1.0f / float2(640, 480);
+	float2 px = 1.0f / float2(640, 480); // TODO: Generalize
 	float avg = 0;
 	int i = 0;
 	for (int y = -kernelSize; y <=kernelSize; y++)

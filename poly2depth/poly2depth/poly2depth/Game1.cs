@@ -119,10 +119,10 @@ namespace poly2depth
             depthEffect.Parameters["forward"].SetValue(cam.GetForward());
             temple.Draw(depthEffect);
 
+            GraphicsDevice.SetRenderTarget(noiseOut);
+
             if (recorder.IsRecording() && frame % 3 == 0)
                 recorder.RecordFrame(depthOut, cam.GetView());
-
-            GraphicsDevice.SetRenderTarget(noiseOut);
             
             GraphicsDevice.Clear(Color.CornflowerBlue);
             billboardEffect.CurrentTechnique = billboardEffect.Techniques["AddNoise"];
