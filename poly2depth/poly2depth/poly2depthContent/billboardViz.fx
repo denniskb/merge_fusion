@@ -36,7 +36,7 @@ float rnd(float2 texcoord)
 {
 	const float M_PI = 3.14f;
 
-	const float4 a = float4(M_PI * M_PI * M_PI * M_PI, exp(4.0f), pow(13.0f, M_PI / 2.0f), sqrt(1997.0f));
+	const float4 a = float4((M_PI * M_PI) * (M_PI * M_PI), exp(4.0f), pow(13.0f, M_PI / 2.0f), sqrt(1997.0f));
 	float4 result = float4(texcoord, texcoord);
 	
 	for(int i = 0; i < 2; i++) 
@@ -49,6 +49,79 @@ float rnd(float2 texcoord)
 
 	return result.w;
 }
+
+/*
+TODO: Implement Kinect noise model:
+
+'''
+Created on Nov 10, 2015
+ 
+@author: kyriazis
+'''
+ 
+import numpy as np
+import cv2 as cv
+from abc import abstractmethod
+from scipy.ndimage.filters import median_filter
+ 
+def NormalZ2Angle(z):
+    return np.arccos(-z)
+    
+class MicrosoftKinectNoiseMaker(object):
+    """
+    Noise formulas from
+    
+    Nguyen, Chuong V., Shahram Izadi, and David Lovell.
+    "Modeling kinect sensor noise for improved 3d reconstruction and tracking."
+    3D Imaging, Modeling, Processing, Visualization and Transmission (3DIMPVT), 2012
+    Second International Conference on. IEEE, 2012.
+    
+    This class also adds:
+    - missing measurements for surface angles greater than a threshold
+    - noise diffusion through median filtering
+    """
+    def __init__(self, angleCuttoff=1.4, medianWindow=(5,5)):
+        self.angleCutoff = angleCuttoff
+        self.medianWindow = medianWindow
+        
+    def __noiseZ__(self, z, theta):
+        return 0.0012 + 0.0019 * ((z - 0.4) **2) + (0.0001 / np.sqrt(z)) * (theta ** 2) / ((np.pi/2 - theta)**2)
+    
+    def __noiseL__(self, theta):
+        return 0.8 + 0.035 * theta / (np.pi/2 - theta)
+    
+    def __generateNoise__(self, valid, z, theta):
+        height, width = z.shape
+        
+        # the formula requires depth in meters
+        nZ = self.__noiseZ__(z[valid]/1000, theta[valid])
+        nL = self.__noiseL__(theta[valid])
+        
+        NZ = np.zeros(z.shape)
+        NZ[valid] = nZ
+        NL = np.zeros(z.shape)
+        NL[valid] = nL
+        
+        [X,Y] = np.mgrid[0:width,0:height]
+        X = X.transpose()
+        Y = Y.transpose()
+        
+        X = X + np.random.randn(*NL.shape) * (NL)
+        Y = Y + np.random.randn(*NL.shape) * (NL)
+            
+        z[theta > self.angleCutoff] = 0
+        zz = cv.remap(z + np.random.randn(*NZ.shape) * (NZ),
+                      X.astype(np.float32),
+                      Y.astype(np.float32),
+                      cv.INTER_NEAREST)
+        zz = median_filter(zz, self.medianWindow)
+        
+        return zz
+    
+    def simulate(self, mask, positionMap, normalMap):
+        # Assuming positionMap is in mm.
+        return self.__generateNoise__(mask, positionMap[:,:,2], NormalZ2Angle(normalMap[:,:,2]))
+*/
 
 
 
