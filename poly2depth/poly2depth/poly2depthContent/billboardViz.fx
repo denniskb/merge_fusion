@@ -32,7 +32,7 @@ void sort25(float arr[25])
 }
 
 // returns uniformly distributed random number \in [0, 1]
-float rnd(float2 texcoord)
+float rnd_uniform(float2 texcoord)
 {
 	const float M_PI = 3.14f;
 
@@ -50,83 +50,31 @@ float rnd(float2 texcoord)
 	return result.w;
 }
 
-/*
-TODO: Implement Kinect noise model:
+// returns a normally (mu=0, sigma=1) distributed random number \in [-3, 3]
+float rnd_normal(float2 texcoord)
+{
+	float result = rnd_uniform(texcoord) - 0.5f;
+	int negative = result < 0.0f;
+	return (result * result) * (1 - 2 * negative) * 12;
+}
 
-'''
-Created on Nov 10, 2015
- 
-@author: kyriazis
-'''
- 
-import numpy as np
-import cv2 as cv
-from abc import abstractmethod
-from scipy.ndimage.filters import median_filter
- 
-def NormalZ2Angle(z):
-    return np.arccos(-z)
-    
-class MicrosoftKinectNoiseMaker(object):
-    """
-    Noise formulas from
-    
-    Nguyen, Chuong V., Shahram Izadi, and David Lovell.
-    "Modeling kinect sensor noise for improved 3d reconstruction and tracking."
-    3D Imaging, Modeling, Processing, Visualization and Transmission (3DIMPVT), 2012
-    Second International Conference on. IEEE, 2012.
-    
-    This class also adds:
-    - missing measurements for surface angles greater than a threshold
-    - noise diffusion through median filtering
-    """
-    def __init__(self, angleCuttoff=1.4, medianWindow=(5,5)):
-        self.angleCutoff = angleCuttoff
-        self.medianWindow = medianWindow
-        
-    def __noiseZ__(self, z, theta):
-        return 0.0012 + 0.0019 * ((z - 0.4) **2) + (0.0001 / np.sqrt(z)) * (theta ** 2) / ((np.pi/2 - theta)**2)
-    
-    def __noiseL__(self, theta):
-        return 0.8 + 0.035 * theta / (np.pi/2 - theta)
-    
-    def __generateNoise__(self, valid, z, theta):
-        height, width = z.shape
-        
-        # the formula requires depth in meters
-        nZ = self.__noiseZ__(z[valid]/1000, theta[valid])
-        nL = self.__noiseL__(theta[valid])
-        
-        NZ = np.zeros(z.shape)
-        NZ[valid] = nZ
-        NL = np.zeros(z.shape)
-        NL[valid] = nL
-        
-        [X,Y] = np.mgrid[0:width,0:height]
-        X = X.transpose()
-        Y = Y.transpose()
-        
-        X = X + np.random.randn(*NL.shape) * (NL)
-        Y = Y + np.random.randn(*NL.shape) * (NL)
-            
-        z[theta > self.angleCutoff] = 0
-        zz = cv.remap(z + np.random.randn(*NZ.shape) * (NZ),
-                      X.astype(np.float32),
-                      Y.astype(np.float32),
-                      cv.INTER_NEAREST)
-        zz = median_filter(zz, self.medianWindow)
-        
-        return zz
-    
-    def simulate(self, mask, positionMap, normalMap):
-        # Assuming positionMap is in mm.
-        return self.__generateNoise__(mask, positionMap[:,:,2], NormalZ2Angle(normalMap[:,:,2]))
-*/
+// computes the maximally possible noise in meters depending on distance (in meters) z and surface angle theta
+// Original code by Kyriazis
+float noiseZ(float z, float theta)
+{
+	const float PI = 3.14f;
+
+	return
+	0.0012 +
+	0.0019 * ((z - 0.4f) * (z - 0.4f)) + 
+	(0.0001 / sqrt(z)) * (theta * theta) / ((PI/2 - theta) * (PI/2 - theta));
+}
 
 
 
 Texture2D depth;
 int iFrame;
+float3 forward;
 
 SamplerState depthSampler
 {
@@ -160,16 +108,21 @@ VSOut VS(float4 position : POSITION0)
 float4 PSColor(VSOut input) : COLOR0
 {
 	float depthInMeters = depth.Sample(depthSampler, input.texcoord).r;
-	
-	float depthRGB = (depthInMeters - 0.8f) / 3.2f; // mapped to [0.8m, 4m]
-	
-	return depthRGB;
+
+	// map [0.8m, 4m] to [0, 1]
+	float depth_norm = (depthInMeters - 0.8f) / 3.2f;
+
+	float r = min( 1.0f, ( max( 0.5f, depth_norm ) - 0.5f ) * 6.0f );
+    float g = min( 1.0f, depth_norm * 3.0f ) - min( 1.0f, max( 0.0f, depth_norm - 0.666f ) * 3.0f );
+    float b = max( 0.0f, 1.0f - max( 0.0f, depth_norm - 0.333f ) * 6.0f );
+
+	return float4(r, g, b, 1.0f) * (depthInMeters > 0);
 }
 
 float4 PSNoise(VSOut input) : COLOR0
 {
 	float median[25];
-
+	
 	{
 		int kernelSize = 2;
 		float2 px = float2(1.0f / 640, 1.0f / 480); // TODO: Generalize
@@ -178,13 +131,19 @@ float4 PSNoise(VSOut input) : COLOR0
 		{
 			for (int x = -kernelSize; x <=kernelSize; x++)
 			{
-				median[i++] = depth.Sample(depthSampler, input.texcoord + float2(x, y) * px).x;
+				float4 sample = depth.Sample(depthSampler, input.texcoord).x;
+
+				median[i++] =
+				sample.x
+				+ noiseZ(sample.x, saturate(dot(sample.yzw, -forward)))
+				* rnd_normal(input.texcoord + iFrame)
+				* (sample.x > 0.0f);
 			}
 		}
 	}
-
+	
 	sort25(median);
-
+	
 	return median[12];
 }
 

@@ -128,6 +128,7 @@ namespace poly2depth
             billboardEffect.CurrentTechnique = billboardEffect.Techniques["AddNoise"];
             billboardEffect.Parameters["depth"].SetValue(depthOut);
             billboardEffect.Parameters["iFrame"].SetValue(iFrame);
+            billboardEffect.Parameters["forward"].SetValue(cam.GetForward());
             billboard.Draw(billboardEffect);
 
             GraphicsDevice.SetRenderTarget(null);
