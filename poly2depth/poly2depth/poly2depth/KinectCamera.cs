@@ -41,7 +41,7 @@ namespace poly2depth
             
             return
                 GetView() *
-                Matrix.CreatePerspectiveFieldOfView(radiansKinectFovY, 640.0f / 480.0f, 0.8f, 4.0f);
+                Matrix.CreatePerspectiveFieldOfView(radiansKinectFovY, 640.0f / 480.0f, 0.4f, 4.0f);
         }
 
         public void Update()

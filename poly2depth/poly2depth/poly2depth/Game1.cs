@@ -16,7 +16,9 @@ namespace poly2depth
         private GraphicsDeviceManager graphics;
         private KinectCamera cam;
         private RenderTarget2D depthOut;
+        private RenderTarget2D posOut;
         private RenderTarget2D noiseOut;
+        private RenderTarget2D medianOut;
 
         private Effect depthEffect;
         private Effect billboardEffect;
@@ -54,7 +56,9 @@ namespace poly2depth
             base.Initialize();
 
             depthOut = new RenderTarget2D(graphics.GraphicsDevice, 640, 480, false, SurfaceFormat.Vector4, DepthFormat.Depth24);
+            posOut = new RenderTarget2D(graphics.GraphicsDevice, 640, 480, false, SurfaceFormat.Vector4, DepthFormat.Depth24);
             noiseOut = new RenderTarget2D(graphics.GraphicsDevice, 640, 480, false, SurfaceFormat.Vector4, DepthFormat.Depth24);
+            medianOut = new RenderTarget2D(graphics.GraphicsDevice, 640, 480, false, SurfaceFormat.Vector4, DepthFormat.Depth24);
         }
 
         /// <summary>
@@ -110,9 +114,20 @@ namespace poly2depth
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.SetRenderTarget(depthOut);
+            GraphicsDevice.SetRenderTarget(posOut);
 
             GraphicsDevice.Clear(Color.Black);
+            depthEffect.CurrentTechnique = depthEffect.Techniques["WorldPos"];
+            depthEffect.Parameters["modelToWorld"].SetValue(Matrix.CreateTranslation(0.0f, -10.0f, 20.0f) * Matrix.CreateScale(0.1f));
+            depthEffect.Parameters["eyeToClip"].SetValue(cam.GetViewProjection());
+            depthEffect.Parameters["eye"].SetValue(cam.GetEye());
+            depthEffect.Parameters["forward"].SetValue(cam.GetForward());
+            temple.Draw(depthEffect);
+
+            GraphicsDevice.SetRenderTarget(depthOut);
+            
+            GraphicsDevice.Clear(Color.Black);
+            depthEffect.CurrentTechnique = depthEffect.Techniques["DepthPlusNormal"];
             depthEffect.Parameters["modelToWorld"].SetValue(Matrix.CreateTranslation(0.0f, -10.0f, 20.0f) * Matrix.CreateScale(0.1f));
             depthEffect.Parameters["eyeToClip"].SetValue(cam.GetViewProjection());
             depthEffect.Parameters["eye"].SetValue(cam.GetEye());
@@ -124,18 +139,27 @@ namespace poly2depth
             if (recorder.IsRecording() && iFrame % 3 == 0)
                 recorder.RecordFrame(depthOut, cam.GetView());
             
-            GraphicsDevice.Clear(Color.CornflowerBlue);
+            GraphicsDevice.Clear(Color.Black);
             billboardEffect.CurrentTechnique = billboardEffect.Techniques["AddNoise"];
             billboardEffect.Parameters["depth"].SetValue(depthOut);
+            billboardEffect.Parameters["pos"].SetValue(posOut);
             billboardEffect.Parameters["iFrame"].SetValue(iFrame);
+            billboardEffect.Parameters["eye"].SetValue(cam.GetEye());
             billboardEffect.Parameters["forward"].SetValue(cam.GetForward());
+            billboard.Draw(billboardEffect);
+
+            GraphicsDevice.SetRenderTarget(medianOut);
+
+            GraphicsDevice.Clear(Color.Black);
+            billboardEffect.CurrentTechnique = billboardEffect.Techniques["ComputeMedian"];
+            billboardEffect.Parameters["depth"].SetValue(noiseOut);
             billboard.Draw(billboardEffect);
 
             GraphicsDevice.SetRenderTarget(null);
 
-            GraphicsDevice.Clear(Color.CornflowerBlue);
+            GraphicsDevice.Clear(Color.Black);
             billboardEffect.CurrentTechnique = billboardEffect.Techniques["Depth2Color"];
-            billboardEffect.Parameters["depth"].SetValue(noiseOut);
+            billboardEffect.Parameters["depth"].SetValue(medianOut);
             billboard.Draw(billboardEffect);
             
             base.Draw(gameTime);

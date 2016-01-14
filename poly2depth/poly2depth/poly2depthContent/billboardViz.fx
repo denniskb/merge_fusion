@@ -1,4 +1,4 @@
-void sort25(float arr[25])
+void sort25(inout float arr[25])
 {
 	#define CMP_SWAP(i, j) if(arr[i] > arr[j]) { float tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp; }
 
@@ -73,11 +73,20 @@ float noiseZ(float z, float theta)
 
 
 Texture2D depth;
+Texture2D pos;
 int iFrame;
+float3 eye;
 float3 forward;
 
-SamplerState depthSampler
+sampler depthSampler = sampler_state
 {
+	texture = <depth>;
+	Filter = MIN_MAG_MIP_POINT;
+};
+
+sampler posSampler = sampler_state
+{
+	texture = <pos>;
 	Filter = MIN_MAG_MIP_POINT;
 };
 
@@ -105,21 +114,23 @@ VSOut VS(float4 position : POSITION0)
 
 
 
-float4 PSColor(VSOut input) : COLOR0
+float4 PSNoise(VSOut input) : COLOR0
 {
-	float depthInMeters = depth.Sample(depthSampler, input.texcoord).r;
+	float4 sample = tex2D(depthSampler, input.texcoord);
+	float3 eyeVec = normalize(eye - tex2D(posSampler, input.texcoord).xyz);
+	
+	float theta = acos(dot(sample.yzw, eyeVec));
 
-	// map [0.8m, 4m] to [0, 1]
-	float depth_norm = (depthInMeters - 0.8f) / 3.2f;
-
-	float r = min( 1.0f, ( max( 0.5f, depth_norm ) - 0.5f ) * 6.0f );
-    float g = min( 1.0f, depth_norm * 3.0f ) - min( 1.0f, max( 0.0f, depth_norm - 0.666f ) * 3.0f );
-    float b = max( 0.0f, 1.0f - max( 0.0f, depth_norm - 0.333f ) * 6.0f );
-
-	return float4(r, g, b, 1.0f) * (depthInMeters > 0);
+	float z = 
+	sample.x
+	+ 2 * noiseZ(sample.x, theta) 
+	* rnd_normal(input.texcoord + iFrame) 
+	* (sample.x > 0.0f);
+	
+	return float4(z, sample.yzw);
 }
 
-float4 PSNoise(VSOut input) : COLOR0
+float4 PSMedian(VSOut input) : COLOR0
 {
 	float median[25];
 	
@@ -131,13 +142,7 @@ float4 PSNoise(VSOut input) : COLOR0
 		{
 			for (int x = -kernelSize; x <=kernelSize; x++)
 			{
-				float4 sample = depth.Sample(depthSampler, input.texcoord).x;
-
-				median[i++] =
-				sample.x
-				+ noiseZ(sample.x, saturate(dot(sample.yzw, -forward)))
-				* rnd_normal(input.texcoord + iFrame)
-				* (sample.x > 0.0f);
+				median[i++] = tex2D(depthSampler, input.texcoord + float2(x, y) * px).x;
 			}
 		}
 	}
@@ -147,16 +152,21 @@ float4 PSNoise(VSOut input) : COLOR0
 	return median[12];
 }
 
-
-
-technique Depth2Color
+float4 PSColor(VSOut input) : COLOR0
 {
-    pass Pass1
-    {
-        VertexShader = compile vs_3_0 VS();
-        PixelShader = compile ps_3_0 PSColor();
-    }
+	float depthInMeters = tex2D(depthSampler, input.texcoord).r;
+
+	// map [0.4m, 4m] to [0, 1]
+	float depth_norm = (depthInMeters - 0.4f) / 3.6f;
+
+	float r = min( 1.0f, ( max( 0.5f, depth_norm ) - 0.5f ) * 6.0f );
+    float g = min( 1.0f, depth_norm * 3.0f ) - min( 1.0f, max( 0.0f, depth_norm - 0.666f ) * 3.0f );
+    float b = max( 0.0f, 1.0f - max( 0.0f, depth_norm - 0.333f ) * 6.0f );
+
+	return float4(r, g, b, 1.0f) * (depthInMeters > 0);
 }
+
+
 
 technique AddNoise
 {
@@ -165,4 +175,22 @@ technique AddNoise
 		VertexShader = compile vs_3_0 VS();
         PixelShader = compile ps_3_0 PSNoise();
 	}
+}
+
+technique ComputeMedian
+{
+	pass Pass1
+	{
+		VertexShader = compile vs_3_0 VS();
+		PixelShader = compile ps_3_0 PSMedian();
+	}
+}
+
+technique Depth2Color
+{
+    pass Pass1
+    {
+        VertexShader = compile vs_3_0 VS();
+        PixelShader = compile ps_3_0 PSColor();
+    }
 }
