@@ -30,6 +30,11 @@ namespace poly2depth
 
         private int iFrame;
 
+        private Vector4[] rgba;
+        private Texture2D rgbaTex;
+        private Vector4[] tmpPCL;
+        private PointCloud pcl;
+
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
@@ -43,6 +48,11 @@ namespace poly2depth
             recorder = new Recorder();
 
             iFrame = 0;
+
+            // TODO: Generalize
+            rgba = new Vector4[640 * 480];
+            tmpPCL = new Vector4[640 * 480];
+            pcl = new PointCloud();
         }
 
         /// <summary>
@@ -55,10 +65,13 @@ namespace poly2depth
         {
             base.Initialize();
 
+            // TODO: Generalize
             depthOut = new RenderTarget2D(graphics.GraphicsDevice, 640, 480, false, SurfaceFormat.Vector4, DepthFormat.Depth24);
             posOut = new RenderTarget2D(graphics.GraphicsDevice, 640, 480, false, SurfaceFormat.Vector4, DepthFormat.Depth24);
             noiseOut = new RenderTarget2D(graphics.GraphicsDevice, 640, 480, false, SurfaceFormat.Vector4, DepthFormat.Depth24);
             medianOut = new RenderTarget2D(graphics.GraphicsDevice, 640, 480, false, SurfaceFormat.Vector4, DepthFormat.Depth24);
+
+            rgbaTex = new Texture2D(graphics.GraphicsDevice, 640, 480, false, SurfaceFormat.Vector4);
         }
 
         /// <summary>
@@ -156,12 +169,34 @@ namespace poly2depth
             billboard.Draw(billboardEffect);
 
             GraphicsDevice.SetRenderTarget(null);
-
+            
             GraphicsDevice.Clear(Color.Black);
             billboardEffect.CurrentTechnique = billboardEffect.Techniques["Depth2Color"];
             billboardEffect.Parameters["depth"].SetValue(medianOut);
+            billboardEffect.Parameters["eye"].SetValue(cam.GetEye());
+            billboardEffect.Parameters["forward"].SetValue(cam.GetForward());
             billboard.Draw(billboardEffect);
             
+            //if (iFrame < 100)
+            {
+                // TODO: Change tmpPCL packing order
+                medianOut.GetData<Vector4>(tmpPCL);
+                pcl.Integrate(tmpPCL);
+                
+                for (int i = 0; i < 640 * 480; i++)
+                    rgba[i] = new Vector4();
+
+                pcl.Render(cam.GetViewProjection(), cam.GetEye(), cam.GetForward(), rgba);
+                rgbaTex.SetData<Vector4>(rgba);
+            }
+
+            GraphicsDevice.SetRenderTarget(null);
+            
+            GraphicsDevice.Clear(Color.Black);
+            billboardEffect.CurrentTechnique = billboardEffect.Techniques["RenderTex"];
+            billboardEffect.Parameters["color"].SetValue(rgbaTex);
+            billboard.Draw(billboardEffect);
+
             base.Draw(gameTime);
 
             iFrame++;

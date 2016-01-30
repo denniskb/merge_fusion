@@ -74,6 +74,7 @@ float noiseZ(float z, float theta)
 
 Texture2D depth;
 Texture2D pos;
+Texture2D color;
 int iFrame;
 float3 eye;
 float3 forward;
@@ -87,6 +88,12 @@ sampler depthSampler = sampler_state
 sampler posSampler = sampler_state
 {
 	texture = <pos>;
+	Filter = MIN_MAG_MIP_POINT;
+};
+
+sampler colorSampler = sampler_state
+{
+	texture = <color>;
 	Filter = MIN_MAG_MIP_POINT;
 };
 
@@ -146,10 +153,13 @@ float4 PSMedian(VSOut input) : COLOR0
 			}
 		}
 	}
-	
+
 	sort25(median);
-	
-	return median[12];
+		
+	float3 worldPos = tex2D(posSampler, input.texcoord).xyz;
+	float z = dot(worldPos - eye, forward);
+
+	return float4(median[12], ((worldPos - eye) / z * median[12] + eye) * (median[12] > 0.0f));
 }
 
 float4 PSColor(VSOut input) : COLOR0
@@ -164,6 +174,11 @@ float4 PSColor(VSOut input) : COLOR0
     float b = max( 0.0f, 1.0f - max( 0.0f, depth_norm - 0.333f ) * 6.0f );
 
 	return float4(r, g, b, 1.0f) * (depthInMeters > 0);
+}
+
+float4 PSTexture(VSOut input) : COLOR0
+{
+	return tex2D(colorSampler, input.texcoord);
 }
 
 
@@ -193,4 +208,13 @@ technique Depth2Color
         VertexShader = compile vs_3_0 VS();
         PixelShader = compile ps_3_0 PSColor();
     }
+}
+
+technique RenderTex
+{
+	pass Pass1
+	{
+		VertexShader = compile vs_3_0 VS();
+        PixelShader = compile ps_3_0 PSTexture();
+	}
 }
