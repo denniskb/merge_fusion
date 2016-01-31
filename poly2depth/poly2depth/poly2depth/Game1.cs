@@ -35,6 +35,8 @@ namespace poly2depth
         private Vector4[] tmpPCL;
         private PointCloud pcl;
 
+        private Renderer render;
+
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
@@ -53,6 +55,8 @@ namespace poly2depth
             rgba = new Vector4[640 * 480];
             tmpPCL = new Vector4[640 * 480];
             pcl = new PointCloud();
+
+            render = new Renderer();
         }
 
         /// <summary>
@@ -131,7 +135,7 @@ namespace poly2depth
 
             GraphicsDevice.Clear(Color.Black);
             depthEffect.CurrentTechnique = depthEffect.Techniques["WorldPos"];
-            depthEffect.Parameters["modelToWorld"].SetValue(Matrix.CreateTranslation(0.0f, -10.0f, 20.0f) * Matrix.CreateScale(0.1f));
+            depthEffect.Parameters["modelToWorld"].SetValue(Matrix.CreateScale(0.075f) * Matrix.CreateTranslation(0.0f, -0.75f, -0.37f));
             depthEffect.Parameters["eyeToClip"].SetValue(cam.GetViewProjection());
             depthEffect.Parameters["eye"].SetValue(cam.GetEye());
             depthEffect.Parameters["forward"].SetValue(cam.GetForward());
@@ -141,7 +145,7 @@ namespace poly2depth
             
             GraphicsDevice.Clear(Color.Black);
             depthEffect.CurrentTechnique = depthEffect.Techniques["DepthPlusNormal"];
-            depthEffect.Parameters["modelToWorld"].SetValue(Matrix.CreateTranslation(0.0f, -10.0f, 20.0f) * Matrix.CreateScale(0.1f));
+            depthEffect.Parameters["modelToWorld"].SetValue(Matrix.CreateScale(0.075f) * Matrix.CreateTranslation(0.0f, -0.75f, -0.37f));
             depthEffect.Parameters["eyeToClip"].SetValue(cam.GetViewProjection());
             depthEffect.Parameters["eye"].SetValue(cam.GetEye());
             depthEffect.Parameters["forward"].SetValue(cam.GetForward());
@@ -181,12 +185,11 @@ namespace poly2depth
             {
                 // TODO: Change tmpPCL packing order
                 medianOut.GetData<Vector4>(tmpPCL);
-                pcl.Integrate(tmpPCL);
-                
-                for (int i = 0; i < 640 * 480; i++)
-                    rgba[i] = new Vector4();
 
-                pcl.Render(cam.GetViewProjection(), cam.GetEye(), cam.GetForward(), rgba);
+                pcl.Integrate(tmpPCL, cam.GetViewProjection(), cam.GetEye(), cam.GetForward());
+
+                render.Render(pcl, cam.GetViewProjection(), cam.GetEye(), cam.GetForward(), rgba);
+                
                 rgbaTex.SetData<Vector4>(rgba);
             }
 
