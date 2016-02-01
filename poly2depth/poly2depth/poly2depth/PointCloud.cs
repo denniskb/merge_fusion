@@ -20,11 +20,13 @@ namespace poly2depth
             {
                 Vector4 p = points[i];
                 Vector3 worldPos = new Vector3(p.X, p.Y, p.Z);
-                Vector4 clipPos = Vector4.Transform(new Vector4(worldPos.X, worldPos.Y, worldPos.Z, 1.0f), worldToClip); clipPos /= clipPos.W;
+                Vector4 clipPos = Vector4.Transform(new Vector4(worldPos.X, worldPos.Y, worldPos.Z, 1.0f), worldToClip);
 
+                float depth = clipPos.W;
+                
                 // TODO: Generalize
-                int screenX = (int)(clipPos.X * 320.0f + 320.0f);
-                int screenY = 480 - (int)(clipPos.Y * 240.0f + 240.0f);
+                int screenX = (int)(clipPos.X / clipPos.W * 320.0f + 320.0f);
+                int screenY = 480 - (int)(clipPos.Y / clipPos.W * 240.0f + 240.0f);
 
                 // TODO: Generalize
                 if (screenX < 0 || screenX >= 640 ||
@@ -33,8 +35,6 @@ namespace poly2depth
 
                 // TODO: Generalize
                 int idx = 640 * screenY + screenX;
-                
-                float depth = Vector3.Dot(worldPos - eye, forward);
                 
                 if (depth < depthPointCloud[idx].X + TR)
                 {
