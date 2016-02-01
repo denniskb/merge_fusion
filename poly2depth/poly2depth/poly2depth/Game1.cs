@@ -181,9 +181,8 @@ namespace poly2depth
             billboardEffect.Parameters["forward"].SetValue(cam.GetForward());
             billboard.Draw(billboardEffect);
             
-            //if (iFrame < 100)
+#if true
             {
-                // TODO: Change tmpPCL packing order
                 medianOut.GetData<Vector4>(tmpPCL);
 
                 pcl.Integrate(tmpPCL, cam.GetViewProjection(), cam.GetEye(), cam.GetForward());
@@ -199,6 +198,7 @@ namespace poly2depth
             billboardEffect.CurrentTechnique = billboardEffect.Techniques["RenderTex"];
             billboardEffect.Parameters["color"].SetValue(rgbaTex);
             billboard.Draw(billboardEffect);
+#endif
 
             base.Draw(gameTime);
 

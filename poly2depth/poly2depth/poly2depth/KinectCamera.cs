@@ -14,8 +14,8 @@ namespace poly2depth
 
         public KinectCamera()
         {
-            eye = new Vector3(0.0f, 0.0f, 2.0f);
-            forward = new Vector3(0.0f, 0.0f, -1.0f);
+            eye = new Vector3(-0.5f, 0.0f, 2.0f);
+            forward = Vector3.Normalize(-eye);
         }
 
         public Vector3 GetEye()

@@ -8,18 +8,25 @@ namespace poly2depth
         private List<Vector4> points;
         private float TR;
 
+        private Histogram densities;
+        
         public PointCloud()
         {
             points = new List<Vector4>(640 * 480);
             TR = 0.02f;
+
+            densities = new Histogram(128, new Vector3(-1.5f), new Vector3(1.5f));
         }
 
         public void Integrate(Vector4[] depthPointCloud, Matrix worldToClip, Vector3 eye, Vector3 forward)
         {
+            densities.Clear();
+
             for (int i = 0; i < points.Count; i++)
             {
                 Vector4 p = points[i];
                 Vector3 worldPos = new Vector3(p.X, p.Y, p.Z);
+                densities.Increment(worldPos);
                 Vector4 clipPos = Vector4.Transform(new Vector4(worldPos.X, worldPos.Y, worldPos.Z, 1.0f), worldToClip);
 
                 float depth = clipPos.W;
@@ -46,13 +53,42 @@ namespace poly2depth
             }
 
             // HACK
-            if (points.Count < 300000)
+            if (points.Count < 500000)
                 for (int i = 0; i < depthPointCloud.Length; i++)
                 {
                     Vector4 p = depthPointCloud[i];
                     if (p.X > 0.0f)
+                    {
                         points.Add(new Vector4(p.Y, p.Z, p.W, 1.0f));
+                        densities.Increment(new Vector3(p.Y, p.Z, p.W));
+                    }
                 }
+            //return;
+            for (int i = 0; i < points.Count; i++)
+            {
+                Vector4 p = points[i];
+                // No. of points inside one cell (3.1cm^3)
+                float count = densities.Trilerp(new Vector3(p.X, p.Y, p.Z));
+                //float count = densities.Point(new Vector3(p.X, p.Y, p.Z));
+
+                if (count < 5.0f || count > 150.0f)
+                {
+                    p.W = 0.0f;
+                    points[i] = p;
+                }
+            }
+
+            // Compact (remove 0-weight points)
+            {
+                int idst = 0;
+                int isrc = 0;
+
+                for (; isrc < points.Count; isrc++)
+                    if (points[isrc].W > 0.0f)
+                        points[idst++] = points[isrc];
+
+                points.RemoveRange(idst, points.Count - idst);
+            }
 
             // TODO:
             // - Create histogram density bins
