@@ -20,13 +20,11 @@ namespace poly2depth
 
         public void Integrate(Vector4[] depthPointCloud, Matrix worldToClip, Vector3 eye, Vector3 forward)
         {
-            densities.Clear();
-
+            // Update existing points
             for (int i = 0; i < points.Count; i++)
             {
                 Vector4 p = points[i];
                 Vector3 worldPos = new Vector3(p.X, p.Y, p.Z);
-                densities.Increment(worldPos);
                 Vector4 clipPos = Vector4.Transform(new Vector4(worldPos.X, worldPos.Y, worldPos.Z, 1.0f), worldToClip);
 
                 float depth = clipPos.W;
@@ -52,25 +50,37 @@ namespace poly2depth
                 }
             }
 
-            // HACK
-            if (points.Count < 1000000)
+            // Add new valid points from current depth map
+            if (points.Count < 500000) // HACK
                 for (int i = 0; i < depthPointCloud.Length; i++)
                 {
                     Vector4 p = depthPointCloud[i];
                     if (p.X > 0.0f)
                     {
                         points.Add(new Vector4(p.Y, p.Z, p.W, 1.0f));
-                        densities.Increment(new Vector3(p.Y, p.Z, p.W));
                     }
                 }
-            //return;
+
+            // Reset histogram
+            densities.Clear();
+
+            // Update histogram
             for (int i = 0; i < points.Count; i++)
             {
                 Vector4 p = points[i];
                 Vector3 pos = new Vector3(p.X, p.Y, p.Z);
 
+                densities.Increment(pos);
+            }
+
+            // Delete points based on histogram
+            for (int i = 0; i < points.Count; i++)
+            {
+                Vector4 p = points[i];
+                Vector3 pos = new Vector3(p.X, p.Y, p.Z);
+            
                 float count = densities.Trilerp(pos);
-                
+            
                 if (count < 5.0f || count > 200.0f)
                 {
                     p.W = 0.0f;
@@ -79,7 +89,7 @@ namespace poly2depth
                 }
             }
 
-            // Compact (remove 0-weight points)
+            // Compact array (remove 'mark-deleted' points)
             {
                 int idst = 0;
                 int isrc = 0;
@@ -90,15 +100,6 @@ namespace poly2depth
 
                 points.RemoveRange(idst, points.Count - idst);
             }
-
-            // TODO:
-            // - Create histogram density bins
-            // - Count occurences during the two above iterations
-            // - Prune points that exceed density (trilerp, ie cells have to store densities, not counts!)
-            // - OR: They can store counts, but then trilerp the counts rather than sum them! etsi
-            // - Show results, discuss further steps (hopefully just need to write down algorithm)
-            // - Use them to cap both the sampling rate and to prune isolated points! then show how it performs
-            //   without the pruning step as a comparison! afta
         }
 
         public List<Vector4> Points()
