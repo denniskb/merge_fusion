@@ -76,8 +76,8 @@ namespace poly2depth
             if (keyboard.IsKeyDown(Keys.S))
                 thumbRY = -1f;
 
-            float maxMoveDelta = 1.0f / 60.0f;
-            float maxRotDelta = 0.5f * MathHelper.Pi / 60.0f;
+            float maxMoveDelta = 0.5f / 60.0f;
+            float maxRotDelta = 0.25f * MathHelper.Pi / 60.0f;
 
             Vector3 up = new Vector3(0.0f, 1.0f, 0.0f);
             Vector3 right = Vector3.Normalize(Vector3.Cross(GetForward(), up));

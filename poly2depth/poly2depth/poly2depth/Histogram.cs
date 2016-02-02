@@ -40,16 +40,21 @@ namespace poly2depth
 
         public void Increment(Vector3 p)
         {
-            Vector3 idx = (p - min) / size * res;
-            idx = Max(Vector3.Zero, Min(maxidx, idx));
+            var idx = PosToIdx(p);
 
             data[(int) idx.X, (int) idx.Y, (int) idx.Z]++;
         }
 
+        public void Decrement(Vector3 p)
+        {
+            var idx = PosToIdx(p);
+
+            data[(int)idx.X, (int)idx.Y, (int)idx.Z]--;
+        }
+
         public int Point(Vector3 p)
         {
-            Vector3 idx = (p - min) / size * res;
-            idx = Max(Vector3.Zero, Min(maxidx, idx));
+            var idx = PosToIdx(p);
 
             return data[(int)idx.X, (int)idx.Y, (int)idx.Z];
         }
@@ -104,6 +109,11 @@ namespace poly2depth
                 MathHelper.Max(a.Y, b.Y),
                 MathHelper.Max(a.Z, b.Z)
             );
+        }
+
+        private Vector3 PosToIdx(Vector3 p)
+        {
+            return Max(Vector3.Zero, Min(maxidx, (p - min) / size * res));
         }
     }
 }

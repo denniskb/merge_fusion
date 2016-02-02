@@ -53,7 +53,7 @@ namespace poly2depth
             }
 
             // HACK
-            if (points.Count < 500000)
+            if (points.Count < 1000000)
                 for (int i = 0; i < depthPointCloud.Length; i++)
                 {
                     Vector4 p = depthPointCloud[i];
@@ -67,14 +67,15 @@ namespace poly2depth
             for (int i = 0; i < points.Count; i++)
             {
                 Vector4 p = points[i];
-                // No. of points inside one cell (3.1cm^3)
-                float count = densities.Trilerp(new Vector3(p.X, p.Y, p.Z));
-                //float count = densities.Point(new Vector3(p.X, p.Y, p.Z));
+                Vector3 pos = new Vector3(p.X, p.Y, p.Z);
 
-                if (count < 5.0f || count > 150.0f)
+                float count = densities.Trilerp(pos);
+                
+                if (count < 5.0f || count > 200.0f)
                 {
                     p.W = 0.0f;
                     points[i] = p;
+                    densities.Decrement(pos);
                 }
             }
 

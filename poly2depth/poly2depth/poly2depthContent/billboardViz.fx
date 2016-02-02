@@ -130,7 +130,7 @@ float4 PSNoise(VSOut input) : COLOR0
 
 	float z = 
 	sample.x
-	+ 10 * noiseZ(sample.x, theta) 
+	+ 2 * noiseZ(sample.x, theta) 
 	* rnd_normal(input.texcoord + iFrame) 
 	* (sample.x > 0.0f);
 	
