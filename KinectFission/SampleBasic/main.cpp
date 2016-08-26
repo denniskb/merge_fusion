@@ -20,12 +20,12 @@ using namespace kifi::util;
 
 util::vector2d< int > backBuffer( 640, 480 );
 
-DepthStream depthStreamHouse( "I:/tmp/imrod.depth" );
+DepthStream depthStreamHouse( "D:/Desktop/house.depth" );
 vector2d< float > synthDepthFrame;
-//DepthSensorParams cameraParams( int2( 640, 480 ), float2( 585.0f ), float2( 320, 240 ), float2( 0.8f, 4.0f ) );
-DepthSensorParams cameraParams( DepthSensorParams::KinectParams( KinectDepthSensorResolution640x480, KinectDepthSensorModeFar ) );
+DepthSensorParams cameraParams( int2( 640, 480 ), float2( 571.26f ), float2( 320, 240 ), float2( 0.4f, 4.0f ) );
+//DepthSensorParams cameraParams( DepthSensorParams::KinectParams( KinectDepthSensorResolution640x480, KinectDepthSensorModeFar ) );
 
-Pipeline pipeline( cameraParams, 512, 2.0f, 0.01f );
+Pipeline pipeline( cameraParams, 512, 2.0f, 0.02f );
 
 std::vector< float3   > vertices;
 std::vector< unsigned > indices;
@@ -51,7 +51,7 @@ void myIdleFunc( int button, int state, int x, int y )
 			glutPostRedisplay();
 		}
 		else
-			Mesher::Mesh2Obj( vertices, indices, "I:/tmp/imrod.obj" );
+			Mesher::Mesh2Obj( vertices, indices, "D:/Desktop/house.obj" );
 }
 
 void myDisplayFunc()

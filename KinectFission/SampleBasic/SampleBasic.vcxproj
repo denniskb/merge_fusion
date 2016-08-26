@@ -44,14 +44,14 @@
   <PropertyGroup />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)..;$(FREEGLUT_ROOT)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\workspace\freeglut\v3.0.0\include;D:\workspace\svc\KinectFission</AdditionalIncludeDirectories>
       <FloatingPointExceptions>true</FloatingPointExceptions>
       <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Link />
     <Link>
-      <AdditionalDependencies>freeglut.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(FREEGLUT_ROOT)\lib\x64</AdditionalLibraryDirectories>
+      <AdditionalDependencies>freeglutd.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\workspace\freeglut\v3.0.0\build\lib\Debug</AdditionalLibraryDirectories>
       <SubSystem>Windows</SubSystem>
       <AdditionalOptions>/ENTRY:mainCRTStartup %(AdditionalOptions)</AdditionalOptions>
     </Link>
@@ -61,7 +61,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)..;$(FREEGLUT_ROOT)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\workspace\freeglut\v3.0.0\include;D:\workspace\svc\KinectFission</AdditionalIncludeDirectories>
       <FloatingPointModel>Fast</FloatingPointModel>
       <FloatingPointExceptions>false</FloatingPointExceptions>
       <TreatWarningAsError>false</TreatWarningAsError>
@@ -69,7 +69,7 @@
     <Link />
     <Link>
       <AdditionalDependencies>freeglut.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(FREEGLUT_ROOT)\lib\x64</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>D:\workspace\freeglut\v3.0.0\build\lib\Release</AdditionalLibraryDirectories>
       <AdditionalOptions>/ENTRY:mainCRTStartup %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>

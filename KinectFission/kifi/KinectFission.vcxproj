@@ -49,7 +49,7 @@
     <ClCompile />
     <Link />
     <ClCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)..</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\workspace\svc\KinectFission</AdditionalIncludeDirectories>
       <FloatingPointExceptions>true</FloatingPointExceptions>
       <AdditionalOptions>/D_SCL_SECURE_NO_WARNINGS %(AdditionalOptions)</AdditionalOptions>
       <EnablePREfast>false</EnablePREfast>
@@ -68,7 +68,7 @@
     <ClCompile />
     <Link />
     <ClCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)..</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\workspace\svc\KinectFission</AdditionalIncludeDirectories>
       <FloatingPointExceptions>false</FloatingPointExceptions>
       <UndefinePreprocessorDefinitions>
       </UndefinePreprocessorDefinitions>
