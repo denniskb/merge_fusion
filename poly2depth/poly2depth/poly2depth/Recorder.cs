@@ -32,7 +32,8 @@ namespace poly2depth
 
         public void Update()
         {
-            bool buttonAIsUp = GamePad.GetState(Microsoft.Xna.Framework.PlayerIndex.One).Buttons.A == ButtonState.Released;
+            bool buttonAIsUp = (GamePad.GetState(PlayerIndex.One).IsConnected && GamePad.GetState(PlayerIndex.One).Buttons.A == ButtonState.Released) ||
+                Keyboard.GetState().IsKeyUp(Keys.Space);
 
             if (buttonAIsUp && buttonAWasDown)
                 if (IsRecording())
