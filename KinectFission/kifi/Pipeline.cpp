@@ -1,5 +1,7 @@
 #include <kifi/Pipeline.h>
 
+#include <kifi/util/chrono.h>
+
 
 
 namespace kifi {
@@ -23,37 +25,47 @@ Pipeline::Pipeline
 
 
 
+#pragma warning( push )
+#pragma warning( disable : 4100 )
+
 void Pipeline::Integrate
 (
 	util::vector2d< float > rawDepthMap,
 	util::float4x4 const & worldToEye
 )
 {
+	util::chrono::stop_watch sw;
+
 #if 1
 	m_eyeToWorld = worldToEye;
 	util::invert_transform( m_eyeToWorld );
+	sw.restart();
 	m_integrator.Integrate( m_volume, rawDepthMap, m_camParams, worldToEye );
+	sw.take_time( "tIntegrate" );
 #else
 	if( m_iFrame > 0 )
-	//	// TODO: Swap dst and src
 		m_eyeToWorld = m_icp.Align( rawDepthMap, m_eyeToWorld, m_tmpSynthPointBuffer, m_eyeToWorld, m_camParams );
+	sw.take_time( "tICP" );
 
 	util::float4x4 tmp = m_eyeToWorld;
 	util::invert_transform( tmp );
 
-	// TODO: Change interface of integrator to accept eyeToWorld
-	//if( m_iFrame == 0 )
-		m_integrator.Integrate( m_volume, rawDepthMap, m_camParams, tmp );
+	sw.restart();
+	m_integrator.Integrate( m_volume, rawDepthMap, m_camParams, tmp );
+	sw.take_time( "tIntegrate" );
 
 	m_mesher.Mesh( m_volume, m_tmpSynthPointCloud );
-	//
-	//m_tmpSynthPointBuffer.resize( m_camParams.ResolutionPixels().x, m_camParams.ResolutionPixels().y );
-	m_tmpSynthPointBuffer.resize( 1024, 768 );
+	
+	m_tmpSynthPointBuffer.resize( m_camParams.ResolutionPixels().x, m_camParams.ResolutionPixels().y );
 	m_renderer.Bin( m_tmpSynthPointCloud, m_camParams.EyeToClipRH() * tmp, m_tmpSynthPointBuffer );
 
 	++m_iFrame;
 #endif
+
+	sw.print_times();
 }
+
+#pragma warning( pop )
 
 
 

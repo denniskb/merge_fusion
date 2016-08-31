@@ -34,6 +34,37 @@ void Renderer::Render
 	}
 }
 
+void Renderer::Render
+(
+	Volume const & volume,
+	util::float4x4 const & worldToClip,
+
+	util::vector2d< int > & outRgba 
+)
+{
+	std::memset( outRgba.data(), 0, outRgba.size() * 4 );
+
+	float halfWidth = outRgba.width() * 0.5f;
+	float halfHeight = outRgba.height() * 0.5f;
+
+	for( std::size_t i = 0; i < volume.Data().size(); ++i )
+	{
+		if( std::abs( volume.Data().values_cbegin()[ i ].Distance() ) > 0.006f ) continue;
+
+		unsigned x, y, z;
+		util::unpack( volume.Data().keys_cbegin()[ i ], x, y, z );
+		util::float4 point( volume.VoxelCenter( x, y, z ), 1.0f );
+
+		point = util::homogenize( worldToClip * point );
+		int u = (int) (point.x * halfWidth + halfWidth);
+		int v = (int) outRgba.height() - 1 - (int) (point.y * halfHeight + halfHeight);
+
+		if( u >= 0 && u < outRgba.width() &&
+			v >= 0 && v < outRgba.height() )
+				outRgba( u, v ) = ~0u;
+	}
+}
+
 
 
 void Renderer::Bin

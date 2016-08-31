@@ -176,7 +176,7 @@ namespace poly2depth
             
             GraphicsDevice.Clear(Color.Black);
             billboardEffect.CurrentTechnique = billboardEffect.Techniques["Depth2Color"];
-            billboardEffect.Parameters["depth"].SetValue(depthOut);
+            billboardEffect.Parameters["depth"].SetValue(noiseOut);
             billboardEffect.Parameters["eye"].SetValue(cam.GetEye());
             billboardEffect.Parameters["forward"].SetValue(cam.GetForward());
             billboard.Draw(billboardEffect);

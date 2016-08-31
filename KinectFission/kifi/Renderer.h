@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include <kifi/Volume.h>
 #include <kifi/util/math.h>
 #include <kifi/util/vector2d.h>
 
@@ -15,6 +16,14 @@ public:
 	void Render
 	(
 		std::vector< util::float3 > const & pointCloud,
+		util::float4x4 const & worldToClip,
+
+		util::vector2d< int > & outRgba 
+	);
+
+	void Render
+	(
+		Volume const & volume,
 		util::float4x4 const & worldToClip,
 
 		util::vector2d< int > & outRgba 

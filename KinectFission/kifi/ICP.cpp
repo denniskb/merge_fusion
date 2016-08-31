@@ -130,7 +130,6 @@ util::float4x4 ICP::AlignStep
 				dstMedianSum += p2;
 			}
 		}
-	std::printf( "nassocs: %d\n", m_assocs.size() );
 	// Simple test: Create small array of random points,
 	// use it twice, just with different transforms (rigid),
 	// so we know the exact assocs

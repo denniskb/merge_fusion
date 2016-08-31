@@ -17,9 +17,6 @@
 
 using namespace kifi;
 
-// HACK
-#include <kifi/util/stop_watch.h>
-
 
 
 // static 
@@ -41,8 +38,6 @@ void Integrator::Integrate
 	util::float4x4 worldToClip = cameraParams.EyeToClipRH() * worldToEye;
 	util::float4x4 eyeToWorld  = worldToEye; util::invert_transform( eyeToWorld );
 
-
-	util::chrono::stop_watch sw;
 	std::size_t nSplats = DepthMap2PointCloud( volume, frame, cameraParams, eyeToWorld, m_tmpPointCloud );
 
 	util::radix_sort( m_tmpPointCloud.data(), m_tmpPointCloud.data() + nSplats, m_tmpScratchPad.data() );
@@ -56,18 +51,12 @@ void Integrator::Integrate
 	
 	ExpandChunks( m_tmpPointCloud, m_tmpScratchPad );
 	
-	sw.restart();
 	volume.Data().insert(
 		m_tmpPointCloud.cbegin(), m_tmpPointCloud.cend(),
 		util::make_const_iterator( Voxel() )
 	);
-	sw.take_time( "tmerge" );
 	
-	sw.restart();
 	UpdateVoxels( volume, frame, worldToClip );
-	sw.take_time( "tupd" );
-
-	sw.print_times();
 }
 
 

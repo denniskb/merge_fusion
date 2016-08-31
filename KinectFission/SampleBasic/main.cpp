@@ -25,7 +25,7 @@ vector2d< float > synthDepthFrame;
 DepthSensorParams cameraParams( int2( 640, 480 ), float2( 571.26f ), float2( 320, 240 ), float2( 0.4f, 4.0f ) );
 //DepthSensorParams cameraParams( DepthSensorParams::KinectParams( KinectDepthSensorResolution640x480, KinectDepthSensorModeFar ) );
 
-Pipeline pipeline( cameraParams, 512, 2.0f, 0.02f );
+Pipeline pipeline( cameraParams, 1024, 4.0f, 0.02f );
 
 std::vector< float3   > vertices;
 std::vector< unsigned > indices;
@@ -33,25 +33,32 @@ std::vector< unsigned > indices;
 Renderer r;
 
 //void myIdleFunc()
-void myIdleFunc( int button, int state, int x, int y )
+void myIdleFunc()
 {
+	static bool done = false;
+
 	float4x4 worldToEye;
 
-	if( GLUT_MIDDLE_BUTTON == state )
-		if( depthStreamHouse.NextFrame( synthDepthFrame, worldToEye ) )
-		{
-			pipeline.Integrate( synthDepthFrame, worldToEye );
-			pipeline.Mesh( vertices, indices );
-			//pipeline.Mesh( vertices );
+	if( depthStreamHouse.NextFrame( synthDepthFrame, worldToEye ) )
+	{			
+		std::printf( "#points: %.2fM\n", pipeline.Volume().Data().size() / 1000000.0 );
+		pipeline.Integrate( synthDepthFrame, worldToEye );
+		
+		util::chrono::stop_watch sw;
+		r.Render( pipeline.Volume(), cameraParams.EyeToClipRH() * worldToEye, backBuffer );
+		sw.take_time( "tRender" );
+		sw.print_times();
+			
+		std::printf( "\n" );
 
-			//float4x4 tmp = pipeline.EyeToWorld(); invert_transform( tmp );
-			//r.Render( vertices, cameraParams.EyeToClipRH() * tmp, backBuffer );
-			//r.Render( vertices, cameraParams.EyeToClipRH() * worldToEye, backBuffer );
-
-			glutPostRedisplay();
-		}
-		else
-			Mesher::Mesh2Obj( vertices, indices, "D:/Desktop/house.obj" );
+		glutPostRedisplay();
+	}
+	else if( ! done )
+	{
+		pipeline.Mesh( vertices, indices );
+		Mesher::Mesh2Obj( vertices, indices, "D:/Desktop/house.obj" );
+		done = true;
+	}
 }
 
 void myDisplayFunc()
@@ -59,29 +66,29 @@ void myDisplayFunc()
 	glClear( GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT );
 	glEnable( GL_DEPTH_TEST );
 
-	/*glTexImage2D( GL_TEXTURE_2D, 0, 3, backBuffer.width(), backBuffer.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, backBuffer.data() );
+	glTexImage2D( GL_TEXTURE_2D, 0, 3, backBuffer.width(), backBuffer.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, backBuffer.data() );
 
 	glBegin( GL_QUADS );
         glTexCoord2d( 0.0, 0.0 ); glVertex2d( -1.0,  1.0 );
         glTexCoord2d( 1.0, 0.0 ); glVertex2d(  1.0,  1.0 );
         glTexCoord2d( 1.0, 1.0 ); glVertex2d(  1.0, -1.0 );
         glTexCoord2d( 0.0, 1.0 ); glVertex2d( -1.0, -1.0 );
-    glEnd();*/
+    glEnd();
 
 	auto tmp = pipeline.EyeToWorld(); invert_transform( tmp );
 	auto m = cameraParams.EyeToClipRH() * tmp;
 
-	glPushMatrix();
-	glLoadMatrixf( reinterpret_cast< float * >( & m ) );
-	
-	glEnableClientState( GL_VERTEX_ARRAY );
-	glVertexPointer( 3, GL_FLOAT, sizeof( float3 ), vertices.data() );
-
-	glDrawArrays( GL_POINTS, 0, vertices.size() );
-
-	glDisableClientState( GL_VERTEX_ARRAY );
-
-	glPopMatrix();
+	//glPushMatrix();
+	//glLoadMatrixf( reinterpret_cast< float * >( & m ) );
+	//
+	//glEnableClientState( GL_VERTEX_ARRAY );
+	//glVertexPointer( 3, GL_FLOAT, sizeof( float3 ), vertices.data() );
+	//
+	//glDrawArrays( GL_POINTS, 0, vertices.size() );
+	//
+	//glDisableClientState( GL_VERTEX_ARRAY );
+	//
+	//glPopMatrix();
 
     glutSwapBuffers();
 }
@@ -96,7 +103,7 @@ int main( int argc, char ** argv )
 	glutCreateWindow( "KinectFission" );
 
 	glutDisplayFunc( myDisplayFunc );
-	glutMouseFunc( myIdleFunc );
+	glutIdleFunc( myIdleFunc );
 	//glutIdleFunc( myIdleFunc );
 
 	// Set up the texture
