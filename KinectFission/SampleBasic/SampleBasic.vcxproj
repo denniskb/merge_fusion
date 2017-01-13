@@ -44,7 +44,7 @@
   <PropertyGroup />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>D:\workspace\freeglut\v3.0.0\include;D:\workspace\svc\KinectFission</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\workspace\freeglut\v3.0.0\include;D:\google_drive\projects\svc\KinectFission</AdditionalIncludeDirectories>
       <FloatingPointExceptions>true</FloatingPointExceptions>
       <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
@@ -61,7 +61,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>D:\workspace\freeglut\v3.0.0\include;D:\workspace\svc\KinectFission</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\workspace\freeglut\v3.0.0\include;D:\google_drive\projects\svc\KinectFission</AdditionalIncludeDirectories>
       <FloatingPointModel>Fast</FloatingPointModel>
       <FloatingPointExceptions>false</FloatingPointExceptions>
       <TreatWarningAsError>false</TreatWarningAsError>
