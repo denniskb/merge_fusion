@@ -23,7 +23,6 @@ util::vector2d< int > backBuffer( 640, 480 );
 DepthStream depthStreamHouse( "D:/Desktop/house.depth" );
 vector2d< float > synthDepthFrame;
 DepthSensorParams cameraParams( int2( 640, 480 ), float2( 571.26f ), float2( 320, 240 ), float2( 0.4f, 4.0f ) );
-//DepthSensorParams cameraParams( DepthSensorParams::KinectParams( KinectDepthSensorResolution640x480, KinectDepthSensorModeFar ) );
 
 Pipeline pipeline( cameraParams, 1024, 4.0f, 0.02f );
 
@@ -104,7 +103,6 @@ int main( int argc, char ** argv )
 
 	glutDisplayFunc( myDisplayFunc );
 	glutIdleFunc( myIdleFunc );
-	//glutIdleFunc( myIdleFunc );
 
 	// Set up the texture
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
