@@ -19,6 +19,13 @@ static util::float4x4 AlignStep
 	std::vector< std::pair< util::float3, util::float3 > > & tmpAssocs
 );
 
+/**
+ * Given a list of associations between pairs of 3D points,
+ * find the rigid transformation that minimizes the squared error between them,
+ * using Horn's method (http://people.csail.mit.edu/bkph/papers/Absolute_Orientation.pdf).
+ */
+static util::float4x4 FindTransformHorn( std::vector< std::pair< util::float3, util::float3 > > const & assocs );
+
 
 
 namespace kifi {
@@ -81,8 +88,6 @@ util::float4x4 AlignStep
 	float halfWidth = synthDepthBuffer.width() * 0.5f;
 	float halfHeight = synthDepthBuffer.height() * 0.5f;
 
-	kahan_sum< float4 > srcMedianSum( 0.0f );
-	kahan_sum< float4 > dstMedianSum( 0.0f );
 	tmpAssocs.clear();
 	
 	for( std::size_t y = 0; y < rawDepthMap.height(); y++ )
@@ -101,23 +106,6 @@ util::float4x4 AlignStep
 			point = rawDepthMapEyeToWorldGuess * point; // raw depth map pixel in 3D world space
 
 			float4 uv = homogenize( cameraParams.EyeToClipRH() * dstWorldToEye * point );
-			/*int u = (int) (uv.x * halfWidth + halfWidth);
-			int v = (int) synthDepthBuffer.height() - 1 - (int) (uv.y * halfHeight + halfHeight);
-
-			if( u >= 0 && u < synthDepthBuffer.width() &&
-				v >= 0 && v < synthDepthBuffer.height() )
-			{
-				float4 dst = float4( synthDepthBuffer( u, v ), 1.0f );
-				if( dst.x == 0 && dst.y == 0 && dst.z == 0 ) // invalid point
-					continue;
-
-				if( len2( dst - point ) > 0.01f ) // points more than 10cm apart => not compatible
-					continue;
-
-				tmpAssocs.push_back( std::make_pair( point.xyz(), dst.xyz() ) );
-				srcMedianSum += point;
-				dstMedianSum += dst;
-			}*/
 
 			int u = (int) (uv.x * halfWidth + halfWidth) - 10;
 			int v = (int) synthDepthBuffer.height() - 1 - (int) (uv.y * halfHeight + halfHeight) - 10;
@@ -140,35 +128,42 @@ util::float4x4 AlignStep
 					p1 = point;
 					p2 = dst;
 				}
-
-				//tmpAssocs.push_back( std::make_pair( point.xyz(), dst.xyz() ) );
-				//srcMedianSum += point;
-				//dstMedianSum += dst;
 			}
+
 			if( mind < 0.01f )
 			{
 				tmpAssocs.push_back( std::make_pair( p1.xyz(), p2.xyz() ) );
-				srcMedianSum += p1;
-				dstMedianSum += p2;
 			}
 		}
 
-	float4 srcMedian = srcMedianSum / float4( (float) tmpAssocs.size() );
-	float4 dstMedian = dstMedianSum / float4( (float) tmpAssocs.size() );
+	return FindTransformHorn( tmpAssocs );
+}
+
+static util::float4x4 FindTransformHorn( std::vector< std::pair< util::float3, util::float3 > > const & assocs )
+{
+	using namespace util;
+
+	kahan_sum< float4 > srcMedianSum( 0.0f );
+	kahan_sum< float4 > dstMedianSum( 0.0f );
+
+	for( auto const & srcDst : assocs ) {
+		srcMedianSum += float4( srcDst.first , 1.0f );
+		dstMedianSum += float4( srcDst.second, 1.0f );
+	}
+
+	float4 srcMedian = srcMedianSum / float4( (float) assocs.size() );
+	float4 dstMedian = dstMedianSum / float4( (float) assocs.size() );
+
+
 
 	kahan_sum< float > 
 		Sxx, Sxy, Sxz,
 		Syx, Syy, Syz,
 		Szx, Szy, Szz;
 
-	// associations computed => Horn
-	for( std::size_t i = 0; i < tmpAssocs.size(); ++i )
-	{
-		// all points are valid and compatible, no-brainer
-		auto x = tmpAssocs[ i ];
-
-		float4 src( x.first , 1.0f );
-		float4 dst( x.second, 1.0f );
+	for( auto const & srcDst : assocs ) {
+		float4 src( srcDst.first , 1.0f );
+		float4 dst( srcDst.second, 1.0f );
 
 		src -= srcMedian;
 		dst -= dstMedian;
@@ -250,6 +245,5 @@ util::float4x4 AlignStep
 	T.col3 = t;
 	T.col3.w = 1.0f;
 
-	float4x4 result = T * R;
-	return result;
+	return T * R;
 }
