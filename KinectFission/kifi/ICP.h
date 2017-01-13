@@ -28,19 +28,6 @@ public:
 
 private:
 	std::vector< std::pair< util::float3, util::float3 > > m_assocs;
-
-	static util::float4x4 AlignStep
-	(
-		util::vector2d< float > const & rawDepthMap,
-		util::float4x4 const & rawDepthMapWorldToEyeGuess,
-		
-		util::vector2d< util::float3 > const & synthDepthBuffer,
-		util::float4x4 const & synthDepthBufferWorldToEye,
-
-		DepthSensorParams const & cameraParams,
-
-		std::vector< std::pair< util::float3, util::float3 > > & tmpAssocs
-	);
 };
 
 } // namespace

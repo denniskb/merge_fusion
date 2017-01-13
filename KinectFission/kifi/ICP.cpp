@@ -2,6 +2,23 @@
 
 #include <kifi/ICP.h>
 
+using namespace kifi;
+
+
+
+static util::float4x4 AlignStep
+(
+	util::vector2d< float > const & rawDepthMap,
+	util::float4x4 const & rawDepthMapEyeToWorldGuess,
+		
+	util::vector2d< util::float3 > const & synthDepthBuffer,
+	util::float4x4 const & synthDepthBufferEyeToWorld,
+
+	DepthSensorParams const & cameraParams,
+
+	std::vector< std::pair< util::float3, util::float3 > > & tmpAssocs
+);
+
 
 
 namespace kifi {
@@ -31,10 +48,11 @@ util::float4x4 ICP::Align
 	return result;
 }
 
+} // namespace
 
 
-// static
-util::float4x4 ICP::AlignStep
+
+util::float4x4 AlignStep
 (
 	util::vector2d< float > const & rawDepthMap,
 	util::float4x4 const & rawDepthMapEyeToWorldGuess,
@@ -235,5 +253,3 @@ util::float4x4 ICP::AlignStep
 	float4x4 result = T * R;
 	return result;
 }
-
-} // namespace
