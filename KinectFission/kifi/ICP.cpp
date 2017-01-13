@@ -19,6 +19,19 @@ static util::float4x4 AlignStep
 	std::vector< std::pair< util::float3, util::float3 > > & tmpAssocs
 );
 
+static void FindAssocs
+(
+	util::vector2d< float > const & rawDepthMap,
+	util::float4x4 const & rawDepthMapEyeToWorldGuess,
+		
+	util::vector2d< util::float3 > const & synthDepthBuffer,
+	util::float4x4 const & synthDepthBufferEyeToWorld,
+
+	DepthSensorParams const & cameraParams,
+
+	std::vector< std::pair< util::float3, util::float3 > > & outAssocs
+);
+
 /**
  * Given a list of associations between pairs of 3D points,
  * find the rigid transformation that minimizes the squared error between them,
@@ -74,6 +87,36 @@ util::float4x4 AlignStep
 {
 	using namespace util;
 
+	tmpAssocs.clear();
+
+	FindAssocs
+	(
+		rawDepthMap,
+		rawDepthMapEyeToWorldGuess,
+		synthDepthBuffer,
+		synthDepthBufferEyeToWorld,
+		cameraParams,
+		tmpAssocs
+	);
+
+	return FindTransformHorn( tmpAssocs );
+}
+
+void FindAssocs
+(
+	util::vector2d< float > const & rawDepthMap,
+	util::float4x4 const & rawDepthMapEyeToWorldGuess,
+		
+	util::vector2d< util::float3 > const & synthDepthBuffer,
+	util::float4x4 const & synthDepthBufferEyeToWorld,
+
+	DepthSensorParams const & cameraParams,
+
+	std::vector< std::pair< util::float3, util::float3 > > & outAssocs
+)
+{
+	using namespace util;
+
 	float4x4 dstWorldToEye = synthDepthBufferEyeToWorld; invert_transform( dstWorldToEye );
 
 	float4 flInv( 1.0f / cameraParams.FocalLengthPixels().x, 1.0f / cameraParams.FocalLengthPixels().y, 1.0f, 1.0f );
@@ -88,8 +131,6 @@ util::float4x4 AlignStep
 	float halfWidth = synthDepthBuffer.width() * 0.5f;
 	float halfHeight = synthDepthBuffer.height() * 0.5f;
 
-	tmpAssocs.clear();
-	
 	for( std::size_t y = 0; y < rawDepthMap.height(); y++ )
 		for( std::size_t x = 0; x < rawDepthMap.width(); x += 4 )
 		{
@@ -132,11 +173,9 @@ util::float4x4 AlignStep
 
 			if( mind < 0.01f )
 			{
-				tmpAssocs.push_back( std::make_pair( p1.xyz(), p2.xyz() ) );
+				outAssocs.push_back( std::make_pair( p1.xyz(), p2.xyz() ) );
 			}
 		}
-
-	return FindTransformHorn( tmpAssocs );
 }
 
 static util::float4x4 FindTransformHorn( std::vector< std::pair< util::float3, util::float3 > > const & assocs )
