@@ -24,7 +24,8 @@ util::float4x4 ICP::Align
 		(
 			rawDepthMap, result,
 			synthDepthBuffer, synthDepthBufferEyeToWorld,
-			cameraParams
+			cameraParams,
+			m_assocs
 		) * result;
 
 	return result;
@@ -32,6 +33,7 @@ util::float4x4 ICP::Align
 
 
 
+// static
 util::float4x4 ICP::AlignStep
 (
 	util::vector2d< float > const & rawDepthMap,
@@ -40,7 +42,9 @@ util::float4x4 ICP::AlignStep
 	util::vector2d< util::float3 > const & synthDepthBuffer,
 	util::float4x4 const & synthDepthBufferEyeToWorld,
 
-	DepthSensorParams const & cameraParams
+	DepthSensorParams const & cameraParams,
+
+	std::vector< std::pair< util::float3, util::float3 > > & tmpAssocs
 )
 {
 	using namespace util;
@@ -61,7 +65,7 @@ util::float4x4 ICP::AlignStep
 
 	kahan_sum< float4 > srcMedianSum( 0.0f );
 	kahan_sum< float4 > dstMedianSum( 0.0f );
-	m_assocs.clear();
+	tmpAssocs.clear();
 	
 	for( std::size_t y = 0; y < rawDepthMap.height(); y++ )
 		for( std::size_t x = 0; x < rawDepthMap.width(); x += 4 )
@@ -92,7 +96,7 @@ util::float4x4 ICP::AlignStep
 				if( len2( dst - point ) > 0.01f ) // points more than 10cm apart => not compatible
 					continue;
 
-				m_assocs.push_back( std::make_pair( point.xyz(), dst.xyz() ) );
+				tmpAssocs.push_back( std::make_pair( point.xyz(), dst.xyz() ) );
 				srcMedianSum += point;
 				dstMedianSum += dst;
 			}*/
@@ -119,51 +123,20 @@ util::float4x4 ICP::AlignStep
 					p2 = dst;
 				}
 
-				//m_assocs.push_back( std::make_pair( point.xyz(), dst.xyz() ) );
+				//tmpAssocs.push_back( std::make_pair( point.xyz(), dst.xyz() ) );
 				//srcMedianSum += point;
 				//dstMedianSum += dst;
 			}
 			if( mind < 0.01f )
 			{
-				m_assocs.push_back( std::make_pair( p1.xyz(), p2.xyz() ) );
+				tmpAssocs.push_back( std::make_pair( p1.xyz(), p2.xyz() ) );
 				srcMedianSum += p1;
 				dstMedianSum += p2;
 			}
 		}
-	// Simple test: Create small array of random points,
-	// use it twice, just with different transforms (rigid),
-	// so we know the exact assocs
-	// apply identity to one set and a rigid to other (take depth stream worldToView)
-	// assume identity for src and see if horn produces worldToView (after all that's what
-	// you need to multiply src with to reach dst !!!
 
-	/*kahan_sum< float4 > srcMedianSum( 0.0f );
-	kahan_sum< float4 > dstMedianSum( 0.0f );
-	m_assocs.clear();
-
-	std::vector< float4 > testArray( 100 );
-	for( int i = 0; i < testArray.size(); i++ )
-		testArray[ i ] = float4
-		(
-			std::rand() / (float) RAND_MAX,
-			std::rand() / (float) RAND_MAX,
-			std::rand() / (float) RAND_MAX,
-			1.0f
-		);
-
-	for( int i = 0; i < testArray.size(); i++ )
-	{
-		float4 src = testArray[ i ];
-		float4 dst = rawDepthMapEyeToWorldGuess * src; // this should be the result of Horn!
-		
-		srcMedianSum += src;
-		dstMedianSum += dst;
-
-		m_assocs.push_back( std::make_pair( src.xyz(), dst.xyz() ) );
-	}*/
-
-	float4 srcMedian = srcMedianSum / float4( (float) m_assocs.size() );
-	float4 dstMedian = dstMedianSum / float4( (float) m_assocs.size() );
+	float4 srcMedian = srcMedianSum / float4( (float) tmpAssocs.size() );
+	float4 dstMedian = dstMedianSum / float4( (float) tmpAssocs.size() );
 
 	kahan_sum< float > 
 		Sxx, Sxy, Sxz,
@@ -171,10 +144,10 @@ util::float4x4 ICP::AlignStep
 		Szx, Szy, Szz;
 
 	// associations computed => Horn
-	for( std::size_t i = 0; i < m_assocs.size(); ++i )
+	for( std::size_t i = 0; i < tmpAssocs.size(); ++i )
 	{
 		// all points are valid and compatible, no-brainer
-		auto x = m_assocs[ i ];
+		auto x = tmpAssocs[ i ];
 
 		float4 src( x.first , 1.0f );
 		float4 dst( x.second, 1.0f );
