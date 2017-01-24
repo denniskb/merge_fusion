@@ -81,4 +81,16 @@ DepthSensorParams DepthSensorParams::KinectParams( KinectDepthSensorResolution r
 	);
 }
 
+// static 
+DepthSensorParams DepthSensorParams::KinectV2Params()
+{
+	return DepthSensorParams
+	(
+		util::int2( 512, 424 ),
+		0.870799f * 424,
+		util::float2( 0.50602675f * 512, 0.499133f * 424 ),
+		util::float2( 0.5f, 8.0f )
+	);
+}
+
 } // namespace

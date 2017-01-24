@@ -43,6 +43,7 @@ public:
 	util::float4x4 EyeToClipRH() const;
 
 	static DepthSensorParams KinectParams( KinectDepthSensorResolution resolution, KinectDepthSensorMode mode );
+	static DepthSensorParams KinectV2Params();
 
 private:
 	util::int2   m_res;

@@ -156,8 +156,8 @@ void FindAssocs
 
 			float mind = 0.01f;
 			float4 p1, p2;
-			for( int y1 = v; y1 < std::min( 480, v + 21 ); y1++ )
-			for( int x1 = u; x1 < std::min( 640, u + 21 ); x1++ )
+			for( int y1 = v; y1 < std::min( (int) rawDepthMap.height(), v + 21 ); y1++ )
+			for( int x1 = u; x1 < std::min( (int) rawDepthMap.width() , u + 21 ); x1++ )
 			{
 				float4 dst = float4( synthDepthBuffer( x1, y1 ), 1.0f );
 				if( dst.x == 0 && dst.y == 0 && dst.z == 0 ) // invalid point
