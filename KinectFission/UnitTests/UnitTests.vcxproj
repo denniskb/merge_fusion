@@ -48,7 +48,7 @@
       <AdditionalIncludeDirectories>D:\workspace\boost\v1.57;D:\google_drive\projects\svc\KinectFission</AdditionalIncludeDirectories>
       <AdditionalOptions>/D_SCL_SECURE_NO_WARNINGS %(AdditionalOptions)</AdditionalOptions>
       <FloatingPointExceptions>true</FloatingPointExceptions>
-      <PreprocessorDefinitions>TMP_DIR="I:/tmp";BOOST_ALL_DYN_LINK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TMP_DIR="D:/temp";BOOST_ALL_DYN_LINK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>D:\workspace\boost\v1.57\stage\lib</AdditionalLibraryDirectories>
@@ -63,7 +63,7 @@
       <AdditionalIncludeDirectories>D:\workspace\boost\v1.57;D:\google_drive\projects\svc\KinectFission</AdditionalIncludeDirectories>
       <FloatingPointExceptions>false</FloatingPointExceptions>
       <FloatingPointModel>Fast</FloatingPointModel>
-      <PreprocessorDefinitions>TMP_DIR="I:/tmp";BOOST_ALL_DYN_LINK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TMP_DIR="D:/temp";BOOST_ALL_DYN_LINK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>D:\workspace\boost\v1.57\stage\lib</AdditionalLibraryDirectories>
