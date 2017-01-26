@@ -19,11 +19,15 @@ using namespace kifi::util;
 
 
 util::vector2d< int > backBuffer( 640, 480 );
-
-DepthStream depthStreamHouse( "D:/Desktop/test.depth" );
 vector2d< float > synthDepthFrame;
-//DepthSensorParams cameraParams( int2( 640, 480 ), float2( 571.26f ), float2( 320, 240 ), float2( 0.4f, 4.0f ) );
-DepthSensorParams cameraParams = DepthSensorParams::KinectV2Params();
+
+#if 1
+	DepthStream depthStreamHouse( "D:/Desktop/house.depth" );
+	DepthSensorParams cameraParams( int2( 640, 480 ), float2( 571.26f ), float2( 320, 240 ), float2( 0.4f, 4.0f ) );
+#else
+	DepthStream depthStreamHouse( "D:/Desktop/test.depth" );
+	DepthSensorParams cameraParams = DepthSensorParams::KinectV2Params();
+#endif
 
 Pipeline pipeline( cameraParams, 1024, 4.0f, 0.02f );
 
@@ -32,7 +36,6 @@ std::vector< unsigned > indices;
 
 Renderer r;
 
-//void myIdleFunc()
 void myIdleFunc()
 {
 	static bool done = false;
@@ -77,18 +80,6 @@ void myDisplayFunc()
 
 	auto tmp = pipeline.EyeToWorld(); invert_transform( tmp );
 	auto m = cameraParams.EyeToClipRH() * tmp;
-
-	//glPushMatrix();
-	//glLoadMatrixf( reinterpret_cast< float * >( & m ) );
-	//
-	//glEnableClientState( GL_VERTEX_ARRAY );
-	//glVertexPointer( 3, GL_FLOAT, sizeof( float3 ), vertices.data() );
-	//
-	//glDrawArrays( GL_POINTS, 0, vertices.size() );
-	//
-	//glDisableClientState( GL_VERTEX_ARRAY );
-	//
-	//glPopMatrix();
 
     glutSwapBuffers();
 }
