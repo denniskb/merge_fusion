@@ -14,6 +14,7 @@ namespace poly2depth
         private int frameCount;
 
         private bool buttonAWasDown;
+        private bool spaceWasDown;
 
         private Vector4[] tmpBufferRT;
         private byte[] tmpBufferDepth;
@@ -32,16 +33,20 @@ namespace poly2depth
 
         public void Update()
         {
-            bool buttonAIsUp = (GamePad.GetState(PlayerIndex.One).IsConnected && GamePad.GetState(PlayerIndex.One).Buttons.A == ButtonState.Released) ||
-                Keyboard.GetState().IsKeyUp(Keys.Space);
+            bool buttonAIsUp = GamePad.GetState(PlayerIndex.One).IsConnected && GamePad.GetState(PlayerIndex.One).Buttons.A == ButtonState.Released;
+            bool spaceIsUp   = Keyboard.GetState().IsKeyUp(Keys.Space);
 
-            if (buttonAIsUp && buttonAWasDown)
+            bool buttonAPressed = buttonAIsUp && buttonAWasDown;
+            bool spacePressed   = spaceIsUp   && spaceWasDown;
+
+            if (buttonAPressed || spacePressed)
                 if (IsRecording())
                     StopRecording();
                 else
                     StartRecording();
 
             buttonAWasDown = !buttonAIsUp;
+            spaceWasDown = !spaceIsUp;
         }
 
         public bool IsRecording()
