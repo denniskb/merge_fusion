@@ -49,7 +49,7 @@ void Renderer::Render
 
 	for( std::size_t i = 0; i < volume.Data().size(); ++i )
 	{
-		if( std::abs( volume.Data().values_cbegin()[ i ].Distance() ) > 0.006f ) continue;
+		if( volume.Data().values_cbegin()[ i ].Weight() == 0 || std::abs( volume.Data().values_cbegin()[ i ].Distance() ) > volume.VoxelLength() ) continue;
 
 		unsigned x, y, z;
 		util::unpack( volume.Data().keys_cbegin()[ i ], x, y, z );
