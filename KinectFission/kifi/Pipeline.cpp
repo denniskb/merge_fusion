@@ -36,7 +36,7 @@ void Pipeline::Integrate
 {
 	util::chrono::stop_watch sw;
 
-#if 1
+#if 0
 	m_eyeToWorld = worldToEye;
 	util::invert_transform( m_eyeToWorld );
 	sw.restart();

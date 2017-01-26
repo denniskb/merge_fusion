@@ -88,7 +88,8 @@ DepthSensorParams DepthSensorParams::KinectV2Params()
 	(
 		util::int2( 512, 424 ),
 		0.870799f * 424,
-		util::float2( 0.50602675f * 512, 0.499133f * 424 ),
+		//util::float2( 0.50602675f * 512, 0.499133f * 424 ),
+		util::float2( 256, 212 ),
 		util::float2( 0.5f, 8.0f )
 	);
 }

@@ -21,9 +21,9 @@ using namespace kifi::util;
 util::vector2d< int > backBuffer( 640, 480 );
 vector2d< float > synthDepthFrame;
 
-#if 1
+#if 0
 	DepthStream depthStreamHouse( "D:/Desktop/house.depth" );
-	DepthSensorParams cameraParams( int2( 640, 480 ), float2( 571.26f ), float2( 320, 240 ), float2( 0.4f, 4.0f ) );
+	DepthSensorParams cameraParams = DepthSensorParams::KinectParams( KinectDepthSensorResolution640x480, KinectDepthSensorModeFar );
 #else
 	DepthStream depthStreamHouse( "D:/Desktop/test.depth" );
 	DepthSensorParams cameraParams = DepthSensorParams::KinectV2Params();
