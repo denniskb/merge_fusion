@@ -56,7 +56,7 @@ util::float4x4 ICP::Align
 {
 	util::float4x4 result = rawDepthMapEyeToWorldGuess;
 	
-	for( int i = 0; i < 4; i++ )
+	for( int i = 0; i < 7; i++ )
 		result = AlignStep
 		(
 			rawDepthMap, result,
@@ -99,6 +99,8 @@ util::float4x4 AlignStep
 		tmpAssocs
 	);
 
+	std::printf( "#assocs: %d\n", tmpAssocs.size() );
+
 	return FindTransformHorn( tmpAssocs );
 }
 
@@ -116,6 +118,8 @@ void FindAssocs
 )
 {
 	using namespace util;
+
+	float const dist_thres = 0.01f;
 
 	float4x4 dstWorldToEye = synthDepthBufferEyeToWorld; invert_transform( dstWorldToEye );
 
@@ -154,7 +158,7 @@ void FindAssocs
 			u = std::max( 0, u );
 			v = std::max( 0, v );
 
-			float mind = 0.01f;
+			float mind = dist_thres;
 			float4 p1, p2;
 			for( int y1 = v; y1 < std::min( (int) rawDepthMap.height(), v + 21 ); y1++ )
 			for( int x1 = u; x1 < std::min( (int) rawDepthMap.width() , u + 21 ); x1++ )
@@ -163,15 +167,15 @@ void FindAssocs
 				if( dst.x == 0 && dst.y == 0 && dst.z == 0 ) // invalid point
 					continue;
 
-				if( len2( dst - point ) < mind )
+				if( len( dst - point ) < mind )
 				{
-					mind = len2( dst - point );
+					mind = len( dst - point );
 					p1 = point;
 					p2 = dst;
 				}
 			}
 
-			if( mind < 0.01f )
+			if( mind < dist_thres )
 			{
 				outAssocs.push_back( std::make_pair( p1.xyz(), p2.xyz() ) );
 			}

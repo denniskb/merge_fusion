@@ -29,7 +29,7 @@ vector2d< float > synthDepthFrame;
 	DepthSensorParams cameraParams = DepthSensorParams::KinectV2Params();
 #endif
 
-Pipeline pipeline( cameraParams, 1024, 4.0f, 0.02f );
+Pipeline pipeline( cameraParams, 1024, 4.0f, 0.04f );
 
 std::vector< float3   > vertices;
 std::vector< unsigned > indices;
@@ -60,6 +60,7 @@ void myIdleFunc()
 	{
 		pipeline.Mesh( vertices, indices );
 		Mesher::Mesh2Obj( vertices, indices, "D:/Desktop/house.obj" );
+		std::printf( "DONE!\n" );
 		done = true;
 	}
 }
