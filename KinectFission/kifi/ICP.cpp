@@ -2,6 +2,12 @@
 
 #include <kifi/ICP.h>
 
+#pragma warning( push )
+#pragma warning( disable : 4324 4458 4996 )
+#include <pcl/point_types.h>
+#include <pcl/registration/icp.h>
+#pragma warning( pop )
+
 using namespace kifi;
 
 

@@ -49,7 +49,7 @@
     <ClCompile />
     <Link />
     <ClCompile>
-      <AdditionalIncludeDirectories>D:\google_drive\projects\svc\KinectFission</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\google_drive\projects\svc\KinectFission;D:\workspace\pcl\common\include;D:\workspace\pcl\registration\include;D:\workspace\pcl\build\include;D:\workspace\boost\v1.57;D:\workspace\eigen;D:\workspace\pcl\sample_consensus\include;D:\workspace\pcl\search\include;D:\workspace\pcl\kdtree\include;D:\workspace\flann\src\cpp</AdditionalIncludeDirectories>
       <FloatingPointExceptions>true</FloatingPointExceptions>
       <AdditionalOptions>/D_SCL_SECURE_NO_WARNINGS %(AdditionalOptions)</AdditionalOptions>
       <EnablePREfast>false</EnablePREfast>
@@ -68,7 +68,7 @@
     <ClCompile />
     <Link />
     <ClCompile>
-      <AdditionalIncludeDirectories>D:\google_drive\projects\svc\KinectFission</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\google_drive\projects\svc\KinectFission;D:\workspace\pcl\common\include;D:\workspace\pcl\registration\include;D:\workspace\pcl\build\include;D:\workspace\boost\v1.57;D:\workspace\eigen;D:\workspace\pcl\sample_consensus\include;D:\workspace\pcl\search\include;D:\workspace\pcl\kdtree\include;D:\workspace\flann\src\cpp</AdditionalIncludeDirectories>
       <FloatingPointExceptions>false</FloatingPointExceptions>
       <UndefinePreprocessorDefinitions>
       </UndefinePreprocessorDefinitions>
