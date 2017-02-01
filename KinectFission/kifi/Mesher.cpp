@@ -101,7 +101,7 @@ void Mesher::Generate( Volume const & volume, std::vector< util::float3 > & outV
 
 	Voxel voxels[ 8 ];
 
-	int deltas[] = {
+	unsigned const deltas[] = {
 		util::pack( 0, 0, 0 ), // self
 		util::pack( 1, 0, 0 ), // right
 		util::pack( 0, 1, 0 ), // top
@@ -181,8 +181,8 @@ void Mesher::Generate( Volume const & volume, std::vector< util::float3 > & outV
 			voxels[ 7 ] = ( keys[ iFrontTop + 1 ] == keys[ i ] + deltas[ 7 ] ) ? values[ iFrontTop + 1 ] : Voxel();
 
 			int skip = 0;
-			for( int i = 1; i < 8; ++i )
-				skip |= ( 0.0f == voxels[ i ].Weight() );
+			for( int j = 1; j < 8; ++j )
+				skip |= ( 0.0f == voxels[ j ].Weight() );
 
 			if( skip )
 				continue;
@@ -218,12 +218,12 @@ void Mesher::Generate( Volume const & volume, std::vector< util::float3 > & outV
 			localToGlobal[ 11 ] = util::pack( x1, y0, z0 ) * 3 + 1;
 
 			for (
-				int i = TriOffsets()[ lutIdx ],
+				int j = TriOffsets()[ lutIdx ],
 				end   = TriOffsets()[ lutIdx + 1 ];
-				i < end;
-				i++
+				j < end;
+				j++
 			)
-				m_indexIDs.push_back(  localToGlobal[ TriTable()[ i ] ] );
+				m_indexIDs.push_back( localToGlobal[ TriTable()[ j ] ] );
 		}
 	}
 }

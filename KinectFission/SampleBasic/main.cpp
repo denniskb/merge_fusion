@@ -70,7 +70,7 @@ void myDisplayFunc()
 	glClear( GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT );
 	glEnable( GL_DEPTH_TEST );
 
-	glTexImage2D( GL_TEXTURE_2D, 0, 3, backBuffer.width(), backBuffer.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, backBuffer.data() );
+	glTexImage2D( GL_TEXTURE_2D, 0, 3, (GLsizei) backBuffer.width(), (GLsizei) backBuffer.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, backBuffer.data() );
 
 	glBegin( GL_QUADS );
         glTexCoord2d( 0.0, 0.0 ); glVertex2d( -1.0,  1.0 );
@@ -91,7 +91,7 @@ int main( int argc, char ** argv )
 
 	glutInitDisplayMode( GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH );
 	glutInitWindowPosition( 250, 80 );
-	glutInitWindowSize( backBuffer.width(), backBuffer.height() );
+	glutInitWindowSize( (int) backBuffer.width(), (int) backBuffer.height() );
 	glutCreateWindow( "KinectFission" );
 
 	glutDisplayFunc( myDisplayFunc );

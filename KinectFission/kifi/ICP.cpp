@@ -99,7 +99,7 @@ util::float4x4 AlignStep
 		tmpAssocs
 	);
 
-	std::printf( "#assocs: %d\n", tmpAssocs.size() );
+	std::printf( "#assocs: %llu\n", tmpAssocs.size() );
 
 	return FindTransformHorn( tmpAssocs );
 }

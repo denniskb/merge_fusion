@@ -16,9 +16,9 @@ high_resolution_clock::now()
 {
 	static std::int_least64_t const freq = []()
 	{
-		LARGE_INTEGER freq;
-		QueryPerformanceFrequency( & freq );
-		return freq.QuadPart;
+		LARGE_INTEGER f;
+		QueryPerformanceFrequency( & f );
+		return f.QuadPart;
 	}();
 
 	LARGE_INTEGER t;
