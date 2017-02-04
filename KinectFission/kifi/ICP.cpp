@@ -10,6 +10,8 @@
 
 using namespace kifi;
 
+#pragma warning( disable : 4100 4505 ) // unreferenced function due to toggling between myICP and pclICP
+
 
 
 static util::float4x4 AlignStep
@@ -45,6 +47,49 @@ static void FindAssocs
  */
 static util::float4x4 FindTransformHorn( std::vector< std::pair< util::float3, util::float3 > > const & assocs );
 
+/**
+ * Use PCL implementation of ICP to align both point clouds
+ */
+static util::float4x4 AlignPCL
+(
+	util::vector2d< float > const & rawDepthMap,
+	util::float4x4 const & rawDepthMapEyeToWorldGuess,
+		
+	util::vector2d< util::float3 > const & synthDepthBuffer,
+
+	DepthSensorParams const & cameraParams
+);
+
+class extrapolate
+{
+public:
+	extrapolate( util::float2 fl, util::float2 pp, std::size_t width, std::size_t height ) :
+		flInv( 1.0f / fl.x, 1.0f / fl.y, 1.0f, 1.0f ),
+		ppOverFl( util::float4( 0.5f - pp.x, pp.y - 0.5f, 0.0f, 0.0f ) * flInv ),
+		halfWidth( 0.5f * width ),
+		halfHeight( 0.5f * height )
+	{
+	}
+
+	util::float4 operator()( std::size_t x, std::size_t y, float d, util::float4x4 const & eyeToWorld )
+	{
+		util::float4 point( (float) x, - (float) y, -1.0f, 0.0f );
+
+		point = ( point * flInv + ppOverFl ) * d;
+		point.w = 1.0f;
+
+		point = eyeToWorld * point;
+
+		return point;
+	}
+
+private:
+	util::float4 flInv;
+	util::float4 ppOverFl;
+	float halfWidth;
+	float halfHeight;
+};
+
 
 
 namespace kifi {
@@ -60,6 +105,7 @@ util::float4x4 ICP::Align
 	DepthSensorParams const & cameraParams
 )
 {
+#if 0 // my ICP
 	util::float4x4 result = rawDepthMapEyeToWorldGuess;
 	
 	for( int i = 0; i < 7; i++ )
@@ -72,6 +118,9 @@ util::float4x4 ICP::Align
 		) * result;
 
 	return result;
+#else // PCL ICP
+	return AlignPCL( rawDepthMap, rawDepthMapEyeToWorldGuess, synthDepthBuffer, cameraParams );
+#endif
 }
 
 } // namespace
@@ -129,16 +178,15 @@ void FindAssocs
 
 	float4x4 dstWorldToEye = synthDepthBufferEyeToWorld; invert_transform( dstWorldToEye );
 
-	float4 flInv( 1.0f / cameraParams.FocalLengthPixels().x, 1.0f / cameraParams.FocalLengthPixels().y, 1.0f, 1.0f );
-	float4 ppOverFl = float4
+	extrapolate eye2world
 	(
-		(0.5f - cameraParams.PrincipalPointPixels().x),
-		(cameraParams.PrincipalPointPixels().y - 0.5f),
-		0.0f, 
-		0.0f
-	) * flInv;
+		cameraParams.FocalLengthPixels(),
+		cameraParams.PrincipalPointPixels(),
+		synthDepthBuffer.width(),
+		synthDepthBuffer.height()
+	);
 
-	float halfWidth = synthDepthBuffer.width() * 0.5f;
+	float halfWidth  = synthDepthBuffer.width () * 0.5f;
 	float halfHeight = synthDepthBuffer.height() * 0.5f;
 
 	for( std::size_t y = 0; y < rawDepthMap.height(); y++ )
@@ -148,14 +196,9 @@ void FindAssocs
 
 			if( 0.0f == depth )
 				continue;
+
+			float4 point = eye2world( x, y, depth, rawDepthMapEyeToWorldGuess );
 			
-			float4 point( (float) x, - (float) y, -1.0f, 0.0f );
-
-			point = ( point * flInv + ppOverFl ) * depth;
-			point.w = 1.0f;
-
-			point = rawDepthMapEyeToWorldGuess * point; // raw depth map pixel in 3D world space
-
 			float4 uv = homogenize( cameraParams.EyeToClipRH() * dstWorldToEye * point );
 
 			int u = (int) (uv.x * halfWidth + halfWidth) - 10;
@@ -295,4 +338,62 @@ static util::float4x4 FindTransformHorn( std::vector< std::pair< util::float3, u
 	T.col3.w = 1.0f;
 
 	return T * R;
+}
+
+static util::float4x4 AlignPCL
+(
+	util::vector2d< float > const & rawDepthMap,
+	util::float4x4 const & rawDepthMapEyeToWorldGuess,
+		
+	util::vector2d< util::float3 > const & synthDepthBuffer,
+	
+	DepthSensorParams const & cameraParams
+)
+{
+	// synth = src, raw = dst (how do we go from synth (previous frame) to raw (current frame)?)
+	pcl::PointCloud< pcl::PointXYZ >::Ptr src( new pcl::PointCloud< pcl::PointXYZ >( (std::uint32_t) synthDepthBuffer.width(), (std::uint32_t) synthDepthBuffer.height() ) );
+	pcl::PointCloud< pcl::PointXYZ >::Ptr dst( new pcl::PointCloud< pcl::PointXYZ >( (std::uint32_t) rawDepthMap.width(), (std::uint32_t) rawDepthMap.height() ) );
+
+	for( std::size_t i = 0; i < src->size(); i++ )
+	{
+		auto p = synthDepthBuffer[ i ];
+		src->points[ i ] = pcl::PointXYZ( p.x, p.y, p.z );
+	}
+
+	extrapolate depth2point
+	(
+		cameraParams.FocalLengthPixels(),
+		cameraParams.PrincipalPointPixels(),
+		cameraParams.ResolutionPixels().x,
+		cameraParams.ResolutionPixels().y
+	);
+
+	for( std::size_t y = 0; y < rawDepthMap.height(); y++ )
+		for( std::size_t x = 0; x < rawDepthMap.width(); x++ )
+		{
+			std::size_t i = x + y * rawDepthMap.width();
+
+			auto p = depth2point( x, y, rawDepthMap[ i ], rawDepthMapEyeToWorldGuess );
+			dst->points[ i ] = pcl::PointXYZ( p.x, p.y, p.z );
+		}
+
+	pcl::IterativeClosestPoint< pcl::PointXYZ, pcl::PointXYZ > icp;
+	pcl::PointCloud< pcl::PointXYZ > final;
+	Eigen::Matrix4f T;
+
+	icp.setInputSource( src );
+	icp.setInputTarget( dst );
+	icp.setMaximumIterations( 2 );
+	icp.align( final, T );
+
+	std::printf( icp.hasConverged() ? "ICP has converged\n" : "ICP hasn't converged\n" );
+
+	// TODO: Correct conversion?
+	return util::float4x4
+	(
+		T( 0, 0 ), T( 0, 1 ), T( 0, 2 ), T( 0, 3 ),
+		T( 1, 0 ), T( 1, 1 ), T( 1, 2 ), T( 1, 3 ),
+		T( 2, 0 ), T( 2, 1 ), T( 2, 2 ), T( 2, 3 ),
+		T( 3, 0 ), T( 3, 1 ), T( 3, 2 ), T( 3, 3 )
+	);
 }

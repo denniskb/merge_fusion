@@ -50,8 +50,8 @@
     </ClCompile>
     <Link />
     <Link>
-      <AdditionalDependencies>freeglutd.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>D:\workspace\freeglut\v3.0.0\build\lib\Debug</AdditionalLibraryDirectories>
+      <AdditionalDependencies>freeglutd.lib;pcl_common_debug.lib;pcl_search_debug.lib;pcl_registration_debug.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\workspace\freeglut\v3.0.0\build\lib\Debug;D:\workspace\pcl\build\lib</AdditionalLibraryDirectories>
       <SubSystem>Windows</SubSystem>
       <AdditionalOptions>/ENTRY:mainCRTStartup %(AdditionalOptions)</AdditionalOptions>
     </Link>
@@ -68,8 +68,8 @@
     </ClCompile>
     <Link />
     <Link>
-      <AdditionalDependencies>freeglut.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>D:\workspace\freeglut\v3.0.0\build\lib\Release</AdditionalLibraryDirectories>
+      <AdditionalDependencies>freeglut.lib;pcl_common_release.lib;pcl_search_release.lib;pcl_registration_release.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\workspace\freeglut\v3.0.0\build\lib\Release;D:\workspace\pcl\build\lib</AdditionalLibraryDirectories>
       <AdditionalOptions>/ENTRY:mainCRTStartup %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
