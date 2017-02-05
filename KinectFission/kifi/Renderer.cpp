@@ -26,6 +26,9 @@ void Renderer::Render
 	util::vector2d< int > & outRgba 
 )
 {
+	m_depthBuffer.resize( outRgba.width(), outRgba.height() );
+	std::fill( m_depthBuffer.begin(), m_depthBuffer.end(), std::numeric_limits< float >::max() );
+
 	std::memset( outRgba.data(), 0, outRgba.size() * 4 );
 
 	float halfWidth = outRgba.width() * 0.5f;
@@ -47,6 +50,10 @@ void Renderer::Render
 			v < 0 || v >= outRgba.height() ||
 			point.z < 0.0f || point.z > 1.0f )
 			continue;
+
+		if( point.z >= m_depthBuffer( u, v ) ) continue;
+
+		m_depthBuffer ( u, v ) = point.z;
 
 		float red   = clamp((point.z - 0.5f) * 6.0f, 0.0f, 1.0f);
 		float green = std::min(1.0f, point.z * 3.0f) - std::max(0.0f, (point.z - 0.666f) * 3.0f);

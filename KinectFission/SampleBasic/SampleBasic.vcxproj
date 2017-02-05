@@ -47,12 +47,14 @@
       <AdditionalIncludeDirectories>D:\workspace\freeglut\v3.0.0\include;D:\google_drive\projects\svc\KinectFission</AdditionalIncludeDirectories>
       <FloatingPointExceptions>true</FloatingPointExceptions>
       <TreatWarningAsError>false</TreatWarningAsError>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <SmallerTypeCheck>false</SmallerTypeCheck>
     </ClCompile>
     <Link />
     <Link>
       <AdditionalDependencies>freeglutd.lib;pcl_common_debug.lib;pcl_search_debug.lib;pcl_registration_debug.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>D:\workspace\freeglut\v3.0.0\build\lib\Debug;D:\workspace\pcl\build\lib</AdditionalLibraryDirectories>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <AdditionalOptions>/ENTRY:mainCRTStartup %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>

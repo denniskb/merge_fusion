@@ -105,7 +105,7 @@ util::float4x4 ICP::Align
 	DepthSensorParams const & cameraParams
 )
 {
-#if 0 // my ICP
+#if 1 // my ICP
 	util::float4x4 result = rawDepthMapEyeToWorldGuess;
 	
 	for( int i = 0; i < 7; i++ )
@@ -350,43 +350,44 @@ static util::float4x4 AlignPCL
 	DepthSensorParams const & cameraParams
 )
 {
-	// synth = src, raw = dst (how do we go from synth (previous frame) to raw (current frame)?)
-	pcl::PointCloud< pcl::PointXYZ >::Ptr src( new pcl::PointCloud< pcl::PointXYZ >( (std::uint32_t) synthDepthBuffer.width(), (std::uint32_t) synthDepthBuffer.height() ) );
-	pcl::PointCloud< pcl::PointXYZ >::Ptr dst( new pcl::PointCloud< pcl::PointXYZ >( (std::uint32_t) rawDepthMap.width(), (std::uint32_t) rawDepthMap.height() ) );
+	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_in (new pcl::PointCloud<pcl::PointXYZ>);
+  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_out (new pcl::PointCloud<pcl::PointXYZ>);
 
-	for( std::size_t i = 0; i < src->size(); i++ )
-	{
-		auto p = synthDepthBuffer[ i ];
-		src->points[ i ] = pcl::PointXYZ( p.x, p.y, p.z );
-	}
+  // Fill in the CloudIn data
+  cloud_in->width    = (int32_t) synthDepthBuffer.width();
+  cloud_in->height   = (int32_t) synthDepthBuffer.height();
+  cloud_in->is_dense = false;
+  cloud_in->points.resize (cloud_in->width * cloud_in->height);
 
-	extrapolate depth2point
-	(
-		cameraParams.FocalLengthPixels(),
-		cameraParams.PrincipalPointPixels(),
-		cameraParams.ResolutionPixels().x,
-		cameraParams.ResolutionPixels().y
-	);
+  for (size_t i = 0; i < cloud_in->points.size (); ++i)
+  {
+	auto p = synthDepthBuffer[ i ];
+	cloud_in->points[i] = pcl::PointXYZ( p.x, p.y, p.z );
+  }
 
-	for( std::size_t y = 0; y < rawDepthMap.height(); y++ )
-		for( std::size_t x = 0; x < rawDepthMap.width(); x++ )
-		{
-			std::size_t i = x + y * rawDepthMap.width();
+  *cloud_out = *cloud_in;
 
-			auto p = depth2point( x, y, rawDepthMap[ i ], rawDepthMapEyeToWorldGuess );
-			dst->points[ i ] = pcl::PointXYZ( p.x, p.y, p.z );
-		}
+  extrapolate depth2point( cameraParams.FocalLengthPixels(), cameraParams.PrincipalPointPixels(), rawDepthMap.width(), rawDepthMap.height() );
 
-	pcl::IterativeClosestPoint< pcl::PointXYZ, pcl::PointXYZ > icp;
-	pcl::PointCloud< pcl::PointXYZ > final;
-	Eigen::Matrix4f T;
+  for (size_t i = 0; i < cloud_out->points.size (); ++i)
+  {
+	  size_t x = i % rawDepthMap.width();
+	  size_t y = i / rawDepthMap.width();
 
-	icp.setInputSource( src );
-	icp.setInputTarget( dst );
-	icp.setMaximumIterations( 2 );
-	icp.align( final, T );
+	auto p = depth2point( x, y, rawDepthMap[ i ], rawDepthMapEyeToWorldGuess );
+	cloud_out->points[i] = pcl::PointXYZ( p.x, p.y, p.z );
+  }
 
-	std::printf( icp.hasConverged() ? "ICP has converged\n" : "ICP hasn't converged\n" );
+  Eigen::Matrix4f T;
+  pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> icp;
+  icp.setInputSource(cloud_in);
+  icp.setInputTarget(cloud_out);
+  icp.setMaximumIterations(2);
+  pcl::PointCloud<pcl::PointXYZ> Final;
+  icp.align(Final, T);
+  std::cout << "has converged:" << icp.hasConverged() << " score: " <<
+  icp.getFitnessScore() << std::endl;
+  std::cout << T << std::endl;
 
 	// TODO: Correct conversion?
 	return util::float4x4
