@@ -108,7 +108,7 @@ util::float4x4 ICP::Align
 #if 1 // my ICP
 	util::float4x4 result = rawDepthMapEyeToWorldGuess;
 	
-	for( int i = 0; i < 7; i++ )
+	for( int i = 0; i < 10; i++ )
 		result = AlignStep
 		(
 			rawDepthMap, result,
@@ -174,7 +174,7 @@ void FindAssocs
 {
 	using namespace util;
 
-	float const dist_thres = 0.01f;
+	float const dist_thres = 0.05f;
 
 	float4x4 dstWorldToEye = synthDepthBufferEyeToWorld; invert_transform( dstWorldToEye );
 

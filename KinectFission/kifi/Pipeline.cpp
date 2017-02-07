@@ -20,6 +20,7 @@ Pipeline::Pipeline
 	m_iFrame( 0 ),
 	m_eyeToWorld( util::float4x4::identity() )
 {
+	m_eyeToWorld.col3.z = 2;
 }
 
 

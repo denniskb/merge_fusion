@@ -66,7 +66,7 @@ float noiseZ(float z, float theta)
 
 	return
 	0.0012 +
-	0.0019 * ((z - 0.4f) * (z - 0.4f)) + 
+	10 * 0.0019 * ((z - 0.4f) * (z - 0.4f)) + 
 	(0.0001 / sqrt(z)) * (theta * theta) / ((PI/2 - theta) * (PI/2 - theta));
 }
 
