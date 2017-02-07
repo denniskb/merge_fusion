@@ -23,7 +23,12 @@ namespace poly2depth
         private Effect depthEffect;
         private Effect billboardEffect;
 
-        private AnimatedFBX temple;
+        private AnimatedFBX model;
+        private Matrix modelTransform;
+        private AnimatedFBX desk;
+        private Matrix deskTransform;
+        private AnimatedFBX house;
+        private Matrix houseTransform;
         private AnimatedFBX billboard;
 
         private Recorder recorder;
@@ -87,17 +92,28 @@ namespace poly2depth
             depthEffect = Content.Load<Effect>("Depth");
             billboardEffect = Content.Load<Effect>("billboardViz");
             
-            temple = new AnimatedFBX
+            house = new AnimatedFBX
             (
                 Content,
                 "house"
             );
+            houseTransform = Matrix.CreateScale(0.075f) * Matrix.CreateTranslation(0.0f, -0.75f, -0.37f);
+
+            desk = new AnimatedFBX
+            (
+                Content,
+                "desk_clean_simple"
+            );
+            deskTransform = Matrix.CreateRotationX(-MathHelper.PiOver2) * Matrix.CreateTranslation(0, 0, 1);
 
             billboard = new AnimatedFBX
             (
                 Content,
                 "billboard"
             );
+
+            model = desk;
+            modelTransform = deskTransform;
         }
 
         /// <summary>
@@ -135,21 +151,21 @@ namespace poly2depth
 
             GraphicsDevice.Clear(Color.Black);
             depthEffect.CurrentTechnique = depthEffect.Techniques["WorldPos"];
-            depthEffect.Parameters["modelToWorld"].SetValue(Matrix.CreateScale(0.075f) * Matrix.CreateTranslation(0.0f, -0.75f, -0.37f));
+            depthEffect.Parameters["modelToWorld"].SetValue(modelTransform);
             depthEffect.Parameters["eyeToClip"].SetValue(cam.GetViewProjection());
             depthEffect.Parameters["eye"].SetValue(cam.GetEye());
             depthEffect.Parameters["forward"].SetValue(cam.GetForward());
-            temple.Draw(depthEffect);
+            model.Draw(depthEffect);
 
             GraphicsDevice.SetRenderTarget(depthOut);
             
             GraphicsDevice.Clear(Color.Black);
             depthEffect.CurrentTechnique = depthEffect.Techniques["DepthPlusNormal"];
-            depthEffect.Parameters["modelToWorld"].SetValue(Matrix.CreateScale(0.075f) * Matrix.CreateTranslation(0.0f, -0.75f, -0.37f));
+            depthEffect.Parameters["modelToWorld"].SetValue(modelTransform);
             depthEffect.Parameters["eyeToClip"].SetValue(cam.GetViewProjection());
             depthEffect.Parameters["eye"].SetValue(cam.GetEye());
             depthEffect.Parameters["forward"].SetValue(cam.GetForward());
-            temple.Draw(depthEffect);
+            model.Draw(depthEffect);
 
             GraphicsDevice.SetRenderTarget(noiseOut);
 
@@ -176,7 +192,7 @@ namespace poly2depth
             
             GraphicsDevice.Clear(Color.Black);
             billboardEffect.CurrentTechnique = billboardEffect.Techniques["Depth2Color"];
-            billboardEffect.Parameters["depth"].SetValue(noiseOut);
+            billboardEffect.Parameters["depth"].SetValue(medianOut);
             billboardEffect.Parameters["eye"].SetValue(cam.GetEye());
             billboardEffect.Parameters["forward"].SetValue(cam.GetForward());
             billboard.Draw(billboardEffect);
